@@ -26,9 +26,6 @@ $OPENSSL  = '/usr/bin/openssl';
 $TOUCH    = '/usr/bin/touch';
 $SENDMAIL = '/usr/sbin/sendmail';
 
-$date     = `/bin/date`;
-chomp $date;
-
 $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
 

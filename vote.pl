@@ -55,9 +55,6 @@ $MD5      = '/sbin/md5';
 $OPENSSL  = '/usr/bin/openssl';
 $SENDMAIL = '/usr/sbin/sendmail';
 
-$date     = `/bin/date`;
-chomp $date;
-
 $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
 
@@ -173,6 +170,7 @@ if (!defined($vhash2)) { die "I can't find your hashed-hash-ID\n"; }
 
 # ==========================================================================
 # construct vote entry
+$date  = &get_date;
 $entry = "[$date] $vhash2 $vote\n";
 
 # ==========================================================================
@@ -330,5 +328,14 @@ sub hash_file {
     }
     chomp $rv;
     return $rv;
+}
+
+# ==========================================================================
+sub get_date {
+    delete $ENV{'TZ'};
+    local ($sec, $min, $hour, $mday, $mon, $year) = gmtime(time);
+
+    return sprintf("%04d/%02d/%02d %02d:%02d:%02d", 1900 + $year,
+                   $mon+1, $mday, $hour, $min, $sec);
 }
 
