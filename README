@@ -15,19 +15,20 @@ Please try to avoid installing the software while a vote is
 in-progress, since that would cause the file MD5s to change and
 invalidate the vote.
 
-The voter tool consists of five perl scripts and a C wrapper that
+The voter tool consists of six perl scripts and a C wrapper that
 invokes them with setuid voter -- this allows anyone with a login
 on cvs.apache.org to invoke the tool, but only users who can sudo
 to the voter account (or root) can do anything to the voting files
 beyond what is provided by the tools.
 
-The five wrapped scripts are
+The six wrapped scripts are
 
     votegroup    -- create a voting group with a list of e-mail addresses
     make_issue   -- create a new issue for a group and send mail
     vote         -- place a vote on an issue
     reminder     -- send a reminder to user about their voting key
     close_issue  -- end voting on the issue and send final summary
+    check_quorum -- get a list of people who voted on a closed issue
 
 Note that any user on cvs.apache.org can run these scripts, though vote
 requires a voter hash ID and close_issue requires a monitor hash ID.
@@ -51,6 +52,8 @@ the vote is recorded in a tally, sent by e-mail to the monitor(s),
 and a notice is sent to every voter's address.  The vote does not end
 itself automatically -- at least one of the monitors must run the
 close_issue program to end voting and generate the final tally.
+After it is closed, the check_quorum command should be run to determine
+whether enough voters showed up to make a quorum of the group.
 
 If you have DOUBTS about how all of this will work, then Roy suggests
 that you start by creating a test group with a couple of your own e-mail
@@ -136,6 +139,23 @@ A program for closing an issue to end voting and send summary results
         /home/voter/public_html/issue_nnnnnn.html
 
 usage: close_issue [ group-issue-name [ hash-id ] ]
+
+# ==========================================================================
+check_quorum -- Check for quorum by listing the voters on a closed issue
+
+A program for checking if a closed issue reached quorum and
+providing a sorted list of people whose vote was received.
+
+  o  must be run by voter user (see wrapsuid.c for setuid wrapper)
+
+  o  takes as argument an issue name;
+
+  o  checks to be sure the issue has closed (to prevent abuse);
+
+  o  sends mail to the election monitor(s) indicating the sorted
+     list of voted addresses and ratio of votes cast to voters in group.
+
+usage: check_quorum [ group-issue-name ]
 
 # ==========================================================================
 

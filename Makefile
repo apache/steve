@@ -2,7 +2,7 @@ CC = gcc
 INSTALLBIN = /home/voter/bin
 SUIDS = -DTARGET_UID=508 -DTARGET_GID=508
 
-all: votegroup make_issue vote close_issue reminder
+all: votegroup make_issue vote close_issue reminder check_quorum
 
 votegroup: wrapsuid.c
 	$(CC) -DPROGNAME=\"$(INSTALLBIN)/votegroup.pl\" $(SUIDS) \
@@ -24,7 +24,11 @@ reminder: wrapsuid.c
 	$(CC) -DPROGNAME=\"$(INSTALLBIN)/reminder.pl\" $(SUIDS) \
 	      -o reminder wrapsuid.c
 
-install: install-votegroup install-make_issue install-vote install-close_issue install-reminder
+check_quorum: wrapsuid.c
+	$(CC) -DPROGNAME=\"$(INSTALLBIN)/check_quorum.pl\" $(SUIDS) \
+	      -o check_quorum wrapsuid.c
+
+install: install-votegroup install-make_issue install-vote install-close_issue install-reminder install-check_quorum
 
 install-votegroup: votegroup
 	rm -f $(INSTALLBIN)/votegroup $(INSTALLBIN)/votegroup.pl
@@ -60,4 +64,11 @@ install-reminder: reminder
 	cp -p reminder $(INSTALLBIN)/reminder
 	chmod 700 $(INSTALLBIN)/reminder.pl
 	chmod 6755 $(INSTALLBIN)/reminder
+
+install-check_quorum: check_quorum
+	rm -f $(INSTALLBIN)/check_quorum $(INSTALLBIN)/check_quorum.pl
+	cp -p check_quorum.pl $(INSTALLBIN)/check_quorum.pl
+	cp -p check_quorum $(INSTALLBIN)/check_quorum
+	chmod 700 $(INSTALLBIN)/check_quorum.pl
+	chmod 6755 $(INSTALLBIN)/check_quorum
 
