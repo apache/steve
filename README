@@ -169,7 +169,7 @@ KNOWN BUGS
      repeated votes by the same voter (only the last vote counts).
      Roy simply hasn't found time to do this yet.
 
-     The board has decided to change the voting process on multi-choice
+  *) The board has decided to change the voting process on multi-choice
      votes to Single Transferable Vote (STV).  Each voter lists all the
      people they want to see elected in order of preference. Excess votes
      for people who have already reached their quota (i.e., enough votes
@@ -183,4 +183,16 @@ KNOWN BUGS
      The vote type stvN has been created for an STV election of N.
      The hard part (not yet automated) will be calculating the summary
      and educating monitors on how to verify the results.
+     Ceki posted a nice script: see monitoring-tools.txt
 
+     Unfortunately, people don't understand STV and don't bother to
+     read the directions, so leaving the candidates in alphabetical
+     order creates a statistical advantage for those listed first.
+     A possible solution would be to place the list in an array and
+     randomize it before printing (but keeping the same label per name
+     so that the actual vote labels -- what people cast -- are not
+     randomized).  This should prevent lazy folks who vote in the order
+     that the names are listed from having a statistical impact on the
+     vote, assuming that someone can come up with a good randomizer
+     that results in a significantly different order being sent to
+     each voter.

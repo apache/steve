@@ -1,0 +1,112 @@
+From: Ceki Gülcü <ceki@qos.ch>
+Date: Fri Jun 20, 2003  7:31:14  AM America/Los_Angeles
+To: ian Holsman <ian.holsman@cnet.com>
+Cc: "Roy T. Fielding" <fielding@apache.org>, <gstein@apache.org>
+Subject: Scripts to help in monitoring STV elections
+
+
+Hello Ian,
+
+Here are the two small scripts I have written in order to monitor the
+board elections.
+
+With these two scripts and the 'VoteMain' application, it is rather
+easy to verify the results of the elections as reported to the
+monitors by our current voting system.
+
+# ============================================================
+#
+# SCRIPT NAME: rank
+#
+# This script takes in files in the form
+#
+# voter vote
+#
+# e.g
+#
+# 0422f389874d7a8ecfd2fabea0a152ed lagd
+# 9c58d57506a17c83b9d4cc8c0ed4a31e lgej
+# 9db55691a072f88d79968eed8297dc90 fcaki
+# a6d1332887e40af1dd2405cd2abf1e77 glfj
+# a9472aa4f7df905173acd8fe2d8edcb2 jkc
+# adc9914bb9112d8da4cddd6353e09ef1 eagk
+#
+# It prints out a file in the format expected by Voting Systems Toolbox
+#
+#   http://sourceforge.net/projects/votesystem
+#
+# After installing Voting Systems Toolbox, you can execute the 'VoteMain'
+# program as
+#
+#   java -cp Vote-0-4.jar VoteMain -system stv-meek -seats 9 outputFile
+#
+# where outputFile is the result of this script (rank).
+#
+# The output of  'VoteMain' program is the result of the elections.
+#
+# Note that the 'VoteMain' program can detect duplicate votes, as well as votes
+# with incorrect labels.
+
+print "rank order\n";
+print "NAME,  Brian,Ken,Mark,Justin,Roy,Dirk,Jim,Ben,Chuck,William,Sam,Greg,Bill\n";
+print "LABEL, a,    b,  c,   d,     e,  f,   g,  h,  i,    j,      k,  l,   m\n";
+
+open(INPUT, "$ARGV[0]");
+
+while(<INPUT>) {
+  if(/([\w\d]{32})\s([a-m]{1,12})/) {
+    @votes = split(//, $2);
+    $vstr = join(',', @votes);
+    print "$1,$vstr\n";
+  }
+}
+# ============================================================
+
+
+
+# ============================================================
+# SCRIPT NAME: check
+#
+# USAGE: check authorizedVotersFile actualVotersFile
+#
+# Checks whether the elements listed in 'actualVotersFile' are
+# contained in authorizedVotersFile
+#
+# Both files are expected to contain the hash of voters
+#
+
+open(AUTH, "$ARGV[0]");
+
+# Have @auth contain the valid voters
+@auth = ();
+while(<AUTH>) {
+  #chop $_;
+  push(@auth, $_);
+  #print $_;
+}
+
+# Now check against the votes
+
+open(VOTES, "$ARGV[1]");
+
+while(<VOTES>) {
+
+  $result = isInAuth($_);
+  unless($result) {
+    print "Voter [$_] is not in list of valid voters";
+  }
+}
+
+# ===================================
+sub isInAuth() {
+  $voter = $_[0];
+
+  foreach $v (@auth) {
+    if($voter =~ $v) {
+      return 1;
+    }
+  }
+  return 0;
+}
+# ============================================================
+
