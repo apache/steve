@@ -1,14 +1,11 @@
 #!/usr/bin/perl
 # Copyright (C) 2002  The Apache Software Foundation. All rights reserved.
 #                     This code is Apache-specific and not for distribution.
-# close_issue.pl
-#   o  must be run by voter user (see wrapsuid.c for setuid wrapper);
-#   o  accepts issue name and monitor hash-ID as arguments;
-#   o  sets a marker indicating no more votes accepted for issue;
-#   o  reads in tally, counting only last recorded vote per hashed-hash-id;
-#   o  mails summary to election monitor(s)
-#   o  [maybe] creates an HTML summary of results as
-#         /home/voter/public_html/issue_nnnnnn.html
+# reminder.pl
+# A program for reminding a voter about their hash-ID
+#   o  must be run by voter user (see wrapsuid.c for setuid wrapper)
+#   o  a simple program that takes as arguments an issue name
+#   o  sends mail to voter repeating the vote instructions
 # 
 # Originally created by Roy Fielding
 #
@@ -23,14 +20,11 @@ $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
 $OPENSSL  = '/usr/bin/openssl';
-$TOUCH    = '/usr/bin/touch';
 $SENDMAIL = '/usr/sbin/sendmail';
-
-$date     = `/bin/date`;
-chomp $date;
 
 $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
+$host     = 'cvs.apache.org';
 
 umask(0077);
 $| = 1;                                     # Make STDOUT unbuffered
@@ -45,9 +39,9 @@ $pname =~ s#^.*/##;
 sub usage
 {
     die <<"EndUsage";
-usage: $pname [ group-issue-name [ hash-id ] ]
+usage: $pname [ group-issue-name [ voter ] ] ]
 
-$pname -- Close voting on an issue
+$pname -- Remind a voter of their hash-ID for the given issue
 
 EndUsage
 }
@@ -64,11 +58,11 @@ if (/^(\w+)-(\d+)-(\w+)$/) {
 }
 else { &usage; }
 
-$_ = (shift || &get_input_line("your monitor hash-ID", 1));
+$_ = (shift || &get_input_line("your Apache login name", 1));
 if (/^(\w+)$/) {
-    $mhashid = $1;
+    $voter = $1;
 }
-else { die "Invalid hash-ID\n"; }
+else { die "Invalid voter\n"; }
 
 # ==========================================================================
 # Expand and further validate input
@@ -77,6 +71,8 @@ $issueaddr = "voter-$issuename\@apache.org";
 
 $issuedir .= "/$group/$start_date-$issue";
 if (! -d $issuedir) { die "$pname: $issuename doesn't exist\n"; }
+$closerfile = "$issuedir/closed";
+if (-e $closerfile) { die "$pname: $issuename already closed voting\n"; }
 $tallyfile = "$issuedir/tally";
 if (! -e $tallyfile) { die "$pname: $issuename not yet open to voting\n"; }
 $issuefile = "$issuedir/issue";
@@ -88,66 +84,86 @@ $monitors = `$CAT $monfile`;
 chomp $monitors;
 
 $typefile = "$issuedir/vote_type";
+if (! -e $typefile) { die "$pname: can't find vote_type\n"; }
+$vote_type = `$CAT $typefile`;
+chomp $vote_type;
+
+if ($vote_type =~ /^YNA$/i) {
+    $selector = 0;
+    $style = "yes, no, or abstain";
+    $explanation = '"yes", "no", or "abstain".' . "\n";
+}
+elsif ($vote_type =~ /^select([1-9])$/i) {
+    $selector = $1;
+    $style = "select $selector of the identified candidates, labeled [a-z0-9]";
+    $explanation = <<"EndExplain";
+a single word containing the
+concatenated labels of your $selector choices.  In other words,
+if you want to vote for the candidates labeled [x], [s], and [p],
+then your vote should be "xsp" (order does not matter).  The voter
+code will not attempt to verify that the labels chosen are valid.
+EndExplain
+}
+else {
+    die "$pname: failed to read vote_type\n";
+}
 
 # ==========================================================================
-# Recreate the monitor hash-id
+# Recreate the table of voter hash-ids
 
 $issid = &filestuff($issuefile);
-$monhash = &get_hash_of("$issid:$monitors");
-
-if ($mhashid ne $monhash) { die "I don't recognize your hash-ID\n"; }
+$h1 = &get_hash_of("$issid:$voter");
 
 # ==========================================================================
-# Indicate that voting is now closed
+# Send mail to voter telling them that the issue has been put to vote,
+# including the info file and their commands.
 
-$closerfile = "$issuedir/closed";
-system($TOUCH, $closerfile);
-
-# ==========================================================================
-# Send mail to monitors telling them that the issue has been closed
-# and enclose the final tally
-
-# open (MAIL, ">>debug.txt") || die("cannot send mail: $!\n");
-open (MAIL, "|$SENDMAIL -t -f$issueaddr") || die("cannot send mail: $!\n");
+########################################### for debugging
+#   print "                hash1: $h1\n";
+#   open (MAIL, ">>debug.txt") ||
+########################################### replace next line
+open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
+    die("cannot send mail to $voter: $!\n");
 
 print MAIL <<"EndOutput";
-To: $monitors
-Subject: Final tally for $issuename
-
-Issue $issuename is now closed.  The summary is not yet implemented.
-
-Here are the raw collected results -- remember to remove old votes from
-those with duplicate entries before counting them.
+To: $voter\@apache.org
+Subject: Apache vote on $issuename
+Reply-To: $monitors
 
 EndOutput
+open(INFILE, $issuefile) || die "$pname: cannot open issue file: $!\n";
+print MAIL <INFILE>;
+close(INFILE);
 
-open(TALLY, $tallyfile) || die "$pname: cannot open tally file: $!\n";
-print MAIL <TALLY>;
-close(TALLY);
+print MAIL <<"EndOutput";
 
-# Collect hash signatures of voter files that should not change
-@vfiles = (
-    "$issuefile",
-    "$monfile",
-    "$typefile",
-    "$homedir/bin/make_issue",
-    "$homedir/bin/make_issue.pl",
-    "$homedir/bin/vote",
-    "$homedir/bin/vote.pl",
-    "$homedir/bin/close_issue",
-    "$homedir/bin/close_issue.pl"
-);
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-print MAIL "\nCurrent file digests:\n\n";
-foreach $vf (@vfiles) {
-    $pf = $vf;
-    $pf =~ s/^$homedir\///o;
-    print(MAIL &hash_file($vf), ': ', $pf, "\n");
-}
+Your voting key for this issue: $h1
+
+In order to vote, use ssh to login to $host and then run
+
+   /home/voter/bin/vote $issuename \\
+                        $h1 "vote"
+
+where "vote" must be replaced by $explanation
+For verification purposes, you will be receiving an e-mail notification
+each time your voting key is used.  Repeat votes will be considered
+a complete replacement of your prior vote.  Your vote will be
+recorded in a tally file and sent to the vote monitors along with
+a different unique key, minimizing the chance that the contents of
+your vote will be accidentally seen by someone else while associated
+to you.  That is why the verification e-mail will only state that you
+have voted, rather than including how you voted.
+
+If you have any problems or questions, send a reply to the vote monitors
+for this issue: $monitors
+
+EndOutput
 close(MAIL);
 
 # ==========================================================================
-print "Issue closed.  Mail has been sent to the vote monitors.\n";
+print "Sent mail to voter: $voter\@apache.org\n";
 exit(0);
 
 # ==========================================================================
@@ -164,15 +180,6 @@ sub get_input_line {
     } while (/^$/);
 
     return $_;
-}
-
-# ==========================================================================
-sub get_group {
-    local ($group) = @_;
-    local ($name, $passwd, $gid, $members);
-
-    ($name, $passwd, $gid, $members) = getgrnam($group);
-    return split(' ', defined($members) ? $members : '');
 }
 
 # ==========================================================================
@@ -197,22 +204,6 @@ sub get_hash_of {
     }
     else {
         $rv = `$ECHO "$item" | $OPENSSL md5`
-              || die "$pname: failed openssl md5: $!\n";
-    }
-    chomp $rv;
-    return $rv;
-}
-
-# ==========================================================================
-sub hash_file {
-    local ($filename) = @_;
-    local ($rv);
-
-    if (-x $MD5) {
-        $rv = `$MD5 -q "$filename"` || die "$pname: failed md5: $!\n";
-    }
-    else {
-        $rv = `$CAT "$filename" | $OPENSSL md5`
               || die "$pname: failed openssl md5: $!\n";
     }
     chomp $rv;

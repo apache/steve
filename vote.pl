@@ -2,7 +2,7 @@
 # Copyright (C) 2002  The Apache Software Foundation. All rights reserved.
 #                     This code is Apache-specific and not for distribution.
 # vote
-# A program for almost-anonyous voting.
+# A program for mostly-anonyous voting.
 #
 #   o  must be run by voter user (see wrapsuid.c for setuid wrapper)
 #
@@ -13,16 +13,16 @@
 # 
 #   o  appends timestamp, hashed-hash-id, and vote to the tally;
 # 
-#   o  sends mail to voter indicating that their vote has been received
-#      (but not the contents of the vote);
-# 
 #   o  sends mail to the election monitor(s) indicating the vote that
 #      was received and the hashed-hash-id (to identify repeats).
+# 
+#   o  sends mail to voter indicating that their vote has been received
+#      (but not the contents of the vote);
 # 
 # I do not claim that this is the perfect voting solution.  Some of the
 # problems:
 # 
-#   -  it allows the sudo users and root users the ability to modify
+#   -  it allows voter and root users the ability to modify
 #      the votes after they have been received, though this should be
 #      detected unless they also spoof or intercept mail to the monitors.
 # 
@@ -53,14 +53,13 @@ $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
 $OPENSSL  = '/usr/bin/openssl';
-$TOUCH    = '/usr/bin/touch';
 $SENDMAIL = '/usr/sbin/sendmail';
 
 $date     = `/bin/date`;
+chomp $date;
 
 $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
-$host     = 'cvs.apache.org';
 
 umask(0077);
 $| = 1;                                     # Make STDOUT unbuffered
@@ -75,19 +74,17 @@ $pname =~ s#^.*/##;
 sub usage
 {
     die <<"EndUsage";
-usage: $pname group-issue-name hash-key vote
+usage: $pname [ group-issue-name [ hash-id [ vote ] ] ]
 
-$pname -- Vote anonymously on the given issue
+$pname -- Vote anonymously using the Apache on-line voter process
 
 EndUsage
 }
 
 # ==========================================================================
-# Get the command-line options or input from the user
+# Get the command-line options and input from the user
 
-if ($#ARGV != 2) { &usage; }
-
-$_ = shift;
+$_ = (shift || &get_input_line("the issue name", 1));
 if (/^(\w+)-(\d+)-(\w+)$/) {
     $group      = $1;
     $start_date = $2;
@@ -96,17 +93,17 @@ if (/^(\w+)-(\d+)-(\w+)$/) {
 }
 else { &usage; }
 
-$_ = shift;
+$_ = (shift || &get_input_line("your voter hash-ID", 1));
 if (/^(\w+)$/) {
     $vhashid = $1;
 }
-else { &usage; }
+else { die "Invalid hash-id\n"; }
 
-$_ = shift;
+$_ = (shift || &get_input_line("your vote on issue $issuename", 0));
 if (/^(\w+)$/) {
     $vote = $1;
 }
-else { &usage; }
+else { die "Invalid vote\n"; }
 
 # ==========================================================================
 # Expand and further validate input
@@ -131,43 +128,48 @@ if (! -e $monfile) { die "$pname: can't find monitors\n"; }
 $monitors = `$CAT $monfile`;
 chomp $monitors;
 
-$stylefile = "$issuedir/vote_type";
-if (! -e $stylefile) { die "$pname: can't find vote_type\n"; }
-$vote_type = `$CAT $stylefile`;
+# ==========================================================================
+# validate vote based on voting style
+
+$typefile = "$issuedir/vote_type";
+if (! -e $typefile) { die "$pname: can't find vote_type\n"; }
+$vote_type = `$CAT $typefile`;
 chomp $vote_type;
 
 if ($vote_type =~ /^YNA$/i) {
     $selector = 0;
     $style = "yes, no, or abstain";
+    $vote =~ tr/A-Z/a-z/;
+    die "This issue only allows $style as votes\n"
+        unless ($vote =~ /^(no|yes|abstain)$/);
 }
 elsif ($vote_type =~ /^select([1-9])$/i) {
     $selector = $1;
     $style = "select $selector of the identified candidates, labeled [a-z0-9]";
+    $vote =~ tr/A-Z/a-z/;
+    die "You can only vote for at most $selector candidates\n"
+        unless (length($vote) <= $selector);
 }
 else {
-    die "$pname: vote type must be YNA or selectN (N=[1-9])\n";
+    die "$pname: failed to read vote_type\n";
 }
 
 # ==========================================================================
 # Recreate the table of voter hash-ids
 
 $issid = &filestuff($issuefile);
-$monhash = &get_hash_of("$issid:$monitors");
 foreach $voter (@voters) {
     $h1 = &get_hash_of("$issid:$voter");
     $h2 = &get_hash_of("$issid:$h1");
-    $hash1{$voter} = $h1;
     $hash2{$voter} = $h2;
     $invert1{$h1} = $voter;
-    $invert2{$h2} = $voter;
 }
-# &debug_hash;
 
 $voter = $invert1{$vhashid};
-if (!defined($voter)) { die "I don't recognize your voter hash ID\n"; }
+if (!defined($voter))  { die "I don't recognize your voter hash-ID\n"; }
 
 $vhash2 = $hash2{$voter};
-if (!defined($vhash2)) { die "I don't recognize your voter hash ID\n"; }
+if (!defined($vhash2)) { die "I can't find your hashed-hash-ID\n"; }
 
 # ==========================================================================
 # construct vote entry
@@ -192,90 +194,25 @@ do {
 close(TALLY);
 
 print "Your vote has been accepted on issue $issuename\n";
-exit(0);
-# ==========================================================================
-__END__
-
-# ==========================================================================
-# Write list of monitors to issuedir/monitors
-$monfile = "$issuedir/monitors";
-
-open(MON, ">$monfile") || die "$pname: cannot open monitors file: $!\n";
-print MON "$monitors\n";
-close(MON);
-
-# ==========================================================================
-# Write type of vote to issuedir/vote_type
-$typefile = "$issuedir/vote_type";
-
-open(MON, ">$typefile") || die "$pname: cannot open vote type file: $!\n";
-print MON "$vote_type\n";
-close(MON);
-
-# ==========================================================================
-# Verify with user that the info file is okay before mailing everyone.
-
-print "Here is the content of the issue information file:\n";
-print "==============================================================\n";
-system($CAT, $issuefile);
-print "==============================================================\n";
-do {
-    $_ = &get_input_line('"ok" to accept or "abort" to delete issue');
-    if (/^abort$/i) {
-        system('rm', '-rf', $issuedir);
-        exit(1);
-    }
-} until (/^ok/i);
 
 # ==========================================================================
 # Send mail to monitors telling them that the issue has been put to
 # a vote, including the list of valid hashed hash-ids, sigs of files,
 # and the issue info file.
 
+# open (MAIL, ">>debug.txt") || die("cannot send mail: $!\n");
 open (MAIL, "|$SENDMAIL -t -f$issueaddr") || die("cannot send mail: $!\n");
 
 print MAIL <<"EndOutput";
 To: $monitors
-Subject: Monitoring vote on $issuename
+Subject: $issuename
 
-You have been selected as a vote monitor for Apache
+The following vote was received at $date
 
-   Issue: $issuename
-   Voting style: $style
-
-EndOutput
-open(INFILE, $infofile) || die "$pname: cannot open info file: $!\n";
-print MAIL <INFILE>;
-close(INFILE);
-
-print MAIL <<"EndOutput";
-
-= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-The voting system will record a tally of the votes as they are received
-and will report that to you when the voting is closed.  To close voting,
-use ssh to login to $host and then run
-
-   /home/voter/bin/close_issue $issuename \\
-                               $monhash
-
-For verification purposes, you will be receiving an e-mail notification
-of each vote submitted by the voters.  Repeat votes should be considered
-a complete replacement of the person's prior vote.  Your primary role in
-all of this is to compare the votes you received with the results that
-are tallied automatically, letting the group know if there is a
-significant difference.  Any change made to the issue files during the
-voting process will immediately invalidate the hash IDs and kill voting.
-
-The following $numh2 voters are valid, as identified by the double-hashed ID
-that will be sent to you when a vote is recorded.  Note that these IDs are
-different from the single-hash IDs used by the voters when voting.
+   issue: $issuename
+   voter: $vhash2  vote: $vote
 
 EndOutput
-
-foreach $voter (sort(values(%hash2))) {
-    print MAIL "   voter: $voter\n";
-}
 
 # Collect hash signatures of voter files that should not change
 @vfiles = (
@@ -290,7 +227,7 @@ foreach $voter (sort(values(%hash2))) {
     "$homedir/bin/close_issue.pl"
 );
 
-print MAIL "\nCurrent file digests:\n\n";
+print MAIL "Current file digests:\n\n";
 foreach $vf (@vfiles) {
     $pf = $vf;
     $pf =~ s/^$homedir\///o;
@@ -299,89 +236,44 @@ foreach $vf (@vfiles) {
 close(MAIL);
 
 # ==========================================================================
-# Touch tally file to allow voting to begin
-# -- Theoretically, this could be done by a another program with "at"
-#    scheduling to prevent people from voting too early, but why bother?
+# Send mail to voter telling them that someone voted using their hash-ID
 
-system($TOUCH, "$issuedir/tally");
+# open (MAIL, ">>debug.txt") ||
+open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
+    die("cannot send mail to $voter: $!\n");
 
-# ==========================================================================
-# Send mail to voters telling them that the issue has been put to vote,
-# including the info file and their commands.
-
-if ($selector == 0) {
-    $explanation = '"yes", "no", or "abstain".' . "\n";
-}
-else {
-    $explanation = <<"EndExplain";
-a single word containing the
-concatenated labels of your $selector choices.  In other words,
-if you want to vote for the candidates labeled [x], [s], and [p],
-then your vote should be "xsp" (order does not matter).  The voter
-code will not attempt to verify that the labels chosen are valid.
-EndExplain
-}
-
-while (($voter, $h1) = each %hash1) {
-    print "Sending mail to voter: $voter\@apache.org\n";
-    print "                hash1: $h1\n";
-    open (MAIL, ">>debug.txt") ||
-#   open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
-        die("cannot send mail to $voter: $!\n");
-
-    print MAIL <<"EndOutput";
+print MAIL <<"EndOutput";
 To: $voter\@apache.org
-Subject: Apache vote on $issuename
+Subject: Recorded your vote on $issuename
 Reply-To: $monitors
 
-EndOutput
-    open(INFILE, $issuefile) || die "$pname: cannot open issue file: $!\n";
-    print MAIL <INFILE>;
-    close(INFILE);
+Somebody (hopefully you or your proxy) has recorded a vote on
 
-    print MAIL <<"EndOutput";
+   issue: $issuename
 
-= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-Your voting key for this issue: $h1
-
-In order to vote, use ssh to login to $host and then run
-
-   /home/voter/bin/vote $issuename \\
-                        $h1 "vote"
-
-where "vote" must be replaced by $explanation
-For verification purposes, you will be receiving an e-mail notification
-each time your voting key is used.  Repeat votes will be considered
-a complete replacement of your prior vote.  Your vote will be
-recorded in a tally file and sent to the vote monitors along with
-a different unique key, minimizing the chance that the contents of
-your vote will be accidentally seen by someone else while associated
-to you.  That is why the verification e-mail will only state that you
-have voted, rather than including how you voted.
+using the hash-ID assigned to you.
 
 If you have any problems or questions, send a reply to the vote monitors
 for this issue: $monitors
 
 EndOutput
-    close(MAIL);
-}
+close(MAIL);
 
 # ==========================================================================
-print "Issue $issuename has been successfully created.\n";
+print "Mail has been sent to you and the vote monitors.\n";
 exit(0);
 
 # ==========================================================================
 # ==========================================================================
 sub get_input_line {
-    local ($prompt) = @_;
+    local ($prompt, $quit_able) = @_;
     local ($_);
 
     do {
-        print("Enter ", $prompt, " (q=quit): ");
+        print("Enter ", $prompt, $quit_able ? " (q=quit): " : ": ");
         $_ = <STDIN>;
-        chop;
-        exit(0) if (/^q$/i);
+        chomp;
+        exit(0) if ($quit_able && /^q$/i);
     } while (/^$/);
 
     return $_;
@@ -420,7 +312,7 @@ sub get_hash_of {
         $rv = `$ECHO "$item" | $OPENSSL md5`
               || die "$pname: failed openssl md5: $!\n";
     }
-    chop($rv);
+    chomp $rv;
     return $rv;
 }
 
@@ -436,16 +328,7 @@ sub hash_file {
         $rv = `$CAT "$filename" | $OPENSSL md5`
               || die "$pname: failed openssl md5: $!\n";
     }
-    chop($rv);
+    chomp $rv;
     return $rv;
-}
-
-# ==========================================================================
-sub debug_hash {
-    print "==============================================================\n";
-    foreach $voter (@voters) {
-        print "$hash1{$voter} $hash2{$voter} $voter\n";
-    }
-    print "==============================================================\n";
 }
 

@@ -2,7 +2,7 @@ CC = gcc
 INSTALLBIN = /home/voter/bin
 SUIDS = -DTARGET_UID=508 -DTARGET_GID=508
 
-all: make_issue vote close_issue
+all: make_issue vote close_issue reminder
 
 make_issue: wrapsuid.c
 	$(CC) -DPROGNAME=\"$(INSTALLBIN)/make_issue.pl\" $(SUIDS) \
@@ -16,7 +16,11 @@ close_issue: wrapsuid.c
 	$(CC) -DPROGNAME=\"$(INSTALLBIN)/close_issue.pl\" $(SUIDS) \
 	      -o close_issue wrapsuid.c
 
-install: install-make_issue install-vote install-close_issue
+reminder: wrapsuid.c
+	$(CC) -DPROGNAME=\"$(INSTALLBIN)/reminder.pl\" $(SUIDS) \
+	      -o reminder wrapsuid.c
+
+install: install-make_issue install-vote install-close_issue install-reminder
 
 install-make_issue: make_issue
 	rm -f $(INSTALLBIN)/make_issue $(INSTALLBIN)/make_issue.pl
@@ -38,4 +42,11 @@ install-close_issue: close_issue
 	cp -p close_issue $(INSTALLBIN)/close_issue
 	chmod 700 $(INSTALLBIN)/close_issue.pl
 	chmod 6755 $(INSTALLBIN)/close_issue
+
+install-reminder: reminder
+	rm -f $(INSTALLBIN)/reminder $(INSTALLBIN)/reminder.pl
+	cp -p reminder.pl $(INSTALLBIN)/reminder.pl
+	cp -p reminder $(INSTALLBIN)/reminder
+	chmod 700 $(INSTALLBIN)/reminder.pl
+	chmod 6755 $(INSTALLBIN)/reminder
 

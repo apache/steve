@@ -337,8 +337,10 @@ EndExplain
 
 while (($voter, $h1) = each %hash1) {
     print "Sending mail to voter: $voter\@apache.org\n";
+########################################### for debugging
 #   print "                hash1: $h1\n";
 #   open (MAIL, ">>debug.txt") ||
+########################################### replace next line
     open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
         die("cannot send mail to $voter: $!\n");
 
