@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Copyright (C) 2002  The Apache Software Foundation. All rights reserved.
+# Copyright (C) 2003  The Apache Software Foundation. All rights reserved.
 #                     This code is Apache-specific and not for distribution.
 # close_issue.pl
 #   o  must be run by voter user (see wrapsuid.c for setuid wrapper);
@@ -9,16 +9,9 @@
 #   o  mails summary to election monitor(s)
 #   o  [maybe] creates an HTML summary of results as
 #         /home/voter/public_html/issue_nnnnnn.html
-# 
+#
 # Originally created by Roy Fielding
 #
-$ENV{'PATH'}    = '/home/voter/bin:/usr/bin:/usr/sbin:/bin:/sbin';
-$ENV{'LOGNAME'} = 'voter';
-$ENV{'GROUP'}   = 'voter';
-$ENV{'USER'}    = 'voter';
-$ENV{'HOME'}    = '/home/voter';
-$ENV{'MAIL'}    = '/var/mail/voter';
-
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
@@ -28,6 +21,13 @@ $SENDMAIL = '/usr/sbin/sendmail';
 
 $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
+
+$ENV{'PATH'}    = "$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin";
+$ENV{'LOGNAME'} = 'voter';
+$ENV{'GROUP'}   = 'voter';
+$ENV{'USER'}    = 'voter';
+$ENV{'HOME'}    = '/home/voter';
+$ENV{'MAIL'}    = '/var/mail/voter';
 
 umask(0077);
 $| = 1;                                     # Make STDOUT unbuffered
@@ -69,6 +69,8 @@ else { die "Invalid hash-ID\n"; }
 
 # ==========================================================================
 # Expand and further validate input
+
+$votersfile = "$issuedir/$group/voters";
 
 $issueaddr = "voter-$issuename\@apache.org";
 
@@ -124,6 +126,7 @@ close(TALLY);
 
 # Collect hash signatures of voter files that should not change
 @vfiles = (
+    "$votersfile",
     "$issuefile",
     "$monfile",
     "$typefile",
@@ -161,15 +164,6 @@ sub get_input_line {
     } while (/^$/);
 
     return $_;
-}
-
-# ==========================================================================
-sub get_group {
-    local ($group) = @_;
-    local ($name, $passwd, $gid, $members);
-
-    ($name, $passwd, $gid, $members) = getgrnam($group);
-    return split(' ', defined($members) ? $members : '');
 }
 
 # ==========================================================================

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Copyright (C) 2002  The Apache Software Foundation. All rights reserved.
+# Copyright (C) 2003  The Apache Software Foundation. All rights reserved.
 #                     This code is Apache-specific and not for distribution.
 # vote
 # A program for mostly-anonyous voting.
@@ -42,13 +42,6 @@
 # 
 # Originally created by Roy Fielding
 #
-$ENV{'PATH'}    = '/home/voter/bin:/usr/bin:/usr/sbin:/bin:/sbin';
-$ENV{'LOGNAME'} = 'voter';
-$ENV{'GROUP'}   = 'voter';
-$ENV{'USER'}    = 'voter';
-$ENV{'HOME'}    = '/home/voter';
-$ENV{'MAIL'}    = '/var/mail/voter';
-
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
@@ -57,6 +50,13 @@ $SENDMAIL = '/usr/sbin/sendmail';
 
 $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
+
+$ENV{'PATH'}    = "$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin";
+$ENV{'LOGNAME'} = 'voter';
+$ENV{'GROUP'}   = 'voter';
+$ENV{'USER'}    = 'voter';
+$ENV{'HOME'}    = "/home/voter";
+$ENV{'MAIL'}    = '/var/mail/voter';
 
 umask(0077);
 $| = 1;                                     # Make STDOUT unbuffered
@@ -90,24 +90,25 @@ if (/^(\w+)-(\d+)-(\w+)$/) {
 }
 else { &usage; }
 
-$_ = (shift || &get_input_line("your voter hash-ID", 1));
+$_ = (shift || &get_input_line("your voting key", 1));
 if (/^(\w+)$/) {
     $vhashid = $1;
 }
-else { die "Invalid hash-id\n"; }
+else { die "Invalid voting key\n"; }
 
 $_ = (shift || &get_input_line("your vote on issue $issuename", 0));
 if (/^(\w+)$/) {
     $vote = $1;
 }
-else { die "Invalid vote\n"; }
+else { die "Invalid vote; please read the voting instructions.\n"; }
 
 # ==========================================================================
 # Expand and further validate input
 
-@voters = &get_group($group);
+$votersfile = "$issuedir/$group/voters";
+@voters = &get_group($votersfile);
 if ($#voters < 0) {
-    die "$pname: group must be a valid unix group of voters\n";
+    die "$pname: group $group must be an existing voter group\n";
 }
 $issueaddr = "voter-$issuename\@apache.org";
 
@@ -133,17 +134,26 @@ if (! -e $typefile) { die "$pname: can't find vote_type\n"; }
 $vote_type = `$CAT $typefile`;
 chomp $vote_type;
 
-if ($vote_type =~ /^YNA$/i) {
+if ($vote_type =~ /^yna$/i) {
     $selector = 0;
     $style = "yes, no, or abstain";
     $vote =~ tr/A-Z/a-z/;
     die "This issue only allows $style as votes\n"
         unless ($vote =~ /^(no|yes|abstain)$/);
 }
+elsif ($vote_type =~ /^stv([1-9])$/i) {
+    $selector = $1;
+    $style = "single transferable vote for $selector slots";
+    $vote =~ tr/A-Z/a-z/;
+    die "You cannot vote for the same candidate more than once\n"
+        if (&contains_duplicates($vote));
+}
 elsif ($vote_type =~ /^select([1-9])$/i) {
     $selector = $1;
     $style = "select $selector of the identified candidates, labeled [a-z0-9]";
     $vote =~ tr/A-Z/a-z/;
+    die "You cannot vote for the same candidate more than once\n"
+        if (&contains_duplicates($vote));
     die "You can only vote for at most $selector candidates\n"
         unless (length($vote) <= $selector);
 }
@@ -163,7 +173,7 @@ foreach $voter (@voters) {
 }
 
 $voter = $invert1{$vhashid};
-if (!defined($voter))  { die "I don't recognize your voter hash-ID\n"; }
+if (!defined($voter))  { die "I don't recognize your voting key\n"; }
 
 $vhash2 = $hash2{$voter};
 if (!defined($vhash2)) { die "I can't find your hashed-hash-ID\n"; }
@@ -214,6 +224,7 @@ EndOutput
 
 # Collect hash signatures of voter files that should not change
 @vfiles = (
+    "$votersfile",
     "$issuefile",
     "$monfile",
     "$typefile",
@@ -241,7 +252,7 @@ open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
     die("cannot send mail to $voter: $!\n");
 
 print MAIL <<"EndOutput";
-To: $voter\@apache.org
+To: $voter
 Subject: Recorded your vote on $issuename
 Reply-To: $monitors
 
@@ -249,7 +260,7 @@ Somebody (hopefully you or your proxy) has recorded a vote on
 
    issue: $issuename
 
-using the hash-ID assigned to you.
+using the voting key assigned to you.
 
 If you have any problems or questions, send a reply to the vote monitors
 for this issue: $monitors
@@ -258,7 +269,7 @@ EndOutput
 close(MAIL);
 
 # ==========================================================================
-print "Mail has been sent to you and the vote monitors.\n";
+print "Mail has been sent to voter and the vote monitors.\n";
 exit(0);
 
 # ==========================================================================
@@ -279,11 +290,20 @@ sub get_input_line {
 
 # ==========================================================================
 sub get_group {
-    local ($group) = @_;
-    local ($name, $passwd, $gid, $members);
+    local ($groupfile) = @_;
+    local ($_, @rv);
 
-    ($name, $passwd, $gid, $members) = getgrnam($group);
-    return split(' ', defined($members) ? $members : '');
+    open(INFILE, $groupfile) || die "$pname: cannot open $groupfile: $!\n";
+    while ($_ = <INFILE>) {
+        chomp;
+        s/#.*$//;
+        s/\s+$//;
+        s/^\s+//;
+        next if (/^$/);
+        push(@rv, $_);
+    }
+    close(INFILE);
+    return @rv;
 }
 
 # ==========================================================================
@@ -332,10 +352,19 @@ sub hash_file {
 
 # ==========================================================================
 sub get_date {
-    delete $ENV{'TZ'};
     local ($sec, $min, $hour, $mday, $mon, $year) = gmtime(time);
 
     return sprintf("%04d/%02d/%02d %02d:%02d:%02d", 1900 + $year,
                    $mon+1, $mday, $hour, $min, $sec);
 }
 
+# ==========================================================================
+sub contains_duplicates {
+    local ($str) = @_;
+    local (%ctr, $ch);
+
+    foreach $ch (split(//, $str)) {
+        $ctr{$ch} = 1;
+    }
+    return (length($str) != scalar(keys(%ctr)));
+}

@@ -2,7 +2,11 @@ CC = gcc
 INSTALLBIN = /home/voter/bin
 SUIDS = -DTARGET_UID=508 -DTARGET_GID=508
 
-all: make_issue vote close_issue reminder
+all: votegroup make_issue vote close_issue reminder
+
+votegroup: wrapsuid.c
+	$(CC) -DPROGNAME=\"$(INSTALLBIN)/votegroup.pl\" $(SUIDS) \
+	      -o votegroup wrapsuid.c
 
 make_issue: wrapsuid.c
 	$(CC) -DPROGNAME=\"$(INSTALLBIN)/make_issue.pl\" $(SUIDS) \
@@ -20,7 +24,14 @@ reminder: wrapsuid.c
 	$(CC) -DPROGNAME=\"$(INSTALLBIN)/reminder.pl\" $(SUIDS) \
 	      -o reminder wrapsuid.c
 
-install: install-make_issue install-vote install-close_issue install-reminder
+install: install-votegroup install-make_issue install-vote install-close_issue install-reminder
+
+install-votegroup: votegroup
+	rm -f $(INSTALLBIN)/votegroup $(INSTALLBIN)/votegroup.pl
+	cp -p votegroup.pl $(INSTALLBIN)/votegroup.pl
+	cp -p votegroup $(INSTALLBIN)/votegroup
+	chmod 700 $(INSTALLBIN)/votegroup.pl
+	chmod 6755 $(INSTALLBIN)/votegroup
 
 install-make_issue: make_issue
 	rm -f $(INSTALLBIN)/make_issue $(INSTALLBIN)/make_issue.pl

@@ -1,21 +1,14 @@
 #!/usr/bin/perl
-# Copyright (C) 2002  The Apache Software Foundation. All rights reserved.
+# Copyright (C) 2003  The Apache Software Foundation. All rights reserved.
 #                     This code is Apache-specific and not for distribution.
 # reminder.pl
-# A program for reminding a voter about their hash-ID
+# A program for reminding a voter about their voting key
 #   o  must be run by voter user (see wrapsuid.c for setuid wrapper)
-#   o  a simple program that takes as arguments an issue name
+#   o  a simple program that takes as arguments an issue name and voter
 #   o  sends mail to voter repeating the vote instructions
 # 
 # Originally created by Roy Fielding
 #
-$ENV{'PATH'}    = '/home/voter/bin:/usr/bin:/usr/sbin:/bin:/sbin';
-$ENV{'LOGNAME'} = 'voter';
-$ENV{'GROUP'}   = 'voter';
-$ENV{'USER'}    = 'voter';
-$ENV{'HOME'}    = '/home/voter';
-$ENV{'MAIL'}    = '/var/mail/voter';
-
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
@@ -25,6 +18,13 @@ $SENDMAIL = '/usr/sbin/sendmail';
 $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
 $host     = 'cvs.apache.org';
+
+$ENV{'PATH'}    = '$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin';
+$ENV{'LOGNAME'} = 'voter';
+$ENV{'GROUP'}   = 'voter';
+$ENV{'USER'}    = 'voter';
+$ENV{'HOME'}    = '/home/voter';
+$ENV{'MAIL'}    = '/var/mail/voter';
 
 umask(0077);
 $| = 1;                                     # Make STDOUT unbuffered
@@ -41,7 +41,7 @@ sub usage
     die <<"EndUsage";
 usage: $pname [ group-issue-name [ voter ] ] ]
 
-$pname -- Remind a voter of their hash-ID for the given issue
+$pname -- Remind a voter of their voting key for the given issue
 
 EndUsage
 }
@@ -58,11 +58,18 @@ if (/^(\w+)-(\d+)-(\w+)$/) {
 }
 else { &usage; }
 
-$_ = (shift || &get_input_line("your Apache login name", 1));
-if (/^(\w+)$/) {
+$_ = (shift || &get_input_line("the voter's e-mail address", 1));
+if (/^(\S+\@\S+)$/) {
     $voter = $1;
 }
 else { die "Invalid voter\n"; }
+
+# ==========================================================================
+# Check to see if the voter is in the voting group
+
+if (! &found_in_group($voter, "$issuedir/$group/voters")) {
+    die "$voter is not in group $group\n";
+}
 
 # ==========================================================================
 # Expand and further validate input
@@ -88,21 +95,17 @@ if (! -e $typefile) { die "$pname: can't find vote_type\n"; }
 $vote_type = `$CAT $typefile`;
 chomp $vote_type;
 
-if ($vote_type =~ /^YNA$/i) {
+if ($vote_type =~ /^yna$/i) {
     $selector = 0;
     $style = "yes, no, or abstain";
-    $explanation = '"yes", "no", or "abstain".' . "\n";
+}
+elsif ($vote_type =~ /^stv([1-9])$/i) {
+    $selector = $1;
+    $style = "single transferable vote for $selector slots";
 }
 elsif ($vote_type =~ /^select([1-9])$/i) {
     $selector = $1;
     $style = "select $selector of the identified candidates, labeled [a-z0-9]";
-    $explanation = <<"EndExplain";
-a single word containing the
-concatenated labels of your $selector choices.  In other words,
-if you want to vote for the candidates labeled [x], [s], and [p],
-then your vote should be "xsp" (order does not matter).  The voter
-code will not attempt to verify that the labels chosen are valid.
-EndExplain
 }
 else {
     die "$pname: failed to read vote_type\n";
@@ -126,7 +129,7 @@ open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
     die("cannot send mail to $voter: $!\n");
 
 print MAIL <<"EndOutput";
-To: $voter\@apache.org
+To: $voter
 Subject: Apache vote on $issuename
 Reply-To: $monitors
 
@@ -134,19 +137,83 @@ EndOutput
 open(INFILE, $issuefile) || die "$pname: cannot open issue file: $!\n";
 print MAIL <INFILE>;
 close(INFILE);
+&explain_vote(*MAIL, $h1);
+close(MAIL);
 
-print MAIL <<"EndOutput";
+# ==========================================================================
+print "Sent mail to voter: $voter\n";
+exit(0);
+
+
+# ==========================================================================
+# ==========================================================================
+sub explain_vote {
+    local (*FDES, $hashid) = @_;
+
+    print FDES <<"EndOut1";
 
 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-Your voting key for this issue: $h1
+Your voting key for this issue: $hashid
 
 In order to vote, use ssh to login to $host and then run
 
    /home/voter/bin/vote $issuename \\
-                        $h1 "vote"
+                        $hashid "vote"
 
-where "vote" must be replaced by $explanation
+EndOut1
+
+    if ($selector == 0) {
+        print FDES <<"EndYNA";
+where "vote" must be replaced by "yes", "no", or "abstain".
+EndYNA
+    }
+    elsif ($vote_type =~ /^stv/i) {
+        print FDES <<"EndSTV";
+where "vote" must be replaced by a single word containing the
+concatenated labels of candidates in the order that you wish them
+to be selected.  In other words, if you want to vote for the candidates
+labeled [x], [s], and [p], in that order, then your vote should be "xsp".
+
+This election will be decided according to the Single Transferable Vote
+rules described at
+
+   http://www.electoral-reform.org.uk/votingsystems/stvi.htm
+   http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
+
+for an election with $selector open slots. 
+
+You have one vote.  Use your vote by entering the label of your
+first preference candidate followed by, if desired, the label of your
+second preference candidate, and so on until you are indifferent about
+the remaining candidates.  The sequence of your preferences is crucial.
+You should continue to express preferences only as long as you are able
+to place successive candidates in order.  A later preference is considered
+only if an earlier preference has a surplus above the quota required for
+election, or is excluded because of insufficient support.  Under no
+circumstances will a later preference count against an earlier preference.
+
+You may list as many candidates as you wish, but no more than once per
+vote (e.g., "xsxp" would be rejected).  The voter code will not attempt
+to verify that the labels chosen are within the range of candidates.
+EndSTV
+    }
+    else {
+        print FDES <<"EndSelect";
+where "vote" must be replaced by a single word containing the
+concatenated labels of your $selector choices.  In other words,
+if you want to vote for the candidates labeled [x], [s], and [p],
+then your vote should be "xsp" (order does not matter).  The voter
+code will not attempt to verify that the labels chosen are valid.
+EndSelect
+    }
+
+    print FDES <<"EndExplain";
+If for some reason you are unable to use ssh to access $host,
+then you can vote by proxy: simply send your voting key to some
+person with ssh access that you trust, preferably with instructions
+on how you wish them to place your vote.
+
 For verification purposes, you will be receiving an e-mail notification
 each time your voting key is used.  Repeat votes will be considered
 a complete replacement of your prior vote.  Your vote will be
@@ -159,14 +226,9 @@ have voted, rather than including how you voted.
 If you have any problems or questions, send a reply to the vote monitors
 for this issue: $monitors
 
-EndOutput
-close(MAIL);
+EndExplain
+}
 
-# ==========================================================================
-print "Sent mail to voter: $voter\@apache.org\n";
-exit(0);
-
-# ==========================================================================
 # ==========================================================================
 sub get_input_line {
     local ($prompt, $quit_able) = @_;
@@ -180,6 +242,26 @@ sub get_input_line {
     } while (/^$/);
 
     return $_;
+}
+
+# ==========================================================================
+sub found_in_group {
+    local ($voter, $groupfile) = @_;
+    local ($_);
+
+    open(INFILE, $groupfile) || return 0;
+    while ($_ = <INFILE>) {
+        chomp;
+        s/#.*$//;
+        s/\s+$//;
+        s/^\s+//;
+        if ($_ eq $voter) {
+            close(INFILE);
+            return 1;
+        }
+    }
+    close(INFILE);
+    return 0;
 }
 
 # ==========================================================================

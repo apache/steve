@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Copyright (C) 2002  The Apache Software Foundation. All rights reserved.
+# Copyright (C) 2003  The Apache Software Foundation. All rights reserved.
 #                     This code is Apache-specific and not for distribution.
 # make_issue
 # A program for creating issues to be voted upon by the named "group"
@@ -22,13 +22,6 @@
 #
 require "getopts.pl";
 
-$ENV{'PATH'}    = '/home/voter/bin:/usr/bin:/usr/sbin:/bin:/sbin';
-$ENV{'LOGNAME'} = 'voter';
-$ENV{'GROUP'}   = 'voter';
-$ENV{'USER'}    = 'voter';
-$ENV{'HOME'}    = '/home/voter';
-$ENV{'MAIL'}    = '/var/mail/voter';
-
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
@@ -40,17 +33,18 @@ $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
 $host     = 'cvs.apache.org';
 
+$ENV{'PATH'}    = "$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin";
+$ENV{'LOGNAME'} = 'voter';
+$ENV{'GROUP'}   = 'voter';
+$ENV{'USER'}    = 'voter';
+$ENV{'HOME'}    = '/home/voter';
+$ENV{'MAIL'}    = '/var/mail/voter';
+
 umask(0077);
 $| = 1;                                     # Make STDOUT unbuffered
 
 $pname = $0;                                # executable name for errors
 $pname =~ s#^.*/##;
-
-# Work-around for non-voting members
-$emeritus{'rst'}    = 1;
-$emeritus{'drtr'}   = 1;
-$emeritus{'robh'}   = 1;
-$emeritus{'sameer'} = 1;
 
 # ==========================================================================
 # ==========================================================================
@@ -63,13 +57,15 @@ usage: $pname [-h] [-g group] [-s start_date] [-i issue] [-f infofile]
                     [-m monitors] [-v vote_type )]
 $pname -- Make an issue for managing an on-line, anonymous voting process
 Options:
-     -h  (help) -- just display this message and quit.
-     -g  group  -- create an issue for the given Unix group of voters
+     -h  (help) -- just display this message and quit
+     -g  group  -- create an issue for an existing group of voters
      -s  date   -- YYYYMMDD format of date that voting is allowed to start
      -i  issue  -- append this alphanumeric string to start date as issue name
      -f  file   -- send the contents of this file to each voter as explanation
      -m  monitors -- e-mail address(es) for sending mail to vote monitor(s)
-     -v  type   -- type of vote: YNA = Yes/No/Abstain, selectN = pick [1-9]
+     -v  type   -- type of vote: yna = Yes/No/Abstain,
+                   stvN = single transferable vote for [1-9] slots,
+                   selectN = vote for [1-9] of the candidates
 
 EndUsage
 }
@@ -85,18 +81,17 @@ if (defined($opt_g)) {
     $group = $opt_g;
 }
 else {
-    $group = &get_input_line("group name for voters on this issue");
+    $group = &get_input_line("group name for voters on this issue", 1);
 }
-@voters = &get_group($group);
-if ($#voters < 0) {
-    die "$pname: group must be a valid unix group of voters\n";
+if ($group !~ /^\w+$/) {
+    die "$pname: group name must be an alphanumeric token\n";
 }
 
 if (defined($opt_s)) {
     $start_date = $opt_s;
 }
 else {
-    $start_date = &get_input_line("YYYYMMDD date that voting starts");
+    $start_date = &get_input_line("YYYYMMDD date that voting starts", 1);
 }
 if ($start_date !~ /^[2-9]\d\d\d(0[1-9]|1[012])([012]\d|3[01])$/) {
     die "$pname: start date must be formatted as YYYYMMDD, like 20020930\n";
@@ -106,7 +101,7 @@ if (defined($opt_i)) {
     $issue = $opt_i;
 }
 else {
-    $issue = &get_input_line("short issue name to append to date");
+    $issue = &get_input_line("short issue name to append to date", 1);
 }
 if ($issue !~ /^\w+$/) {
     die "$pname: issue name must be an alphanumeric token\n";
@@ -116,17 +111,20 @@ if (defined($opt_f)) {
     $infofile = $opt_f;
 }
 else {
-    $infofile = &get_input_line("file pathname of issue info on $host");
+    $infofile = &get_input_line("file pathname of issue info on $host", 1);
 }
 if (!(-e $infofile)) {
     die "$pname: info file does not exist: $infofile\n";
+}
+if ($infofile =~ /(\/etc\/|$issuedir)/) {
+    die "$pname: forbidden to read info files in that directory\n";
 }
 
 if (defined($opt_m)) {
     $monitors = $opt_m;
 }
 else {
-    $monitors = &get_input_line("e-mail address(es) for vote monitors");
+    $monitors = &get_input_line("e-mail address(es) for vote monitors", 1);
 }
 if ($monitors !~ /\@/) {
     die "$pname: vote monitor must be an Internet e-mail address\n";
@@ -136,25 +134,26 @@ if (defined($opt_v)) {
     $vote_type = $opt_v;
 }
 else {
-    $vote_type = &get_input_line("vote type YNA or selectN (N=1-9)");
+    $vote_type = &get_input_line("vote type: yna, stvN, or selectN (N=1-9)", 1);
 }
-if ($vote_type =~ /^YNA$/i) {
+if ($vote_type =~ /^yna$/i) {
     $selector = 0;
     $style = "yes, no, or abstain";
 }
+elsif ($vote_type =~ /^stv([1-9])$/i) {
+    $selector = $1;
+    $style = "single transferable vote for $selector slots";
+}
 elsif ($vote_type =~ /^select([1-9])$/i) {
     $selector = $1;
-    $style = "select $selector of the identified candidates, labeled [a-z0-9]";
+    $style = "select $selector of the candidates labeled [a-z0-9]";
 }
 else {
-    die "$pname: vote type must be YNA or selectN (N=[1-9])\n";
+    die "$pname: vote type must be yna, stvN, or selectN (N=[1-9])\n";
 }
 
 # ==========================================================================
-# Create directory for new issue only if it doesn't exist
-
-$issuename = "$group-$start_date-$issue";
-print "Creating new issue: $issuename\n";
+# Check the voter group and read the list of voter addresses
 
 die "$pname: cannot find $issuedir\n" unless (-d $issuedir);
 $issuedir .= "/$group";
@@ -163,8 +162,21 @@ if (-d $issuedir) {
         unless (-o _ && -r _ && -w _ && -x _);
 }
 else {
-    mkdir($issuedir, 0700) || die "$pname: cannot mkdir $issuedir: $!\n";
+    die "$pname: group $group has not been created yet, see votegroup\n";
 }
+
+$votersfile = "$issuedir/voters";
+@voters = &get_group($votersfile);
+if ($#voters < 0) {
+    die "$pname: $group must be an existing voter group: see votegroup\n";
+}
+
+# ==========================================================================
+# Create directory for new issue only if it doesn't exist
+
+$issuename = "$group-$start_date-$issue";
+print "Creating new issue: $issuename\n";
+
 $issuedir .= "/$start_date-$issue";
 if (-e $issuedir) { die "$pname: $issuedir already exists\n"; }
 mkdir($issuedir, 0700) || die "$pname: cannot mkdir $issuedir: $!\n";
@@ -198,7 +210,6 @@ for (;;) {
     $issid = &filestuff($issuefile);
     $monhash = &get_hash_of("$issid:$monitors");
     foreach $voter (@voters) {
-        next if (defined($emeritus{$voter}));
         $h1 = &get_hash_of("$issid:$voter");
         $h2 = &get_hash_of("$issid:$h1");
         $hash1{$voter} = $h1;
@@ -211,7 +222,7 @@ for (;;) {
     $numi1 = scalar(keys(%invert1));
     $numi2 = scalar(keys(%invert2));
     last if (($numh1 == $numi1) && ($numh2 == $numi2));
-    $h1 = &get_input_line("anything to retry collision-free hash");
+    $h1 = &get_input_line("anything to retry collision-free hash", 1);
     system($TOUCH, $issuefile);
 }
 # &debug_hash;
@@ -235,12 +246,30 @@ close(MON);
 # ==========================================================================
 # Verify with user that the info file is okay before mailing everyone.
 
-print "Here is the content of the issue information file:\n";
+print "Here is the issue information to be sent to each voter:\n";
 print "==============================================================\n";
 system($CAT, $issuefile);
+&explain_vote(*STDOUT, 'unique-hash-key');
 print "==============================================================\n";
 do {
-    $_ = &get_input_line('"ok" to accept or "abort" to delete issue');
+    $_ = &get_input_line('"ok" to accept or "abort" to delete issue', 0);
+    if (/^abort$/i) {
+        system('rm', '-rf', $issuedir);
+        exit(1);
+    }
+} until (/^ok/i);
+
+# ==========================================================================
+# Verify with user that the voters file is okay before mailing everyone.
+
+print "Here is the list of voter e-mail addresses:\n";
+print "==============================================================\n";
+for $voter (@voters) {
+    print $voter, "\n";
+}
+print "==============================================================\n";
+do {
+    $_ = &get_input_line('"ok" to accept or "abort" to delete issue', 0);
     if (/^abort$/i) {
         system('rm', '-rf', $issuedir);
         exit(1);
@@ -299,6 +328,7 @@ foreach $voter (sort(values(%hash2))) {
 
 # Collect hash signatures of voter files that should not change
 @vfiles = (
+    "$votersfile",
     "$issuefile",
     "$monfile",
     "$typefile",
@@ -329,21 +359,8 @@ system($TOUCH, "$issuedir/tally");
 # Send mail to voters telling them that the issue has been put to vote,
 # including the info file and their commands.
 
-if ($selector == 0) {
-    $explanation = '"yes", "no", or "abstain".' . "\n";
-}
-else {
-    $explanation = <<"EndExplain";
-a single word containing the
-concatenated labels of your $selector choices.  In other words,
-if you want to vote for the candidates labeled [x], [s], and [p],
-then your vote should be "xsp" (order does not matter).  The voter
-code will not attempt to verify that the labels chosen are valid.
-EndExplain
-}
-
 while (($voter, $h1) = each %hash1) {
-    print "Sending mail to voter: $voter\@apache.org\n";
+    print "Sending mail to voter: $voter\n";
 ########################################### for debugging
 #   print "                hash1: $h1\n";
 #   open (MAIL, ">>debug.txt") ||
@@ -352,7 +369,7 @@ while (($voter, $h1) = each %hash1) {
         die("cannot send mail to $voter: $!\n");
 
     print MAIL <<"EndOutput";
-To: $voter\@apache.org
+To: $voter
 Subject: Apache vote on $issuename
 Reply-To: $monitors
 
@@ -360,19 +377,84 @@ EndOutput
     open(INFILE, $issuefile) || die "$pname: cannot open issue file: $!\n";
     print MAIL <INFILE>;
     close(INFILE);
+    &explain_vote(*MAIL, $h1);
+    close(MAIL);
+}
 
-    print MAIL <<"EndOutput";
+# ==========================================================================
+print "Issue $issuename has been successfully created.\n";
+exit(0);
+
+
+# ==========================================================================
+# ==========================================================================
+sub explain_vote {
+    local (*FDES, $hashid) = @_;
+
+    print FDES <<"EndOut1";
 
 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-Your voting key for this issue: $h1
+Your voting key for this issue: $hashid
 
 In order to vote, use ssh to login to $host and then run
 
    /home/voter/bin/vote $issuename \\
-                        $h1 "vote"
+                        $hashid "vote"
 
-where "vote" must be replaced by $explanation
+EndOut1
+
+    if ($selector == 0) {
+        print FDES <<"EndYNA";
+where "vote" must be replaced by "yes", "no", or "abstain".
+EndYNA
+    }
+    elsif ($vote_type =~ /^stv/i) {
+        print FDES <<"EndSTV";
+where "vote" must be replaced by a single word containing the
+concatenated labels of candidates in the order that you wish them
+to be selected.  In other words, if you want to vote for the candidates
+labeled [x], [s], and [p], in that order, then your vote should be "xsp".
+
+This election will be decided according to the Single Transferable Vote
+rules described at
+
+   http://www.electoral-reform.org.uk/votingsystems/stvi.htm
+   http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
+
+for an election with $selector open slots. 
+
+You have one vote.  Use your vote by entering the label of your
+first preference candidate followed by, if desired, the label of your
+second preference candidate, and so on until you are indifferent about
+the remaining candidates.  The sequence of your preferences is crucial.
+You should continue to express preferences only as long as you are able
+to place successive candidates in order.  A later preference is considered
+only if an earlier preference has a surplus above the quota required for
+election, or is excluded because of insufficient support.  Under no
+circumstances will a later preference count against an earlier preference.
+
+You may list as many candidates as you wish, but no more than once per
+vote (e.g., "xsxp" would be rejected).  The voter code will not attempt
+to verify that the labels chosen are within the range of candidates.
+EndSTV
+    }
+    else {
+        print FDES <<"EndSelect";
+where "vote" must be replaced by a single word containing the
+concatenated labels of your $selector choices.  In other words,
+if you want to vote for the candidates labeled [x], [s], and [p],
+then your vote should be "xsp" (order does not matter).  The voter
+code will not attempt to verify that the labels chosen are valid.
+EndSelect
+    }
+
+    print FDES <<"EndExplain";
+If for some reason you are unable to use ssh to access $host,
+then you can vote by proxy: simply send your voting key to some
+person with ssh access that you trust, preferably with instructions
+on how you wish them to place your vote.
+
 For verification purposes, you will be receiving an e-mail notification
 each time your voting key is used.  Repeat votes will be considered
 a complete replacement of your prior vote.  Your vote will be
@@ -385,25 +467,19 @@ have voted, rather than including how you voted.
 If you have any problems or questions, send a reply to the vote monitors
 for this issue: $monitors
 
-EndOutput
-    close(MAIL);
+EndExplain
 }
 
 # ==========================================================================
-print "Issue $issuename has been successfully created.\n";
-exit(0);
-
-# ==========================================================================
-# ==========================================================================
 sub get_input_line {
-    local ($prompt) = @_;
+    local ($prompt, $quit_able) = @_;
     local ($_);
 
     do {
-        print("Enter ", $prompt, " (q=quit): ");
+        print("Enter ", $prompt, $quit_able ? " (q=quit): " : ": ");
         $_ = <STDIN>;
-        chop;
-        exit(0) if (/^q$/i);
+        chomp;
+        exit(0) if ($quit_able && /^q$/i);
     } while (/^$/);
 
     return $_;
@@ -411,11 +487,22 @@ sub get_input_line {
 
 # ==========================================================================
 sub get_group {
-    local ($group) = @_;
-    local ($name, $passwd, $gid, $members);
+    local ($groupfile) = @_;
+    local ($_, @rv);
 
-    ($name, $passwd, $gid, $members) = getgrnam($group);
-    return split(' ', defined($members) ? $members : '');
+    open(INFILE, $groupfile) || die "$pname: cannot open $groupfile: $!\n";
+    while ($_ = <INFILE>) {
+        chomp;
+        s/#.*$//;
+        s/\s+$//;
+        s/^\s+//;
+        next if (/^$/);
+        die "$pname: voter must be an Internet e-mail address\n"
+            unless (/\@/);
+        push(@rv, $_);
+    }
+    close(INFILE);
+    return @rv;
 }
 
 # ==========================================================================
@@ -442,7 +529,7 @@ sub get_hash_of {
         $rv = `$ECHO "$item" | $OPENSSL md5`
               || die "$pname: failed openssl md5: $!\n";
     }
-    chop($rv);
+    chomp($rv);
     return $rv;
 }
 
@@ -458,7 +545,7 @@ sub hash_file {
         $rv = `$CAT "$filename" | $OPENSSL md5`
               || die "$pname: failed openssl md5: $!\n";
     }
-    chop($rv);
+    chomp($rv);
     return $rv;
 }
 
@@ -466,7 +553,6 @@ sub hash_file {
 sub debug_hash {
     print "==============================================================\n";
     foreach $voter (@voters) {
-        next if (defined($emeritus{$voter}));
         print "$hash1{$voter} $hash2{$voter} $voter\n";
     }
     print "==============================================================\n";
