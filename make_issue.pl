@@ -184,7 +184,9 @@ mkdir($issuedir, 0700) || die "$pname: cannot mkdir $issuedir: $!\n";
 # ==========================================================================
 # Create issue information file (needs to be done before voter hash)
 
-$issueaddr = "voter-$issuename\@apache.org";
+# $issueaddr = "voter-$issuename\@apache.org";
+$issueaddr = 'voter@icarus.apache.org';
+
 $issuefile = "$issuedir/issue";
 
 open(ISF, ">$issuefile") || die "$pname: cannot open issue file: $!\n";
@@ -284,6 +286,7 @@ do {
 open (MAIL, "|$SENDMAIL -t -f$issueaddr") || die("cannot send mail: $!\n");
 
 print MAIL <<"EndOutput";
+From: "Apache voting tool" <$issueaddr>
 To: $monitors
 Subject: Monitoring vote on $issuename
 
@@ -340,6 +343,8 @@ foreach $voter (sort(values(%hash2))) {
     "$homedir/bin/close_issue.pl"
 );
 
+print MAIL "\nThe following explains the voting process to voters:\n";
+&explain_vote(*MAIL, 'unique-hash-key');
 print MAIL "\nCurrent file digests:\n\n";
 foreach $vf (@vfiles) {
     $pf = $vf;
@@ -369,6 +374,7 @@ while (($voter, $h1) = each %hash1) {
         die("cannot send mail to $voter: $!\n");
 
     print MAIL <<"EndOutput";
+From: "Apache voting tool" <$issueaddr>
 To: $voter
 Subject: Apache vote on $issuename
 Reply-To: $monitors

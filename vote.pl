@@ -110,7 +110,9 @@ $votersfile = "$issuedir/$group/voters";
 if ($#voters < 0) {
     die "$pname: group $group must be an existing voter group\n";
 }
-$issueaddr = "voter-$issuename\@apache.org";
+
+# $issueaddr = "voter-$issuename\@apache.org";
+$issueaddr = 'voter@icarus.apache.org';
 
 $issuedir .= "/$group/$start_date-$issue";
 if (! -d $issuedir) { die "$pname: $issuename doesn't exist\n"; }
@@ -212,6 +214,7 @@ print "Your vote has been accepted on issue $issuename\n";
 open (MAIL, "|$SENDMAIL -t -f$issueaddr") || die("cannot send mail: $!\n");
 
 print MAIL <<"EndOutput";
+From: "Apache voting tool" <$issueaddr>
 To: $monitors
 Subject: $issuename
 
@@ -252,6 +255,7 @@ open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
     die("cannot send mail to $voter: $!\n");
 
 print MAIL <<"EndOutput";
+From: "Apache voting tool" <$issueaddr>
 To: $voter
 Subject: Recorded your vote on $issuename
 Reply-To: $monitors
@@ -269,7 +273,9 @@ EndOutput
 close(MAIL);
 
 # ==========================================================================
+print "Vote on $issuename received: $vote\n";
 print "Mail has been sent to voter and the vote monitors.\n";
+print "You may re-vote until issue is closed; only last vote is counted.\n";
 exit(0);
 
 # ==========================================================================

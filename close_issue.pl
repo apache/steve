@@ -72,7 +72,8 @@ else { die "Invalid hash-ID\n"; }
 
 $votersfile = "$issuedir/$group/voters";
 
-$issueaddr = "voter-$issuename\@apache.org";
+# $issueaddr = "voter-$issuename\@apache.org";
+$issueaddr = 'voter@icarus.apache.org';
 
 $issuedir .= "/$group/$start_date-$issue";
 if (! -d $issuedir) { die "$pname: $issuename doesn't exist\n"; }
@@ -110,6 +111,7 @@ system($TOUCH, $closerfile);
 open (MAIL, "|$SENDMAIL -t -f$issueaddr") || die("cannot send mail: $!\n");
 
 print MAIL <<"EndOutput";
+From: "Apache voting tool" <$issueaddr>
 To: $monitors
 Subject: Final tally for $issuename
 

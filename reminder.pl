@@ -74,7 +74,8 @@ if (! &found_in_group($voter, "$issuedir/$group/voters")) {
 # ==========================================================================
 # Expand and further validate input
 
-$issueaddr = "voter-$issuename\@apache.org";
+# $issueaddr = "voter-$issuename\@apache.org";
+$issueaddr = 'voter@icarus.apache.org';
 
 $issuedir .= "/$group/$start_date-$issue";
 if (! -d $issuedir) { die "$pname: $issuename doesn't exist\n"; }
@@ -129,6 +130,7 @@ open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
     die("cannot send mail to $voter: $!\n");
 
 print MAIL <<"EndOutput";
+From: "Apache voting tool" <$issueaddr>
 To: $voter
 Subject: Apache vote on $issuename
 Reply-To: $monitors
