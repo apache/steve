@@ -46,6 +46,12 @@ $| = 1;                                     # Make STDOUT unbuffered
 $pname = $0;                                # executable name for errors
 $pname =~ s#^.*/##;
 
+# Work-around for non-voting members
+$emeritus{'rst'}    = 1;
+$emeritus{'drtr'}   = 1;
+$emeritus{'robh'}   = 1;
+$emeritus{'sameer'} = 1;
+
 # ==========================================================================
 # ==========================================================================
 # Print the usage information if help requested (-h) or a bad option given.
@@ -192,6 +198,7 @@ for (;;) {
     $issid = &filestuff($issuefile);
     $monhash = &get_hash_of("$issid:$monitors");
     foreach $voter (@voters) {
+        next if (defined($emeritus{$voter}));
         $h1 = &get_hash_of("$issid:$voter");
         $h2 = &get_hash_of("$issid:$h1");
         $hash1{$voter} = $h1;
@@ -459,6 +466,7 @@ sub hash_file {
 sub debug_hash {
     print "==============================================================\n";
     foreach $voter (@voters) {
+        next if (defined($emeritus{$voter}));
         print "$hash1{$voter} $hash2{$voter} $voter\n";
     }
     print "==============================================================\n";
