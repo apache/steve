@@ -21,7 +21,7 @@
 # Originally created by Roy Fielding
 #
 require "getopts.pl";
-using randomize;
+use randomize;
 
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';

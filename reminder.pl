@@ -9,7 +9,7 @@
 # 
 # Originally created by Roy Fielding
 #
-using randomize;
+use randomize;
 
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
