@@ -1,6 +1,6 @@
 CC = gcc
 INSTALLBIN = /home/voter/bin
-SUIDS = -DTARGET_UID=508 -DTARGET_GID=508
+SUIDS = -DTARGET_UID=509 -DTARGET_GID=509
 
 all: votegroup make_issue vote close_issue reminder check_quorum
 
