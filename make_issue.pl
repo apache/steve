@@ -21,6 +21,7 @@
 # Originally created by Roy Fielding
 #
 require "getopts.pl";
+using randomize;
 
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
@@ -381,7 +382,7 @@ Reply-To: $monitors
 
 EndOutput
     open(INFILE, $issuefile) || die "$pname: cannot open issue file: $!\n";
-    print MAIL <INFILE>;
+    print MAIL randomize(<INFILE>);
     close(INFILE);
     &explain_vote(*MAIL, $h1);
     close(MAIL);

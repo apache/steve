@@ -188,11 +188,10 @@ KNOWN BUGS
      Unfortunately, people don't understand STV and don't bother to
      read the directions, so leaving the candidates in alphabetical
      order creates a statistical advantage for those listed first.
-     A possible solution would be to place the list in an array and
-     randomize it before printing (but keeping the same label per name
-     so that the actual vote labels -- what people cast -- are not
-     randomized).  This should prevent lazy folks who vote in the order
-     that the names are listed from having a statistical impact on the
-     vote, assuming that someone can come up with a good randomizer
-     that results in a significantly different order being sent to
-     each voter.
+     This is addressed by randomizing the list of candidates prior
+     to printing (but keeping the same label per name so that the 
+     actual vote labels -- what people cast -- are not randomized).  
+     This should prevent lazy folks who vote in the order that the 
+     names are listed from having a statistical impact on the vote.
+
+     See randomize.pm for details.

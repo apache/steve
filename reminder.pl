@@ -9,6 +9,8 @@
 # 
 # Originally created by Roy Fielding
 #
+using randomize;
+
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
@@ -137,7 +139,7 @@ Reply-To: $monitors
 
 EndOutput
 open(INFILE, $issuefile) || die "$pname: cannot open issue file: $!\n";
-print MAIL <INFILE>;
+print MAIL randomize(<INFILE>);
 close(INFILE);
 &explain_vote(*MAIL, $h1);
 close(MAIL);
