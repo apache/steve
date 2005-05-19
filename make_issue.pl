@@ -185,8 +185,7 @@ mkdir($issuedir, 0700) || die "$pname: cannot mkdir $issuedir: $!\n";
 # ==========================================================================
 # Create issue information file (needs to be done before voter hash)
 
-# $issueaddr = "voter-$issuename\@apache.org";
-$issueaddr = 'voter@icarus.apache.org';
+$issueaddr = 'voter@apache.org';
 
 $issuefile = "$issuedir/issue";
 

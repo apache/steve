@@ -111,8 +111,7 @@ if ($#voters < 0) {
     die "$pname: group $group must be an existing voter group\n";
 }
 
-# $issueaddr = "voter-$issuename\@apache.org";
-$issueaddr = 'voter@icarus.apache.org';
+$issueaddr = 'voter@apache.org';
 
 $issuedir .= "/$group/$start_date-$issue";
 if (! -d $issuedir) { die "$pname: $issuename doesn't exist\n"; }
