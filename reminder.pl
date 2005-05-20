@@ -19,7 +19,7 @@ $SENDMAIL = '/usr/sbin/sendmail';
 
 $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
-$host     = 'cvs.apache.org';
+$host     = 'people.apache.org';
 
 $ENV{'PATH'}    = '$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin';
 $ENV{'LOGNAME'} = 'voter';

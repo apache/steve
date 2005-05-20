@@ -4,7 +4,7 @@ code has to be manually copied by the "voter" user to the
 
     /home/voter/src
 
-directory on cvs.apache.org.  Running "make" in that directory and
+directory on people.apache.org.  Running "make" in that directory and
 then "make install" will recompile the wrappers and install them
 and the scripts into
 
@@ -17,7 +17,7 @@ invalidate the vote.
 
 The voter tool consists of six perl scripts and a C wrapper that
 invokes them with setuid voter -- this allows anyone with a login
-on cvs.apache.org to invoke the tool, but only users who can sudo
+on people.apache.org to invoke the tool, but only users who can sudo
 to the voter account (or root) can do anything to the voting files
 beyond what is provided by the tools.
 
@@ -30,7 +30,7 @@ The six wrapped scripts are
     close_issue  -- end voting on the issue and send final summary
     check_quorum -- get a list of people who voted on a closed issue
 
-Note that any user on cvs.apache.org can run these scripts, though vote
+Note that any user on people.apache.org can run these scripts, though vote
 requires a voter hash ID and close_issue requires a monitor hash ID.
 
 The issue making and voting process is simple and guided by the scripts.
@@ -39,7 +39,7 @@ group exists, or if the existing group is missing some new voters,
 you need to create it using votegroup and a file containing all of
 the voters' e-mail addresses, listed one per line.
 
-Second, create a file on cvs.apache.org, readable by everyone, that
+Second, create a file on people.apache.org, readable by everyone, that
 contains the text of the issue description.  This text will be sent
 to everyone, so be sure to get it right before continuing.  You CANNOT
 change the information after the vote has started.  The file should
