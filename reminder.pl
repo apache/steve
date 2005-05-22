@@ -133,7 +133,7 @@ open (MAIL, "|$SENDMAIL -t -f$issueaddr") ||
 print MAIL <<"EndOutput";
 From: "Apache voting tool" <$issueaddr>
 To: $voter
-Subject: Apache vote on $issuename
+Subject: Reminder: Apache vote on $issuename
 Reply-To: $monitors
 
 EndOutput
@@ -156,6 +156,7 @@ sub explain_vote {
     print FDES <<"EndOut1";
 
 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+APACHE VOTE REMINDER:
 
 Your voting key for this issue: $hashid
 
