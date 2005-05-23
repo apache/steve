@@ -48,8 +48,8 @@ monitors by our current voting system.
 # with incorrect labels.
 
 print "rank order\n";
-print "NAME,  Brian,Ken,Mark,Justin,Roy,Dirk,Jim,Ben,Chuck,William,Sam,Greg,Bill\n";
-print "LABEL, a,    b,  c,   d,     e,  f,   g,  h,  i,    j,      k,  l,   m\n";
+print "NAME,  Ken, Justin, Fitz, Dirk, Jim, BenL, Geir, Stefano, Sam, Dims, Greg, Sander\n";
+print "LABEL, c,   k,      j,    f,    e,   g,    d,    b,       i,   h,    l,    a\n";
 
 open(INPUT, "$ARGV[0]");
 
