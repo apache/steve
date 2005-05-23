@@ -20,6 +20,12 @@
 #
 #   http://sourceforge.net/projects/votesystem
 #
+# It takes an optional argument, -d, which instructs the script
+# to only output the last vote per ID, thus ignoring previous
+# votes. ONLY use this if you are positive that the input
+# file is in time-stamped order with newer votes appended to
+# the end! 
+#
 # After installing Voting Systems Toolbox, you can execute the 'VoteMain'
 # program as
 #
@@ -36,13 +42,27 @@ print "rank order\n";
 print "NAME,  Ken, Justin, Fitz, Dirk, Jim, BenL, Geir, Stefano, Sam, Dims, Greg, Sander\n";
 print "LABEL, c,   k,      j,    f,    e,   g,    d,    b,       i,   h,    l,    a\n";
 
+if ($ARGV[0] eq '-d') {
+   $handle_dups = 1;
+   shift @ARGV;
+}
+
 open(INPUT, "$ARGV[0]");
 
 while(<INPUT>) {
   if(/([\w\d]{32})\s([a-m]{1,12})/) {
     @votes = split(//, $2);
     $vstr = join(',', @votes);
-    print "$1,$vstr\n";
+    if ($handle_dups) {
+       $votes{$1} = $vstr;
+    } else {
+       print "$1,$vstr\n";
+    }
+  }
+}
+if ($handle_dups) {
+  foreach $id (keys %votes) {
+     print "$id,$votes{$id}\n";
   }
 }
 # ============================================================
