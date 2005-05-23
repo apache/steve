@@ -388,7 +388,7 @@ EndOutput
 }
 
 # ==========================================================================
-print "Issue $issuename has been successfully created.\n";
+print "Issue $issuename with hashcode of $monhash\nhas been successfully created.\n";
 exit(0);
 
 
