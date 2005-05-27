@@ -28,7 +28,18 @@ check_quorum: wrapsuid.c
 	$(CC) -DPROGNAME=\"$(INSTALLBIN)/check_quorum.pl\" $(SUIDS) \
 	      -o check_quorum wrapsuid.c
 
-install: install-votegroup install-make_issue install-vote install-close_issue install-reminder install-check_quorum
+install: check_directory        \
+	install-votegroup       \
+	install-make_issue      \
+	install-vote            \
+	install-close_issue     \
+	install-reminder        \
+	install-check_quorum
+
+check-directory:
+        if [ ! -d $(INSTALLBIN) ]; then  \
+                mkdir $(INSTALLBIN);     \
+        fi
 
 install-votegroup: votegroup
 	rm -f $(INSTALLBIN)/votegroup $(INSTALLBIN)/votegroup.pl
