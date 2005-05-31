@@ -129,10 +129,11 @@ chomp $monitors;
 
 # ==========================================================================
 # validate vote based on voting style
-
+chomp $vote;
 $typefile = "$issuedir/vote_type";
 if (! -e $typefile) { die "$pname: can't find vote_type\n"; }
-$vote_type = (`$CAT $typefile`)[0];
+@valid_votes = `$CAT $typefile`;
+$vote_type = shift @valid_votes;
 chomp $vote_type;
 
 if ($vote_type =~ /^yna$/i) {
@@ -148,6 +149,8 @@ elsif ($vote_type =~ /^stv([1-9])$/i) {
     $vote =~ tr/A-Z/a-z/;
     die "You cannot vote for the same candidate more than once\n"
         if (&contains_duplicates($vote));
+    die "You have an invalid vote - no such candidate\n"
+        if (&not_valid($vote, @valid_votes));
 }
 elsif ($vote_type =~ /^select([1-9])$/i) {
     $selector = $1;
@@ -157,6 +160,8 @@ elsif ($vote_type =~ /^select([1-9])$/i) {
         if (&contains_duplicates($vote));
     die "You can only vote for at most $selector candidates\n"
         unless (length($vote) <= $selector);
+    die "You have an invalid vote - no such candidate\n"
+        if (&not_valid($vote, @valid_votes));
 }
 else {
     die "$pname: failed to read vote_type\n";
@@ -372,4 +377,19 @@ sub contains_duplicates {
         $ctr{$ch} = 1;
     }
     return (length($str) != scalar(keys(%ctr)));
+}
+
+# ==========================================================================
+
+sub not_valid {
+  my (@votes, %valid);
+  @votes = split(//, shift(@_));
+  for (@_) {
+      chomp;
+      $valid{$_} = 1;
+  }
+  for (@votes) {
+      return 1 unless $valid{$_} == 1;
+  }
+  return 0;
 }
