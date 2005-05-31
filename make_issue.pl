@@ -22,6 +22,7 @@
 #
 require "getopts.pl";
 use randomize;
+use ballots;
 
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
@@ -243,6 +244,14 @@ $typefile = "$issuedir/vote_type";
 
 open(MON, ">$typefile") || die "$pname: cannot open vote type file: $!\n";
 print MON "$vote_type\n";
+if ($selector == 0) {
+    @ballots = ( "yes\n", "no\n", "abstain\n");
+} else {
+    open(INFILE, $issuefile) || die "$pname: cannot open issue file: $!\n";
+    @ballots = ballots(<INFILE>);
+    close(INFILE);
+}
+print MON @ballots;
 close(MON);
 
 # ==========================================================================

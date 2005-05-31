@@ -132,7 +132,7 @@ chomp $monitors;
 
 $typefile = "$issuedir/vote_type";
 if (! -e $typefile) { die "$pname: can't find vote_type\n"; }
-$vote_type = `$CAT $typefile`;
+$vote_type = (`$CAT $typefile`)[0];
 chomp $vote_type;
 
 if ($vote_type =~ /^yna$/i) {
