@@ -177,6 +177,7 @@ KNOWN BUGS
      are redistributed to lower-numbered choices. This process is repeated
      until the required number are elected.
 
+       http://wiki.apache.org/incubator/BoardElectionVoteCounting
        http://www.electoral-reform.org.uk/votingsystems/stvi.htm
        http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
 

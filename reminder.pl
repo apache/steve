@@ -182,6 +182,7 @@ labeled [x], [s], and [p], in that order, then your vote should be "xsp".
 This election will be decided according to the Single Transferable Vote
 rules described at
 
+   http://wiki.apache.org/incubator/BoardElectionVoteCounting
    http://www.electoral-reform.org.uk/votingsystems/stvi.htm
    http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
 
