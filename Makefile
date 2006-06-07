@@ -28,7 +28,7 @@ check_quorum: wrapsuid.c
 	$(CC) -DPROGNAME=\"$(INSTALLBIN)/check_quorum.pl\" $(SUIDS) \
 	      -o check_quorum wrapsuid.c
 
-install: check_directory        \
+install: check-directory        \
 	install-votegroup       \
 	install-make_issue      \
 	install-vote            \
