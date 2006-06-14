@@ -39,8 +39,8 @@
 # with incorrect labels.
 
 print "rank order\n";
-print "NAME,  Ken, Justin, Fitz, Dirk, Jim, BenL, Geir, Stefano, Sam, Dims, Greg, Sander\n";
-print "LABEL, c,   k,      j,    f,    e,   g,    d,    b,       i,   h,    l,    a\n";
+print "NAME,  Ken, Justin, Fitz, Dirk, Ian, Jim, Geir, Sam, Will, Cliff, Greg, Sander, Henri\n";
+print "LABEL, i,   a,      k,    d,    j,   e,    m,   l,   g,    h,     c,    f,      b\n";
 
 if ($ARGV[0] eq '-d') {
    $handle_dups = 1;
