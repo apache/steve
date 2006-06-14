@@ -47,9 +47,12 @@ if ($ARGV[0] eq '-d') {
    shift @ARGV;
 }
 
+@invalids = ();
+
 open(INPUT, "$ARGV[0]");
 
 while(<INPUT>) {
+  chomp;
   if(/([\w\d]{32})\s([a-m]{1,12})/) {
     @votes = split(//, $2);
     $vstr = join(',', @votes);
@@ -58,11 +61,20 @@ while(<INPUT>) {
     } else {
        print "$1,$vstr\n";
     }
+  } else {
+       push(@invalids, $_);
   }
 }
 if ($handle_dups) {
   foreach $id (keys %votes) {
      print "$id,$votes{$id}\n";
   }
+}
+
+if (@invalids) {
+    print "\n### Input had invalid entries! ###\n";
+    foreach $bad (@invalids) {
+        print "   $bad\n";
+    }
 }
 # ============================================================
