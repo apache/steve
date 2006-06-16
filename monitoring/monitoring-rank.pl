@@ -9,12 +9,12 @@
 #
 # e.g
 #
-# 0422f389874d7a8ecfd2fabea0a152ed lagd
-# 9c58d57506a17c83b9d4cc8c0ed4a31e lgej
-# 9db55691a072f88d79968eed8297dc90 fcaki
-# a6d1332887e40af1dd2405cd2abf1e77 glfj
-# a9472aa4f7df905173acd8fe2d8edcb2 jkc
-# adc9914bb9112d8da4cddd6353e09ef1 eagk
+# [2006/06/13 18:22:30] 0422f389874d7a8ecfd2fabea0a152ed lagd
+# [2006/06/13 18:23:15] 9c58d57506a17c83b9d4cc8c0ed4a31e lgej
+# [2006/06/13 18:28:27] 9db55691a072f88d79968eed8297dc90 fcaki
+# [2006/06/13 19:01:13] a6d1332887e40af1dd2405cd2abf1e77 glfj
+# [2006/06/13 19:22:45] a9472aa4f7df905173acd8fe2d8edcb2 jkc
+# [2006/06/13 20:42:33] adc9914bb9112d8da4cddd6353e09ef1 eagk
 #
 # It prints out a file in the format expected by Voting Systems Toolbox
 #
@@ -53,7 +53,7 @@ open(INPUT, "$ARGV[0]");
 
 while(<INPUT>) {
   chomp;
-  if(/([\w\d]{32})\s([a-m]{1,12})/) {
+  if(/\[.{19}\]\s([\w\d]{32})\s([a-m]{1,12})/) {
     @votes = split(//, $2);
     $vstr = join(',', @votes);
     if ($handle_dups) {
