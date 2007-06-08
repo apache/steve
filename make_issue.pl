@@ -317,8 +317,7 @@ The voting system will record a tally of the votes as they are received
 and will report that to you when the voting is closed.  To close voting,
 use ssh to login to $host and then run
 
-   /home/voter/bin/close_issue $issuename \\
-                               $monhash
+   /home/voter/bin/close_issue $issuename $monhash
 
 For verification purposes, you will be receiving an e-mail notification
 of each vote submitted by the voters.  Repeat votes should be considered
@@ -414,8 +413,7 @@ Your voting key for this issue: $hashid
 
 In order to vote, use ssh to login to $host and then run
 
-   /home/voter/bin/vote $issuename \\
-                        $hashid "vote"
+   /home/voter/bin/vote $issuename $hashid "vote"
 
 EndOut1
 

@@ -162,8 +162,7 @@ Your voting key for this issue: $hashid
 
 In order to vote, use ssh to login to $host and then run
 
-   /home/voter/bin/vote $issuename \\
-                        $hashid "vote"
+   /home/voter/bin/vote $issuename $hashid "vote"
 
 EndOut1
 
