@@ -38,7 +38,7 @@ open(INPUT, "$ARGV[0]");
 while(<INPUT>) {
   chomp;
   # Change the below
-  if (/Issue members200706-20070605-(\w*) is now closed/) {
+  if (/Issue members200712-20071211-(\w*) is now closed/) {
     $issuename = $1;
     %votes = ();
     $dups{$issuename} = 0;
