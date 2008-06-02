@@ -1,3 +1,43 @@
+Included are some helpful tools/scripts to make the
+vote monitor's job easier.
+
+For STV, we use
+
+    http://sourceforge.net/projects/votesystem
+
+to do the actual STV determination. To get the voter tool
+results in the format it expects, we have
+
+    stv-rank.pl
+
+After installing Voting Systems Toolbox, you can execute the 'VoteMain'
+program as
+
+    java -cp Vote-0-4.jar VoteMain -system stv-meek -seats 9 outputFile
+
+where outputFile is the output of stv-rank.pl above.
+
+For simply YNA, we have
+
+    yna-summary.pl
+
+which does the checks for you.   
+
+  *) The board has decided to change the voting process on multi-choice
+     votes to Single Transferable Vote (STV).  Each voter lists all the
+     people they want to see elected in order of preference. Excess votes
+     for people who have already reached their quota (i.e., enough votes
+     to ensure election) and also for the candidate with the least votes
+     are redistributed to lower-numbered choices. This process is repeated
+     until the required number are elected.
+
+       http://wiki.apache.org/incubator/BoardElectionVoteCounting
+       http://www.electoral-reform.org.uk/votingsystems/stvi.htm
+       http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
+
+-----------
+HISTORY:
+-----------
 From: Ceki Gülcü <ceki@qos.ch>
 Date: Fri Jun 20, 2003  7:31:14  AM America/Los_Angeles
 To: ian Holsman <ian.holsman@cnet.com>
