@@ -38,14 +38,15 @@
 # Note that the 'VoteMain' program can detect duplicate votes, as well as votes
 # with incorrect labels.
 
-print "rank order\n";
-print "NAME,  Ken, Shane, Justin, Aaron, Jim, Geir, Bill, Sam, Henning, Leo, Greg, Sander, Henri\n";
-print "LABEL, l,   a,     b,      e,     f,   h,    k,    g,   c,       j,   d,    i,      m\n";
-
-if ($ARGV[0] eq '-d') {
-   $handle_dups = 1;
-   shift @ARGV;
+use Getopt::Std;
+getopt('d');
+if ($opt_d) {
+  $handle_dups = 1;
 }
+
+print "rank order\n";
+print "NAME,  Bertrand, Justin, J Aaron, Jim, Geir, Brett, William, Sam, Craig, Henning, Greg, Sander\n";
+print "LABEL, f,        i,      h,       c,   d,    a,     k,       e,   l,     g,       b,     k\n";
 
 @invalids = ();
 
