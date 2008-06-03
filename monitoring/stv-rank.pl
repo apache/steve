@@ -46,7 +46,7 @@ if ($opt_d) {
 
 print "rank order\n";
 print "NAME,  Bertrand, Justin, J Aaron, Jim, Geir, Brett, William, Sam, Craig, Henning, Greg, Sander\n";
-print "LABEL, f,        i,      h,       c,   d,    a,     k,       e,   l,     g,       b,     k\n";
+print "LABEL, f,        i,      h,       c,   d,    a,     j,       e,   l,     g,       b,     k\n";
 
 @invalids = ();
 
