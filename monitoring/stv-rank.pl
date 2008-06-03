@@ -39,7 +39,7 @@
 # with incorrect labels.
 
 use Getopt::Std;
-getopt('d');
+getopt();
 if ($opt_d) {
   $handle_dups = 1;
 }
