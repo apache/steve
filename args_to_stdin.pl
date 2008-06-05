@@ -1,5 +1,11 @@
 #!/usr/bin/perl -nal
 
+# args_to_stdin.pl - prevents vote scripts from exposing
+#                    their arguments to `ps` listings by
+#                    passing them to stdin instead.
+#
+# Usage: args_to_stdin.pl <vote.txt
+
 use warnings;
 
 @F or next;
