@@ -146,9 +146,7 @@ def print_tally(args, output, blt):
             line = line + ", " + ("%10.10s" % id)
         print line
         for id in votes.keys():
-            line = id
-            for vote in votes[id]:
-                line = line + "," + vote;
+            line = id + "," + ",".join(votes[id])
             print line
 
     
