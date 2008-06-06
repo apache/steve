@@ -124,11 +124,11 @@ def print_tally(args, output, blt):
         numcands = len(nomkeys)
         print "%d %d" % (numcands, numseats)
         for id in votes.keys():
-            line = "1 "
+            line = [ ]
             for vote in votes[id]:
                 value = ord(vote) - ord('a') + 1
-                line = line + str(value) + " "
-            line += "0"
+                line.append(str(value))
+            line = "1 "+ " ".join(line) + " 0"
             print line
         print "0"
         for id in nomkeys:
@@ -137,13 +137,15 @@ def print_tally(args, output, blt):
   
     else:
         print "rank order"
-        line = "NAME "
+        line = [ ]
         for id in nomkeys:
-            line = line + ", " + ("%10.10s" % nominees[id])
+            line.append("%10.10s" % nominees[id])
+        line = "NAME, " + ", ".join(line)
         print line
-        line = "LABEL"
+        line = [ ]
         for id in nomkeys:
-            line = line + ", " + ("%10.10s" % id)
+            line.append("%10.10s" % id)
+        line = "LABEL," + ", ".join(line)
         print line
         for id in votes.keys():
             line = id + "," + ",".join(votes[id])
