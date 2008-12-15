@@ -37,7 +37,7 @@ open(INPUT, "$ARGV[0]");
 
 while(<INPUT>) {
   chomp;
-  # Change the below
+  # Assumes standard format of closed email
   if (/Issue [^-]*-[^-]*-(\w*) is now closed/) {
     $issuename = $1;
     %votes = ();
