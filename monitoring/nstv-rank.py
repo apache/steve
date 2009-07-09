@@ -66,18 +66,25 @@
 import getopt, sys, re, string
 
 nominees = {
- 'a': 'Brett',
- 'b': 'Greg',
+ 'a': 'Paul',
+ 'b': 'Craig',
  'c': 'Jim',
- 'd': 'Geir',
- 'e': 'Sam',
- 'f': 'Bertrand',
- 'g': 'Henning',
- 'h': 'J Aaron',
- 'i': 'Justin',
- 'j': 'William',
- 'k': 'Sander',
- 'l': 'Craig'
+ 'd': 'Doug',
+ 'e': 'Justin',
+ 'f': 'Sander',
+ 'g': 'Brian',
+ 'h': 'Roy',
+ 'i': 'Bill',
+ 'j': 'Greg',
+ 'k': 'Geir',
+ 'l': 'Santiago',
+ 'm': 'Phil',
+ 'n': 'Jukka',
+ 'o': 'Shane',
+ 'p': 'Ross',
+ 'q': 'Bertrand',
+ 'r': 'Brett',
+ 's': 'Gianugo',
  }
 
 
