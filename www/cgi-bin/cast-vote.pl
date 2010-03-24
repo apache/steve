@@ -12,7 +12,7 @@ $ENV{PATH_INFO} =~ m!^/([\w-]+)/([0-9a-f]{32})/(yna|stv[1-9]|select[1-9])$!
 my ($issue, $hash, $type) = ($1, $2, $3);
 
 
-if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} = "HEAD") {
+if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
     print "Content-Type: text/html\n\n";
 
