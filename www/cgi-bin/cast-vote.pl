@@ -57,7 +57,8 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     print $voter_tool "$hash\n";
     print $voter_tool "$vote\n";
 
-    my $vote_status = close $voter_tool;
+    close $voter_tool;
+    my $vote_status = $?;
     my $vote_log;
 
     if (open my $fh, $tmpfile) {
