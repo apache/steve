@@ -48,10 +48,11 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     open my $voter_tool, "| $cmd"
         or die "Can't popen '$cmd': $!";
 
-    local $SIG{TERM} = local $SIG{INT} = local $SIG{HUP} = sub {
-        unlink $tmpfile;
-        die "SIG$_[0] caught";
-    };
+    local $SIG{TERM} = local $SIG{INT} = local $SIG{HUP} = local $SIG{PIPE}
+        = sub {
+            unlink $tmpfile;
+            die "SIG$_[0] caught";
+        };
 
     print $voter_tool "$issue\n";
     print $voter_tool "$hash\n";
