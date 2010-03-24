@@ -25,31 +25,13 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     print "Content-Type: text/html\n\n";
 
     if ($type eq "yna") {
-        print <<EoYNA;
-
-<h1>Cast your vote &lt;$voter&gt;.</h1>
-<pre>
-$issue_content
-</pre>
-EoYNA
+        print yna_form($voter, $issue_content);
     }
-    elsif ($type =~ /^stv[1-9]$/) {
-        print <<EoSTV;
-
-<h1>Cast your vote &lt;$voter&gt;.</h1>
-<pre>
-$issue_content
-</pre>
-EoSTV
+    elsif ($type =~ /^stv([1-9])$/) {
+        print stv_form($1, $voter, $issue_content);
     }
-    elsif ($type =~ /^select[1-9]$/) {
-        print <<EoSELECT;
-
-<h1>Cast your vote &lt;$voter&gt;.</h1>
-<pre>
-$issue_content
-</pre>
-EoSELECT
+    elsif ($type =~ /^select([1-9])$/) {
+        print select_form($1, $voter, $issue_content);
     }
 
     exit;
@@ -153,4 +135,41 @@ sub filestuff {
          or die "Can't stat $filename: $!";
 
     return "$ino:$mtime";
+}
+
+sub yna_form {
+    my ($voter, $issue_content) = @_;
+
+
+my $html = <<EoYNA;
+
+<h1>Cast your vote &lt;$voter&gt;.</h1>
+<pre>
+$issue_content
+</pre>
+EoYNA
+}
+
+sub stv_form {
+    my ($num, $voter, $issue_content) = @_;
+
+    my $html = <<EoSTV;
+
+<h1>Cast your vote &lt;$voter&gt;.</h1>
+<pre>
+$issue_content
+</pre>
+EoSTV
+}
+
+sub select_form {
+    my ($num, $voter, $issue_content) = @_;
+
+    my $html =  <<EoSELECT;
+
+<h1>Cast your vote &lt;$voter&gt;.</h1>
+<pre>
+$issue_content
+</pre>
+EoSELECT
 }
