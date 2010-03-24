@@ -99,6 +99,7 @@ sub fetch_voter {
     for my $voter (eval { get_group("$VOTE_ISSUEDIR/$group/voters") }) {
         return $voter if get_hash_of("$issue_id:$voter") eq $hash;
     }
+    return;
 }
 
 sub get_hash_of {
