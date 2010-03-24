@@ -6,6 +6,7 @@ use CGI::Carp qw/fatalsToBrowser/;
 
 my $VOTE_TOOL = "/home/voter/bin/vote";
 my $VOTE_TMPDIR = "/home/voter/tmp";
+my $VOTE_DATADIR = "/home/voter/issues";
 
 $ENV{PATH_INFO} =~ m!^/([\w-]+)/([0-9a-f]{32})/(yna|stv[1-9]|select[1-9])$!
     or die "Invalid path";
@@ -14,21 +15,36 @@ my ($issue, $hash, $type) = ($1, $2, $3);
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
+    my $issue_path = "$VOTE_DATADIR/$issue/issue";
+    $issue_path =~ s!\-!/! or die "Invalid issue path";
+    open my $fh, $issue_path or die "Can't open issue: $!";
+    read $fh, my $issue_content, -s $fh;
+    close $fh;
+
     print "Content-Type: text/html\n\n";
 
     if ($type eq "yna") {
         print <<EoYNA;
 
+<pre>
+$issue_content
+</pre>
 EoYNA
     }
     elsif ($type =~ /^stv[1-9]$/) {
         print <<EoSTV;
 
+<pre>
+$issue_content
+</pre>
 EoSTV
     }
     elsif ($type =~ /^select[1-9]$/) {
         print <<EoSELECT;
 
+<pre>
+$issue_content
+</pre>
 EoSELECT
     }
 
