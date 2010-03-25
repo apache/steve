@@ -9,7 +9,7 @@ my $VOTE_TOOL = "/home/voter/bin/vote";
 my $VOTE_TMPDIR = "/home/voter/tmp";
 my $VOTE_ISSUEDIR = "/home/voter/issues";
 
-$ENV{PATH_INFO} =~ m!^/([\w]+)-(\d+-\w+)/([0-9a-f]{32})/(yna|stv[1-9]|select[1-9])$!
+$ENV{PATH_INFO} =~ m!^/(\w+)-(\d+-\w+)/([0-9a-f]{32})/(yna|stv[1-9]|select[1-9])$!
     or die "Invalid URL";
 my ($group, $issue, $hash, $type) = ($1, $2, $3, $4);
 
