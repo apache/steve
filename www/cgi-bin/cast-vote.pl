@@ -54,7 +54,7 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
             die "SIG$_[0] caught";
         };
 
-    print $voter_tool "$issue\n";
+    print $voter_tool "$group-$issue\n";
     print $voter_tool "$hash\n";
     print $voter_tool "$vote\n";
 
