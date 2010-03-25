@@ -9,11 +9,12 @@ my $VOTE_TOOL = "/home/voter/bin/vote";
 my $VOTE_TMPDIR = "/home/voter/tmp";
 my $VOTE_ISSUEDIR = "/home/voter/issues";
 
-$ENV{PATH_INFO} =~ m!^/(\w+)-(\d+-\w+)/([0-9a-f]{32})/(yna|stv[1-9]|select[1-9])$!
+$ENV{PATH_INFO} =~ m!^/(\w+)-(\d+-\w+)/([0-9a-f]{32})$!
     or die "Invalid URL";
-my ($group, $issue, $hash, $type) = ($1, $2, $3, $4);
+my ($group, $issue, $hash) = ($1, $2, $3);
 
 my $voter = fetch_voter($group, $issue, $hash) or die "Invalid URL";
+my ($type, @valid_vote) = fetch_type_info($group, $issue) or die "Can't identify issue type!";
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
@@ -41,11 +42,28 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     my $vote = $q->param("vote");
     die "Vote undefined" unless defined $vote;
 
+    if ($type eq "yna") {
+        grep $_ eq $vote, @valid_vote or die "Invalid yna vote: $vote";
+    }
+    elsif ($type =~ /^stv([1-9])$/) {
+        my $selection = $1;
+        my $char_class = "[" . join("",@valid_vote) . "]";
+        my %uniq;
+        @uniq{split //, $vote} = ();
+        $vote =~ /^$char_class+$/ or die "stv$selection vote out of range: $vote";
+        length($vote) == keys %uniq or die "Duplicate stv$selection vote: $vote";
+    }
+    elsif ($type =~ /^select([1-9])$/) {
+        # XXX todo
+    }
+
+    # vote is valid, time to execute the program...
+
     local %ENV;
 
     my $tmpfile = "$VOTE_TMPDIR/$issue.$$";
     my $cmd = "$VOTE_TOOL > $tmpfile 2>&1";
-    open my $voter_tool, "| $cmd"
+    open my $vote_tool, "| $cmd"
         or die "Can't popen '$cmd': $!";
 
     local $SIG{TERM} = local $SIG{INT} = local $SIG{HUP} = local $SIG{PIPE}
@@ -54,11 +72,11 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
             die "SIG$_[0] caught";
         };
 
-    print $voter_tool "$group-$issue\n";
-    print $voter_tool "$hash\n";
-    print $voter_tool "$vote\n";
+    print $vote_tool "$group-$issue\n";
+    print $vote_tool "$hash\n";
+    print $vote_tool "$vote\n";
 
-    close $voter_tool;
+    close $vote_tool;
     my $vote_status = $?;
     my $vote_log;
 
@@ -92,6 +110,14 @@ EoVOTE
 } else {
     die "Unsupported method $ENV{REQUEST_METHOD}";
 }
+
+sub fetch_type_info {
+    my ($group, $issue) = @_;
+    open my $fh, "$VOTE_ISSUEDIR/$group/$issue/vote_type" or return;
+    chomp(my @data = <$fh>);
+    return @data;
+}
+
 
 sub fetch_voter {
     my ($group, $issue, $hash) = @_;
