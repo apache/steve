@@ -13,8 +13,10 @@ $ENV{PATH_INFO} =~ m!^/(\w+)-(\d+-\w+)/([0-9a-f]{32})$!
     or die "Invalid URL";
 my ($group, $issue, $hash) = ($1, $2, $3);
 
-my $voter = fetch_voter($group, $issue, $hash) or die "Invalid URL";
-my ($type, @valid_vote) = fetch_type_info($group, $issue) or die "Can't identify issue type!";
+my $voter = fetch_voter($group, $issue, $hash)
+    or die "Invalid URL";
+my ($type, @valid_vote) = fetch_type_info($group, $issue)
+    or die "Can't identify issue type!";
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
@@ -50,8 +52,10 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
         my $char_class = "[" . join("",@valid_vote) . "]";
         my %uniq;
         @uniq{split //, $vote} = ();
-        $vote =~ /^$char_class+$/ or die "stv$selection vote out of range: $vote";
-        length($vote) == keys %uniq or die "Duplicate stv$selection vote: $vote";
+        $vote =~ /^$char_class+$/
+            or die "stv$selection vote out of range: $vote";
+        length($vote) == keys %uniq
+            or die "Duplicate stv$selection vote: $vote";
     }
     elsif ($type =~ /^select([1-9])$/) {
         # XXX todo
@@ -121,7 +125,8 @@ sub fetch_type_info {
 
 sub fetch_voter {
     my ($group, $issue, $hash) = @_;
-    my $issue_id = eval { filestuff("$VOTE_ISSUEDIR/$group/$issue/issue")} or return;
+    my $issue_id = eval { filestuff("$VOTE_ISSUEDIR/$group/$issue/issue") }
+        or return;
     for my $voter (eval { get_group("$VOTE_ISSUEDIR/$group/voters") }) {
         return $voter if get_hash_of("$issue_id:$voter") eq $hash;
     }
