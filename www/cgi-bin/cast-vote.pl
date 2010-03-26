@@ -114,7 +114,7 @@ EoVOTE
     exit;
 
 } else {
-    die "Unsupported method $ENV{REQUEST_METHOD}";
+    die "Unsupported method $ENV{REQUEST_METHOD}\n";
 }
 
 sub fetch_type_info {
