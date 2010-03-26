@@ -53,12 +53,22 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
         my %uniq;
         @uniq{split //, $vote} = ();
         $vote =~ /^$char_class+$/
-            or die "stv$selection vote out of range: $vote";
+            or die "stv$selection vote out of range (no such candidate): $vote";
         length($vote) == keys %uniq
-            or die "Duplicate stv$selection vote: $vote";
+            or die "Duplicate candidates in stv$selection vote: $vote";
     }
     elsif ($type =~ /^select([1-9])$/) {
-        # XXX todo
+        $vote =~ tr/A-Z/a-z/;
+        my $selection = $1;
+        my $char_class = "[" . join("",@valid_vote) . "]";
+        my %uniq;
+        @uniq{split //, $vote} = ();
+        $vote =~ /^$char_class+$/
+            or die "select$selection vote out of range (no such candidate): $vote";
+        length($vote) == keys %uniq
+            or die "Duplicate candidates in select$selection vote: $vote";
+        length($vote) <= $selection
+            or die "Too many candidates: only select up to $selection: $vote";
     }
 
     # vote is valid, time to execute the program...
