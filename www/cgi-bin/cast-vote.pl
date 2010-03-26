@@ -10,18 +10,18 @@ my $VOTE_TMPDIR = "/home/voter/tmp";
 my $VOTE_ISSUEDIR = "/home/voter/issues";
 
 $ENV{PATH_INFO} =~ m!^/(\w+)-(\d+-\w+)/([0-9a-f]{32})$!
-    or die "Invalid URL";
+    or die "Invalid URL\n";
 my ($group, $issue, $hash) = ($1, $2, $3);
 
 my $voter = fetch_voter($group, $issue, $hash)
-    or die "Invalid URL";
+    or die "Invalid URL\n";
 my ($type, @valid_vote) = fetch_type_info($group, $issue)
-    or die "Can't identify issue type!";
+    or die "Can't identify issue type!\n";
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
     my $issue_path = "$VOTE_ISSUEDIR/$group/$issue/issue";
-    open my $fh, $issue_path or die "Can't open issue: $!";
+    open my $fh, $issue_path or die "Can't open issue: $!\n";
     read $fh, my $issue_content, -s $fh;
     close $fh;
 
@@ -42,25 +42,25 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 } elsif ($ENV{REQUEST_METHOD} eq "POST") {
     my $q = CGI->new;
     my $vote = $q->param("vote");
-    die "Vote undefined" unless defined $vote;
+    die "Vote undefined\n" unless defined $vote;
 
     if ($type eq "yna") {
-        grep $_ eq $vote, @valid_vote or die "Invalid yna vote: $vote";
+        grep $_ eq $vote, @valid_vote or die "Invalid yna vote: $vote\n";
     }
     elsif ($type =~ /([1-9])$/) {
         my $selection = $1;
         if ($type =~ /^select/) {
             $vote =~ tr/A-Z/a-z/;
             length($vote) <= $selection
-                or die "Too many candidates: only select up to $selection: $vote";
+                or die "Too many candidates: only select up to $selection: $vote\n";
         }
         my $char_class = "[" . join("",@valid_vote) . "]";
         $vote =~ /^$char_class+$/
-            or die "$type vote out of range (no such candidate): $vote";
+            or die "$type vote out of range (no such candidate): $vote\n";
         my %uniq;
         @uniq{split //, $vote} = ();
         length($vote) == keys %uniq
-            or die "Duplicate candidates in $type vote: $vote";
+            or die "Duplicate candidates in $type vote: $vote\n";
     }
 
     # vote is valid, time to execute the program...
@@ -70,12 +70,12 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     my $tmpfile = "$VOTE_TMPDIR/$issue.$$";
     my $cmd = "$VOTE_TOOL > $tmpfile 2>&1";
     open my $vote_tool, "| $cmd"
-        or die "Can't popen '$cmd': $!";
+        or die "Can't popen '$cmd': $!\n";
 
     local $SIG{TERM} = local $SIG{INT} = local $SIG{HUP} = local $SIG{PIPE}
         = sub {
             unlink $tmpfile;
-            die "SIG$_[0] caught";
+            die "SIG$_[0] caught\n";
         };
 
     print $vote_tool "$group-$issue\n";
@@ -93,7 +93,7 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     }
     else {
         unlink $tmpfile;
-        die "Couldn't open $tmpfile: vote status=$vote_status: $!";
+        die "Couldn't open $tmpfile: vote status=$vote_status: $!\n";
     }
 
     print <<EoVOTE;
@@ -148,7 +148,7 @@ sub get_group {
     local $_;
     my @rv;
 
-    open(my $INFILE, $groupfile) || die "cannot open $groupfile: $!";
+    open(my $INFILE, $groupfile) || die "cannot open $groupfile: $!\n";
     while (<$INFILE>) {
         chomp;
         s/#.*$//;
@@ -168,7 +168,7 @@ sub filestuff {
 
     ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
      $atime,$mtime,$ctime,$blksize,$blocks) = stat($filename)
-         or die "Can't stat $filename: $!";
+         or die "Can't stat $filename: $!\n";
 
     return "$ino:$mtime";
 }
