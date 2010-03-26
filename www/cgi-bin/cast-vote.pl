@@ -47,28 +47,20 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     if ($type eq "yna") {
         grep $_ eq $vote, @valid_vote or die "Invalid yna vote: $vote";
     }
-    elsif ($type =~ /^stv([1-9])$/) {
+    elsif ($type =~ /([1-9])$/) {
         my $selection = $1;
         my $char_class = "[" . join("",@valid_vote) . "]";
         my %uniq;
         @uniq{split //, $vote} = ();
+        if ($type =~ /^select/) {
+            $vote =~ tr/A-Z/a-z/;
+            length($vote) <= $selection
+                or die "Too many candidates: only select up to $selection: $vote";
+        }
         $vote =~ /^$char_class+$/
-            or die "stv$selection vote out of range (no such candidate): $vote";
+            or die "$type vote out of range (no such candidate): $vote";
         length($vote) == keys %uniq
-            or die "Duplicate candidates in stv$selection vote: $vote";
-    }
-    elsif ($type =~ /^select([1-9])$/) {
-        $vote =~ tr/A-Z/a-z/;
-        my $selection = $1;
-        my $char_class = "[" . join("",@valid_vote) . "]";
-        my %uniq;
-        @uniq{split //, $vote} = ();
-        $vote =~ /^$char_class+$/
-            or die "select$selection vote out of range (no such candidate): $vote";
-        length($vote) == keys %uniq
-            or die "Duplicate candidates in select$selection vote: $vote";
-        length($vote) <= $selection
-            or die "Too many candidates: only select up to $selection: $vote";
+            or die "Duplicate candidates in $type vote: $vote";
     }
 
     # vote is valid, time to execute the program...
