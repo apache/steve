@@ -49,16 +49,16 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     }
     elsif ($type =~ /([1-9])$/) {
         my $selection = $1;
-        my $char_class = "[" . join("",@valid_vote) . "]";
-        my %uniq;
-        @uniq{split //, $vote} = ();
         if ($type =~ /^select/) {
             $vote =~ tr/A-Z/a-z/;
             length($vote) <= $selection
                 or die "Too many candidates: only select up to $selection: $vote";
         }
+        my $char_class = "[" . join("",@valid_vote) . "]";
         $vote =~ /^$char_class+$/
             or die "$type vote out of range (no such candidate): $vote";
+        my %uniq;
+        @uniq{split //, $vote} = ();
         length($vote) == keys %uniq
             or die "Duplicate candidates in $type vote: $vote";
     }
