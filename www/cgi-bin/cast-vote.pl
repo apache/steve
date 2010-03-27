@@ -153,6 +153,7 @@ Content-Type: text/html
     document.getElementById(id).style.display = 'inline';
   }
 </script>
+<link rel="stylesheet" type="text/css" href="/cast_style.css">
 </head>
 <body>
 <h1>Vote results for &lt;$voter&gt; on $issue_name...</h1>
@@ -232,12 +233,13 @@ sub yna_form {
 <html>
 <head>
 <title>Vote on $issue_name</title>
-</head>
 <script type='text/javascript'>
   function unhide(id) {
     document.getElementById(id).style.display = 'inline';
   }
 </script>
+<link rel="stylesheet" type="text/css" href="/cast_style.css">
+</head>
 <body>
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <textarea>
@@ -276,6 +278,7 @@ sub stv_form {
     document.getElementById(id).style.display = 'inline';
   }
 </script>
+<link rel="stylesheet" type="text/css" href="/cast_style.css">
 </head>
 <body>
 
@@ -308,7 +311,7 @@ rules described at
 <ul>
    <li><a href=http://wiki.apache.org/incubator/BoardElectionVoteCounting">http://wiki.apache.org/incubator/BoardElectionVoteCounting</a></li>
    <li><a href="http://www.electoral-reform.org.uk/votingsystems/stvi.htm">http://www.electoral-reform.org.uk/votingsystems/stvi.htm</a></li>
-   <li><a href="http://www.cix.co.uk/~rosenstiel/stvrules/index.htm>http://www.cix.co.uk/~rosenstiel/stvrules/index.htm</a></li>
+   <li><a href="http://www.cix.co.uk/~rosenstiel/stvrules/index.htm">http://www.cix.co.uk/~rosenstiel/stvrules/index.htm</a></li>
 </ul>
 
 for an election with $num open slots.
@@ -347,6 +350,7 @@ sub select_form {
     document.getElementById(id).style.display = 'inline';
   }
 </script>
+<link rel="stylesheet" type="text/css" href="/cast_style.css">
 </head>
 <body>
 
