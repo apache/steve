@@ -125,7 +125,7 @@ EOT
     my $vote_status = $?;
     my $vote_log;
 
-    my $http_status= $vote_status == 0 ? 200 : 500;
+    my $http_status = $vote_status == 0 ? 200 : 500;
 
     if (open my $fh, $tmpfile) {
         read $fh, $vote_log, -s $fh;
