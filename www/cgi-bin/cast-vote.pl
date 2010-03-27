@@ -26,24 +26,50 @@ my ($type, @valid_vote) = fetch_type_info($group, $issue)
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
-    my $issue_path = "$VOTE_ISSUEDIR/$group/$issue/issue";
-    open my $fh, $issue_path or die "Can't open issue: $!\n";
+    open my $fh, "$VOTE_ISSUEDIR/$group/$issue/issue"
+        or die "Can't open issue: $!\n";
     read $fh, my $issue_content, -s $fh;
     close $fh;
 
     $issue_content = join "\n", randomize split /\n/, $issue_content;
     $issue_content .= "\n"; # split knocks off the last newline
 
+    open $fh, "$VOTE_ISSUEDIR/$group/$issue/monitors"
+        or die "Can't open monitor file: $!\n";
+    read $fh, my $monitors, -s $fh;
+    close $fh;
+
+    my $trailer = <<EOT;
+If for some reason you are unable to fill out the form and submit it,
+then you can vote by proxy: simply send this URL to some Apache committer
+that you trust, preferably with instructions on how you wish them to
+place your vote.  DO NOT DISCLOSE THIS URL TO ANYONE ELSE, AS THEY
+WILL BE ABLE TO ACT AS YOUR PROXY AND CAST VOTES ON YOUR BEHALF IF
+YOU DO.
+
+For verification purposes, you will be receiving an e-mail notification
+each time your voting key is used.  Repeat votes will be considered
+a complete replacement of your prior vote.  Your vote will be
+recorded in a tally file and sent to the vote monitors along with
+a different unique key, minimizing the chance that the contents of
+your vote will be accidentally seen by someone else while associated
+to you.  That is why the verification e-mail will only state that you
+have voted, rather than including how you voted.
+
+If you have any problems or questions, send a reply to the vote monitors
+for this issue: $monitors
+EOT
+
     print "Content-Type: text/html\n\n";
 
     if ($type eq "yna") {
-        print yna_form($voter, $issue_content);
+        print yna_form($voter, $issue_content, $trailer);
     }
     elsif ($type =~ /^stv([1-9])$/) {
-        print stv_form($1, $voter, $issue_content);
+        print stv_form($1, $voter, $issue_content, $trailer);
     }
     elsif ($type =~ /^select([1-9])$/) {
-        print select_form($1, $voter, $issue_content);
+        print select_form($1, $voter, $issue_content, $trailer);
     }
 
     exit;
@@ -184,37 +210,88 @@ sub filestuff {
 }
 
 sub yna_form {
-    my ($voter, $issue_content) = @_;
+    my ($voter, $issue_content, $trailer) = @_;
 
     my $html = <<EoYNA;
 
 <h1>Cast your vote &lt;$voter&gt;.</h1>
 <pre>
 $issue_content
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+To cast your vote, select yes, no, or abstain from the form below and click
+on the "Submit" button.
+
+$trailer
 </pre>
 EoYNA
 }
 
 sub stv_form {
-    my ($num, $voter, $issue_content) = @_;
+    my ($num, $voter, $issue_content, $trailer) = @_;
 
     my $html = <<EoSTV;
 
 <h1>Cast your vote &lt;$voter&gt;.</h1>
 <pre>
 $issue_content
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+To cast your vote, fill in the form entry for your vote below with a
+single word containing the concatenated labels of the candidates in the
+order that you wish them to be selected.  In other words, if you want to
+vote for the candidates labeled [x], [s], and [p], in that order, then
+your vote should be "xsp".
+
+Then click on the "Submit" button to ultimately cast your vote.
+
+This election will be decided according to the Single Transferable Vote
+rules described at
+
+   http://wiki.apache.org/incubator/BoardElectionVoteCounting
+   http://www.electoral-reform.org.uk/votingsystems/stvi.htm
+   http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
+
+for an election with $num open slots.
+
+You have one vote.  Use your vote by entering the label of your
+first preference candidate followed by, if desired, the label of your
+second preference candidate, and so on until you are indifferent about
+the remaining candidates.  The sequence of your preferences is crucial.
+You should continue to express preferences only as long as you are able
+to place successive candidates in order.  A later preference is considered
+only if an earlier preference has a surplus above the quota required for
+election, or is excluded because of insufficient support.  Under no
+circumstances will a later preference count against an earlier preference.
+
+You may list as many candidates as you wish, but no more than once per
+vote (e.g., "xsxp" would be rejected).
+
+$trailer
 </pre>
 EoSTV
 }
 
 sub select_form {
-    my ($num, $voter, $issue_content) = @_;
+    my ($num, $voter, $issue_content, $trailer) = @_;
 
     my $html =  <<EoSELECT;
 
 <h1>Cast your vote &lt;$voter&gt;.</h1>
 <pre>
 $issue_content
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+To cast your vote, fill in the form entry for your vote below with a
+single word single word containing the concatenated labels of the candidates
+of your $num choices.  In other words, if you want to vote for the candidates
+labeled [x], [s], and [p], then your vote should be "xsp" (order does not
+matter).
+
+$trailer
 </pre>
 EoSELECT
 }
