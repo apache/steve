@@ -240,14 +240,15 @@ sub yna_form {
 </script>
 <body>
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
-<pre>
+<textarea>
 $issue_content
-
+</textarea>
 <hr />
 
+<p>
 To cast your vote, select yes, no, or abstain from the form below and click
 on the "Submit" button.
-</pre>
+</p>
 <form method="POST">
       <input type="radio" name="vote" value="yes"> yes<br />
       <input type="radio" name="vote" value="no"> no<br />
@@ -279,9 +280,9 @@ sub stv_form {
 <body>
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
-<pre>
+<textarea>
 $issue_content
-
+</textarea>
 <hr />
 
 <p>
@@ -294,7 +295,6 @@ your vote should be "xsp".
 <p>
 Then click on the "Submit" button to ultimately cast your vote.
 </p>
-</pre>
 <form method="POST">
       Vote: <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
@@ -351,9 +351,9 @@ sub select_form {
 <body>
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
-<pre>
+<textarea>
 $issue_content
-</pre>
+</textarea>
 
 <hr />
 
