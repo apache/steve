@@ -10,7 +10,7 @@ my $VOTE_TMPDIR = "/home/voter/tmp";
 my $VOTE_ISSUEDIR = "/home/voter/issues";
 
 $ENV{PATH_INFO} =~ m!^/(\w+)-(\d+-\w+)/([0-9a-f]{32})$!
-    or die "Invalid URL\n";
+    or die "Malformed URL\n";
 my ($group, $issue, $hash) = ($1, $2, $3);
 
 my $voter = fetch_voter($group, $issue, $hash)
