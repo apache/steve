@@ -176,8 +176,7 @@ sub filestuff {
 sub yna_form {
     my ($voter, $issue_content) = @_;
 
-
-my $html = <<EoYNA;
+    my $html = <<EoYNA;
 
 <h1>Cast your vote &lt;$voter&gt;.</h1>
 <pre>
