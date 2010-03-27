@@ -5,6 +5,12 @@ use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
 use Digest::MD5;
 
+BEGIN {
+    push @INC, "/home/voter/bin";
+}
+use randomize;
+
+
 my $VOTE_TOOL = "/home/voter/bin/vote";
 my $VOTE_TMPDIR = "/home/voter/tmp";
 my $VOTE_ISSUEDIR = "/home/voter/issues";
@@ -24,6 +30,8 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     open my $fh, $issue_path or die "Can't open issue: $!\n";
     read $fh, my $issue_content, -s $fh;
     close $fh;
+
+    $issue_content = join "\n", randomize split /\n/, $issue_content;
 
     print "Content-Type: text/html\n\n";
 
