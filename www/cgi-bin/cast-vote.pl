@@ -57,19 +57,19 @@ to you.  That is why the verification e-mail will only state that you
 have voted, rather than including how you voted.
 
 If you have any problems or questions, send an email to the vote monitors
-for this issue: $monitors
+for this issue: <a href="mailto:$monitors">$monitors</a>.
 EOT
 
     print "Content-Type: text/html\n\n";
-
+    my $issue_name = "$group-$issue";
     if ($type eq "yna") {
-        print yna_form($voter, $issue_content, $trailer);
+        print yna_form($voter, $issue_name, $issue_content, $trailer);
     }
     elsif ($type =~ /^stv([1-9])$/) {
-        print stv_form($1, $voter, $issue_content, $trailer);
+        print stv_form($1, $voter, $issue_name, $issue_content, $trailer);
     }
     elsif ($type =~ /^select([1-9])$/) {
-        print select_form($1, $voter, $issue_content, $trailer);
+        print select_form($1, $voter, $issue_name, $issue_content, $trailer);
     }
 
     exit;
@@ -210,11 +210,11 @@ sub filestuff {
 }
 
 sub yna_form {
-    my ($voter, $issue_content, $trailer) = @_;
+    my ($voter, $issue_name, $issue_content, $trailer) = @_;
 
     my $html = <<EoYNA;
 
-<h1>Cast your vote &lt;$voter&gt;.</h1>
+<h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <pre>
 $issue_content
 
@@ -222,18 +222,25 @@ $issue_content
 
 To cast your vote, select yes, no, or abstain from the form below and click
 on the "Submit" button.
-
+</pre>
+<form method="POST">
+      <input type="radio" name="vote" value="yes"> yes<br />
+      <input type="radio" name="vote" value="no"> no<br />
+      <input type="radio" name="vote" value="abstain"> abstain<br />
+      <input type="submit" name="submit" value="Submit">
+</form>
+<pre>
 $trailer
 </pre>
 EoYNA
 }
 
 sub stv_form {
-    my ($num, $voter, $issue_content, $trailer) = @_;
+    my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
 
     my $html = <<EoSTV;
 
-<h1>Cast your vote &lt;$voter&gt;.</h1>
+<h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <pre>
 $issue_content
 
@@ -246,7 +253,12 @@ vote for the candidates labeled [x], [s], and [p], in that order, then
 your vote should be "xsp".
 
 Then click on the "Submit" button to ultimately cast your vote.
-
+</pre>
+<form method="POST">
+      Vote: <input type="text" name="vote"><br />
+      <input type="submit" name="submit" value="Submit">
+</form>
+<pre>
 This election will be decided according to the Single Transferable Vote
 rules described at
 
@@ -275,11 +287,11 @@ EoSTV
 }
 
 sub select_form {
-    my ($num, $voter, $issue_content, $trailer) = @_;
+    my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
 
     my $html =  <<EoSELECT;
 
-<h1>Cast your vote &lt;$voter&gt;.</h1>
+<h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <pre>
 $issue_content
 
@@ -290,7 +302,12 @@ single word containing the concatenated labels of the candidates of your
 $num choices.  In other words, if you want to vote for the candidates
 labeled [x], [s], and [p], then your vote should be "xsp" (order does
 not matter).
-
+</pre>
+<form method="POST">
+      Vote: <input type="text" name="vote"><br />
+      <input type="submit" name="submit" value="Submit">
+</form>
+<pre>
 $trailer
 </pre>
 EoSELECT
