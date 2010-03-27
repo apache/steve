@@ -43,13 +43,15 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     close $fh;
 
     my $trailer = <<EOT;
+<p>
 If for some reason you are unable to fill out the form and submit it,
 then you can vote by proxy: simply send this URL to some Apache committer
 that you trust, preferably with instructions on how you wish them to
 place your vote.  <strong>DO NOT DISCLOSE THIS URL TO ANYONE ELSE, AS THEY
 WILL BE ABLE TO ACT AS YOUR PROXY AND CAST VOTES ON YOUR BEHALF IF
 YOU DO.</strong>
-
+</p>
+<p>
 For verification purposes, you will be receiving an e-mail notification
 each time your voting key is used.  Repeat votes will be considered
 a complete replacement of your prior vote.  Your vote will be
@@ -58,9 +60,11 @@ a different unique key, minimizing the chance that the contents of
 your vote will be accidentally seen by someone else while associated
 to you.  That is why the verification e-mail will only state that you
 have voted, rather than including how you voted.
-
+</p>
+<p>
 If you have any problems or questions, send an email to the vote monitors
 for this issue: <a href="mailto:$monitors">$monitors</a>.
+</p>
 EOT
 
     print "Content-Type: text/html\n\n";
@@ -280,29 +284,36 @@ $issue_content
 
 <hr />
 
+<p>
 To cast your vote, fill in the form entry for your vote below with a
 single word containing the concatenated labels of the candidates in the
 order that you wish them to be selected.  In other words, if you want to
 vote for the candidates labeled [x], [s], and [p], in that order, then
 your vote should be "xsp".
-
+</p>
+<p>
 Then click on the "Submit" button to ultimately cast your vote.
+</p>
 </pre>
 <form method="POST">
       Vote: <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
 </form>
 <a href="javascript:unhide('details');">Details</a><br />
-<pre id='details' style='display: none'>
+<div id='details' style='display: none'>
+<p>
 This election will be decided according to the Single Transferable Vote
 rules described at
 
-   <a href=http://wiki.apache.org/incubator/BoardElectionVoteCounting">http://wiki.apache.org/incubator/BoardElectionVoteCounting</a>
-   <a href="http://www.electoral-reform.org.uk/votingsystems/stvi.htm">http://www.electoral-reform.org.uk/votingsystems/stvi.htm</a>
-   <a href="http://www.cix.co.uk/~rosenstiel/stvrules/index.htm>http://www.cix.co.uk/~rosenstiel/stvrules/index.htm</a>
+<ul>
+   <li><a href=http://wiki.apache.org/incubator/BoardElectionVoteCounting">http://wiki.apache.org/incubator/BoardElectionVoteCounting</a></li>
+   <li><a href="http://www.electoral-reform.org.uk/votingsystems/stvi.htm">http://www.electoral-reform.org.uk/votingsystems/stvi.htm</a></li>
+   <li><a href="http://www.cix.co.uk/~rosenstiel/stvrules/index.htm>http://www.cix.co.uk/~rosenstiel/stvrules/index.htm</a></li>
+</ul>
 
 for an election with $num open slots.
-
+</p>
+<p>
 You have one vote.  Use your vote by entering the label of your
 first preference candidate followed by, if desired, the label of your
 second preference candidate, and so on until you are indifferent about
@@ -312,12 +323,13 @@ to place successive candidates in order.  A later preference is considered
 only if an earlier preference has a surplus above the quota required for
 election, or is excluded because of insufficient support.  Under no
 circumstances will a later preference count against an earlier preference.
-
+</p>
+<p>
 You may list as many candidates as you wish, but no more than once per
 vote (e.g., "xsxp" would be rejected).
-
+</p>
 $trailer
-</pre>
+</div>
 </body>
 </html>
 EoSTV
@@ -341,23 +353,25 @@ sub select_form {
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <pre>
 $issue_content
+</pre>
 
-</hr >
+<hr />
 
+<p>
 To cast your vote, fill in the form entry for your vote below with a
 single word containing the concatenated labels of the candidates of your
 $num choices.  In other words, if you want to vote for the candidates
 labeled [x], [s], and [p], then your vote should be "xsp" (order does
 not matter).
-</pre>
+</p>
 <form method="POST">
       Vote: <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
 </form>
 <a href="javascript:unhide('details');">Details</a><br />
-<pre id='details' style='display: none'>
+<div id='details' style='display: none'>
 $trailer
-</pre>
+</div>
 </body>
 </html>
 EoSELECT
