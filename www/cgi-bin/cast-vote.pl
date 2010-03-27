@@ -286,10 +286,10 @@ $issue_content
 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 To cast your vote, fill in the form entry for your vote below with a
-single word single word containing the concatenated labels of the candidates
-of your $num choices.  In other words, if you want to vote for the candidates
-labeled [x], [s], and [p], then your vote should be "xsp" (order does not
-matter).
+single word containing the concatenated labels of the candidates of your
+$num choices.  In other words, if you want to vote for the candidates
+labeled [x], [s], and [p], then your vote should be "xsp" (order does
+not matter).
 
 $trailer
 </pre>
