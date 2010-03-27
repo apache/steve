@@ -32,6 +32,7 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     close $fh;
 
     $issue_content = join "\n", randomize split /\n/, $issue_content;
+    $issue_content .= "\n"; # split knocks off the last newline
 
     print "Content-Type: text/html\n\n";
 
