@@ -219,7 +219,11 @@ sub yna_form {
     my ($voter, $issue_name, $issue_content, $trailer) = @_;
 
     my $html = <<EoYNA;
-
+<html>
+<head>
+<title>Vote on $issue_name</title>
+</head>
+<body>
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <pre>
 $issue_content
@@ -238,6 +242,8 @@ on the "Submit" button.
 <pre>
 $trailer
 </pre>
+</body>
+</html>
 EoYNA
 }
 
@@ -245,6 +251,11 @@ sub stv_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
 
     my $html = <<EoSTV;
+<html>
+<head>
+<title>Vote on $issue_name</title>
+</head>
+<body>
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <pre>
@@ -289,6 +300,8 @@ vote (e.g., "xsxp" would be rejected).
 
 $trailer
 </pre>
+</body>
+</html>
 EoSTV
 }
 
@@ -296,6 +309,11 @@ sub select_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
 
     my $html =  <<EoSELECT;
+<html>
+<head>
+<title>Vote on $issue_name</title>
+</head>
+<body>
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <pre>
@@ -316,5 +334,7 @@ not matter).
 <pre>
 $trailer
 </pre>
+</body>
+</html>
 EoSELECT
 }
