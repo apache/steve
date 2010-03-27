@@ -21,8 +21,11 @@ my ($group, $issue, $hash) = ($1, $2, $3);
 
 my $voter = fetch_voter($group, $issue, $hash)
     or die "Invalid URL\n";
+
 my ($type, @valid_vote) = fetch_type_info($group, $issue)
     or die "Can't identify issue type!\n";
+
+my $issue_name = "$group-$issue";
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
@@ -43,9 +46,9 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 If for some reason you are unable to fill out the form and submit it,
 then you can vote by proxy: simply send this URL to some Apache committer
 that you trust, preferably with instructions on how you wish them to
-place your vote.  DO NOT DISCLOSE THIS URL TO ANYONE ELSE, AS THEY
+place your vote.  <strong>DO NOT DISCLOSE THIS URL TO ANYONE ELSE, AS THEY
 WILL BE ABLE TO ACT AS YOUR PROXY AND CAST VOTES ON YOUR BEHALF IF
-YOU DO.
+YOU DO.</strong>
 
 For verification purposes, you will be receiving an e-mail notification
 each time your voting key is used.  Repeat votes will be considered
@@ -61,7 +64,7 @@ for this issue: <a href="mailto:$monitors">$monitors</a>.
 EOT
 
     print "Content-Type: text/html\n\n";
-    my $issue_name = "$group-$issue";
+
     if ($type eq "yna") {
         print yna_form($voter, $issue_name, $issue_content, $trailer);
     }
@@ -114,13 +117,15 @@ EOT
             die "SIG$_[0] caught\n";
         };
 
-    print $vote_tool "$group-$issue\n";
+    print $vote_tool "$issue_name\n";
     print $vote_tool "$hash\n";
     print $vote_tool "$vote\n";
 
     close $vote_tool;
     my $vote_status = $?;
     my $vote_log;
+
+    my $http_status= $vote_status == 0 ? 200 : 500;
 
     if (open my $fh, $tmpfile) {
         read $fh, $vote_log, -s $fh;
@@ -134,13 +139,14 @@ EOT
 
     print <<EoVOTE;
 Content-Type: text/html
+Status: $http_status
 
 <html>
 <head>
-<title></title>
+<title>Vote Cast on $issue_name</title>
 </head>
 <body>
-<h1>Vote results for &lt;$voter&gt; on $group-$issue...</h1>
+<h1>Vote results for &lt;$voter&gt; on $issue_name...</h1>
 <h2>Vote Tool Exit Status: $vote_status (0 means success!)</h2>
 <textarea>$vote_log</textarea>
 </body>
