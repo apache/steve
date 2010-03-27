@@ -160,7 +160,11 @@ APACHE VOTE REMINDER:
 
 Your voting key for this issue: $hashid
 
-In order to vote, use ssh to login to $host and then run
+In order to vote, either visit
+
+   https://vote.apache.org/cast/$issuename/$hashid
+
+or use ssh to login to $host and then run
 
    /home/voter/bin/vote $issuename $hashid "vote"
 
