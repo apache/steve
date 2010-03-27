@@ -147,7 +147,8 @@ EOT
 
     my $comment = $vote_status == 0
         ? "Congratulations, it appears your vote was successfully cast."
-            : "Please try again, it appears there was a problem with your vote.";
+            : qq(<a href="/cast/$issue_name/$hash">Please try again</a>,)
+                . " it appears there was a problem with your vote.";
 
     print <<EoVOTE;
 Status: $http_status
