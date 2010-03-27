@@ -138,8 +138,8 @@ EOT
     }
 
     print <<EoVOTE;
-Content-Type: text/html
 Status: $http_status
+Content-Type: text/html
 
 <html>
 <head>
