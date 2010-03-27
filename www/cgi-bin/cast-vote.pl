@@ -250,9 +250,9 @@ Then click on the "Submit" button to ultimately cast your vote.
 This election will be decided according to the Single Transferable Vote
 rules described at
 
-   http://wiki.apache.org/incubator/BoardElectionVoteCounting
-   http://www.electoral-reform.org.uk/votingsystems/stvi.htm
-   http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
+   <a href=http://wiki.apache.org/incubator/BoardElectionVoteCounting">http://wiki.apache.org/incubator/BoardElectionVoteCounting</a>
+   <a href="http://www.electoral-reform.org.uk/votingsystems/stvi.htm">http://www.electoral-reform.org.uk/votingsystems/stvi.htm</a>
+   <a href="http://www.cix.co.uk/~rosenstiel/stvrules/index.htm>http://www.cix.co.uk/~rosenstiel/stvrules/index.htm</a>
 
 for an election with $num open slots.
 
