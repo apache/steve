@@ -153,7 +153,7 @@ Content-Type: text/html
     document.getElementById(id).style.display = 'inline';
   }
 </script>
-<link rel="stylesheet" type="text/css" href="/cast_style.css">
+<link rel="stylesheet" type="text/css" href="/cast-style.css">
 </head>
 <body>
 <h1>Vote results for &lt;$voter&gt; on $issue_name...</h1>
@@ -238,7 +238,7 @@ sub yna_form {
     document.getElementById(id).style.display = 'inline';
   }
 </script>
-<link rel="stylesheet" type="text/css" href="/cast_style.css">
+<link rel="stylesheet" type="text/css" href="/cast-style.css">
 </head>
 <body>
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
@@ -278,7 +278,7 @@ sub stv_form {
     document.getElementById(id).style.display = 'inline';
   }
 </script>
-<link rel="stylesheet" type="text/css" href="/cast_style.css">
+<link rel="stylesheet" type="text/css" href="/cast-style.css">
 </head>
 <body>
 
@@ -350,7 +350,7 @@ sub select_form {
     document.getElementById(id).style.display = 'inline';
   }
 </script>
-<link rel="stylesheet" type="text/css" href="/cast_style.css">
+<link rel="stylesheet" type="text/css" href="/cast-style.css">
 </head>
 <body>
 
