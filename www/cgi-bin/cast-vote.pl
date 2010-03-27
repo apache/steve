@@ -156,7 +156,7 @@ Status: $http_status
 <a href="javascript:unhide('details');">Details</a><br />
 <textarea id='details' style='display: none'>$vote_log</textarea>
 </body>
-
+</html>
 EoVOTE
 
     exit;
@@ -362,3 +362,9 @@ $trailer
 </html>
 EoSELECT
 }
+
+
+=head1 COPYRIGHT
+
+Copyright (C) 2010  The Apache Software Foundation. All rights reserved.
+                    This code is Apache-specific and not for distribution.
