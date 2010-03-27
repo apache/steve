@@ -224,7 +224,7 @@ sub filestuff {
 sub yna_form {
     my ($voter, $issue_name, $issue_content, $trailer) = @_;
 
-    my $html = <<EoYNA;
+    return <<EoYNA;
 <html>
 <head>
 <title>Vote on $issue_name</title>
@@ -262,7 +262,7 @@ EoYNA
 sub stv_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
 
-    my $html = <<EoSTV;
+    return <<EoSTV;
 <html>
 <head>
 <title>Vote on $issue_name</title>
@@ -326,7 +326,7 @@ EoSTV
 sub select_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
 
-    my $html =  <<EoSELECT;
+    return <<EoSELECT;
 <html>
 <head>
 <title>Vote on $issue_name</title>
