@@ -82,6 +82,7 @@ EOT
     exit;
 
 } elsif ($ENV{REQUEST_METHOD} eq "POST") {
+
     my $q = CGI->new;
     my $vote = $q->param("vote");
     die "Vote undefined\n" unless defined $vote;
@@ -92,13 +93,16 @@ EOT
     }
     elsif ($type =~ /([1-9])$/) {
         my $selection = $1;
+
         if ($type =~ /^select/) {
             length($vote) <= $selection
                 or die "Too many candidates: only select up to $selection: $vote\n";
         }
+
         my $char_class = "[" . join("",@valid_vote) . "]";
         $vote =~ /^$char_class+$/
             or die "$type vote out of range (no such candidate): $vote\n";
+
         my %uniq;
         @uniq{split //, $vote} = ();
         length($vote) == keys %uniq
