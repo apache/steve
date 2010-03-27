@@ -145,7 +145,7 @@ EOT
         die "Couldn't open $tmpfile: vote status=$vote_status: $!\n";
     }
 
-    my $comment = $vote_tool == 0
+    my $comment = $vote_status == 0
         ? "Congratulations, it appears your vote was successfully cast."
             : "Please try again, it appears there was a problem with your vote.";
 
