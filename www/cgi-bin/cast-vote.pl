@@ -144,11 +144,17 @@ Status: $http_status
 <html>
 <head>
 <title>Vote Cast on $issue_name</title>
+<script type='text/javascript'>
+  function unhide(id) {
+    document.getElementById(id).style.display = 'inline';
+  }
+</script>
 </head>
 <body>
 <h1>Vote results for &lt;$voter&gt; on $issue_name...</h1>
 <h2>Vote Tool Exit Status: $vote_status (0 means success!)</h2>
-<textarea>$vote_log</textarea>
+<a href="javascript:unhide('details');">Details</a><br />
+<textarea id='details' style='display: none'>$vote_log</textarea>
 </body>
 
 EoVOTE
@@ -223,12 +229,17 @@ sub yna_form {
 <head>
 <title>Vote on $issue_name</title>
 </head>
+<script type='text/javascript'>
+  function unhide(id) {
+    document.getElementById(id).style.display = 'inline';
+  }
+</script>
 <body>
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <pre>
 $issue_content
 
-= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+<hr />
 
 To cast your vote, select yes, no, or abstain from the form below and click
 on the "Submit" button.
@@ -239,7 +250,8 @@ on the "Submit" button.
       <input type="radio" name="vote" value="abstain"> abstain<br />
       <input type="submit" name="submit" value="Submit">
 </form>
-<pre>
+<a href="javascript:unhide('details');">Details</a><br />
+<pre id='details' style='display: none'>
 $trailer
 </pre>
 </body>
@@ -254,6 +266,11 @@ sub stv_form {
 <html>
 <head>
 <title>Vote on $issue_name</title>
+<script type='text/javascript'>
+  function unhide(id) {
+    document.getElementById(id).style.display = 'inline';
+  }
+</script>
 </head>
 <body>
 
@@ -261,7 +278,7 @@ sub stv_form {
 <pre>
 $issue_content
 
-= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+<hr />
 
 To cast your vote, fill in the form entry for your vote below with a
 single word containing the concatenated labels of the candidates in the
@@ -275,7 +292,8 @@ Then click on the "Submit" button to ultimately cast your vote.
       Vote: <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
 </form>
-<pre>
+<a href="javascript:unhide('details');">Details</a><br />
+<pre id='details' style='display: none'>
 This election will be decided according to the Single Transferable Vote
 rules described at
 
@@ -312,6 +330,11 @@ sub select_form {
 <html>
 <head>
 <title>Vote on $issue_name</title>
+<script type='text/javascript'>
+  function unhide(id) {
+    document.getElementById(id).style.display = 'inline';
+  }
+</script>
 </head>
 <body>
 
@@ -319,7 +342,7 @@ sub select_form {
 <pre>
 $issue_content
 
-= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+</hr >
 
 To cast your vote, fill in the form entry for your vote below with a
 single word containing the concatenated labels of the candidates of your
@@ -331,7 +354,8 @@ not matter).
       Vote: <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
 </form>
-<pre>
+<a href="javascript:unhide('details');">Details</a><br />
+<pre id='details' style='display: none'>
 $trailer
 </pre>
 </body>
