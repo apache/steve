@@ -145,6 +145,10 @@ EOT
         die "Couldn't open $tmpfile: vote status=$vote_status: $!\n";
     }
 
+    my $comment = $vote_tool == 0
+        ? "Congratulations, it appears your vote was successfully cast."
+            : "Please try again, it appears there was a problem with your vote.";
+
     print <<EoVOTE;
 Status: $http_status
 Content-Type: text/html
@@ -162,6 +166,7 @@ Content-Type: text/html
 <body>
 <h1>Vote results for &lt;$voter&gt; on $issue_name...</h1>
 <h2>Vote Tool Exit Status: $vote_status (0 means success!)</h2>
+$comment<br />
 <a href="javascript:unhide('details');">Details</a><br />
 <textarea id='details' style='display: none'>$vote_log</textarea>
 </body>
