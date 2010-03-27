@@ -242,21 +242,28 @@ sub yna_form {
 </head>
 <body>
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
+<center>
 <textarea>
 $issue_content
 </textarea>
+</center>
+
 <hr />
 
 <p>
 To cast your vote, select yes, no, or abstain from the form below and click
 on the "Submit" button.
 </p>
+<center>
 <form method="POST">
+   <div style="text-align:left; width: 10em">
       <input type="radio" name="vote" value="yes"> yes<br />
       <input type="radio" name="vote" value="no"> no<br />
       <input type="radio" name="vote" value="abstain"> abstain<br />
       <input type="submit" name="submit" value="Submit">
+   </div>
 </form>
+</center>
 <a href="javascript:unhide('details');">Details</a><br />
 <pre id='details' style='display: none'>
 $trailer
@@ -283,9 +290,11 @@ sub stv_form {
 <body>
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
+<center>
 <textarea>
 $issue_content
 </textarea>
+</center>
 <hr />
 
 <p>
@@ -298,10 +307,12 @@ your vote should be "xsp".
 <p>
 Then click on the "Submit" button to ultimately cast your vote.
 </p>
+<center>
 <form method="POST">
       Vote: <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
 </form>
+</center>
 <a href="javascript:unhide('details');">Details</a><br />
 <div id='details' style='display: none'>
 <p>
@@ -355,10 +366,11 @@ sub select_form {
 <body>
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
+<center>
 <textarea>
 $issue_content
 </textarea>
-
+</center>
 <hr />
 
 <p>
@@ -368,10 +380,13 @@ $num choices.  In other words, if you want to vote for the candidates
 labeled [x], [s], and [p], then your vote should be "xsp" (order does
 not matter).
 </p>
+<center>
 <form method="POST">
       Vote: <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
 </form>
+</center>
+
 <a href="javascript:unhide('details');">Details</a><br />
 <div id='details' style='display: none'>
 $trailer
