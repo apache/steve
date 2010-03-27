@@ -43,6 +43,7 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     my $q = CGI->new;
     my $vote = $q->param("vote");
     die "Vote undefined\n" unless defined $vote;
+    $vote =~ tr/A-Z/a-z/;
 
     if ($type eq "yna") {
         grep $_ eq $vote, @valid_vote or die "Invalid yna vote: $vote\n";
@@ -50,7 +51,6 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     elsif ($type =~ /([1-9])$/) {
         my $selection = $1;
         if ($type =~ /^select/) {
-            $vote =~ tr/A-Z/a-z/;
             length($vote) <= $selection
                 or die "Too many candidates: only select up to $selection: $vote\n";
         }
