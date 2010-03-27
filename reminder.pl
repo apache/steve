@@ -198,8 +198,7 @@ election, or is excluded because of insufficient support.  Under no
 circumstances will a later preference count against an earlier preference.
 
 You may list as many candidates as you wish, but no more than once per
-vote (e.g., "xsxp" would be rejected).  The voter code will not attempt
-to verify that the labels chosen are within the range of candidates.
+vote (e.g., "xsxp" would be rejected).
 EndSTV
     }
     else {
@@ -207,8 +206,7 @@ EndSTV
 where "vote" must be replaced by a single word containing the
 concatenated labels of your $selector choices.  In other words,
 if you want to vote for the candidates labeled [x], [s], and [p],
-then your vote should be "xsp" (order does not matter).  The voter
-code will not attempt to verify that the labels chosen are valid.
+then your vote should be "xsp" (order does not matter).
 EndSelect
     }
 
