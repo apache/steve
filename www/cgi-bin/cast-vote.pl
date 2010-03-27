@@ -56,7 +56,7 @@ your vote will be accidentally seen by someone else while associated
 to you.  That is why the verification e-mail will only state that you
 have voted, rather than including how you voted.
 
-If you have any problems or questions, send a reply to the vote monitors
+If you have any problems or questions, send an email to the vote monitors
 for this issue: $monitors
 EOT
 
