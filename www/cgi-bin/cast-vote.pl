@@ -65,6 +65,7 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
     # vote is valid, time to execute the program...
 
+    umask 077;
     local %ENV;
 
     my $tmpfile = "$VOTE_TMPDIR/$issue.$$";
