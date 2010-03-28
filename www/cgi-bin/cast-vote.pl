@@ -261,15 +261,16 @@ $issue_content
 <hr />
 
 <p>
-To cast your vote, select yes, no, or abstain from the form below and click
+To cast your vote, select <strong>yes</strong>, <strong>no</strong>,
+or <strong>abstain</strong> from the form below and click
 on the "Submit" button.
 </p>
 <center>
 <form method="POST">
    <div style="text-align:left; width: 10em">
-      <input type="radio" name="vote" value="yes"> yes<br />
-      <input type="radio" name="vote" value="no"> no<br />
-      <input type="radio" name="vote" value="abstain"> abstain<br />
+      <input type="radio" name="vote" value="yes"> <strong>yes</strong><br />
+      <input type="radio" name="vote" value="no"> <strong>no</strong><br />
+      <input type="radio" name="vote" value="abstain"> <strong>abstain</strong><br />
       <input type="submit" name="submit" value="Submit">
    </div>
 </form>
