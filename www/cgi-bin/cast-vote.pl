@@ -67,18 +67,19 @@ for this issue: <a href="mailto:$monitors">$monitors</a>.
 </p>
 EOT
 
-    print "Content-Type: text/html\n\n";
+    my $output = "Content-Type: text/html\n\n";
 
     if ($type eq "yna") {
-        print yna_form($voter, $issue_name, $issue_content, $trailer);
+        $output .= yna_form($voter, $issue_name, $issue_content, $trailer);
     }
     elsif ($type =~ /^stv([1-9])$/) {
-        print stv_form($1, $voter, $issue_name, $issue_content, $trailer);
+        $output .= stv_form($1, $voter, $issue_name, $issue_content, $trailer);
     }
     elsif ($type =~ /^select([1-9])$/) {
-        print select_form($1, $voter, $issue_name, $issue_content, $trailer);
+        $output .= select_form($1, $voter, $issue_name, $issue_content, $trailer);
     }
 
+    print $output;
     exit;
 
 } elsif ($ENV{REQUEST_METHOD} eq "POST") {
@@ -242,7 +243,7 @@ sub filestuff {
 
 sub yna_form {
     my ($voter, $issue_name, $issue_content, $trailer) = @_;
-    my $other_issues = eval { other_issues($issue_name, $voter) };
+    my $other_issues = other_issues($issue_name, $voter);
 
     return <<EoYNA;
 <html>
@@ -292,7 +293,7 @@ EoYNA
 
 sub stv_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
-    my $other_issues = eval { other_issues($issue_name, $voter) };
+    my $other_issues = other_issues($issue_name, $voter);
 
     return <<EoSTV;
 <html>
@@ -370,7 +371,7 @@ EoSTV
 
 sub select_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
-    my $other_issues = eval { other_issues($issue_name, $voter) };
+    my $other_issues = other_issues($issue_name, $voter);
 
     return <<EoSELECT;
 <html>
