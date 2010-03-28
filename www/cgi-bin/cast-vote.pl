@@ -320,7 +320,7 @@ Then click on the "Submit" button to ultimately cast your vote.
 </p>
 <center>
 <form method="POST">
-      Vote: <input type="text" name="vote"><br />
+      <strong>Vote:</strong> <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
 </form>
 </center>
@@ -393,7 +393,7 @@ not matter).
 </p>
 <center>
 <form method="POST">
-      Vote: <input type="text" name="vote"><br />
+      <strong>Vote:</strong> <input type="text" name="vote"><br />
       <input type="submit" name="submit" value="Submit">
 </form>
 </center>
