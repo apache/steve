@@ -145,10 +145,13 @@ EOT
         die "Couldn't open $tmpfile: vote status=$vote_status: $!\n";
     }
 
-    my $comment = $vote_status == 0
-        ? "Congratulations, it appears your vote was successfully cast."
-            : qq(<a href="/cast/$issue_name/$hash">Please try again</a>,)
-                . " it appears there was a problem with your vote.";
+    my $comment = qq(<a href="/cast/$issue_name/$hash">Please try again</a>,)
+        . " it appears there was a problem with your vote.<br />";
+
+    if ($vote_status == 0) {
+        $comment = "Congratulations, it appears your vote was successfully cast.<br />";
+        $comment .= other_issues($issue_name, $voter);
+    }
 
     print <<EoVOTE;
 Status: $http_status
@@ -167,7 +170,7 @@ Content-Type: text/html
 <body>
 <h1>Vote results for &lt;$voter&gt; on $issue_name...</h1>
 <h2>Vote Tool Exit Status: $vote_status (0 means success!)</h2>
-$comment<br />
+$comment
 <a href="javascript:unhide('details');">Details</a><br />
 <textarea id='details' style='display: none'>$vote_log</textarea>
 </body>
@@ -238,6 +241,7 @@ sub filestuff {
 
 sub yna_form {
     my ($voter, $issue_name, $issue_content, $trailer) = @_;
+    my $other_issues = other_issues($issue_name, $voter);
 
     return <<EoYNA;
 <html>
@@ -279,6 +283,7 @@ on the "Submit" button.
 <pre id='details' style='display: none'>
 $trailer
 </pre>
+$other_issues
 </body>
 </html>
 EoYNA
@@ -286,6 +291,7 @@ EoYNA
 
 sub stv_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
+    my $other_issues = other_issues($issue_name, $voter);
 
     return <<EoSTV;
 <html>
@@ -355,6 +361,7 @@ vote (e.g., "xsxp" would be rejected).
 </p>
 $trailer
 </div>
+$other_issues
 </body>
 </html>
 EoSTV
@@ -362,6 +369,7 @@ EoSTV
 
 sub select_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
+    my $other_issues = other_issues($issue_name, $voter);
 
     return <<EoSELECT;
 <html>
@@ -402,9 +410,24 @@ not matter).
 <div id='details' style='display: none'>
 $trailer
 </div>
+$other_issues
 </body>
 </html>
 EoSELECT
+}
+
+sub other_issues {
+    my ($issue_name, $voter) = @_;
+    my ($group) = $issue_name =~ /^(\w+)/;
+    my $html = "<h2>Other Issues</h2>\n<center>";
+    opendir my $dir, "$VOTE_ISSUEDIR/$group"
+        or die "Can't open group dir: $!\n";
+    for (sort grep /^\d+-\w+$/ && $_ ne $issue_name, readdir $dir) {
+        my $issue_id = filestuff("$VOTE_ISSUEDIR/$group/$_");
+        my $h = get_hash_of("$issue_id:$voter");
+        $html .= qq(<a href="/cast/$group-$_/$h">$group-$_</a><br />\n);
+    }
+    return $html . "</center>";
 }
 
 
