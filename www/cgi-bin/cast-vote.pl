@@ -419,15 +419,15 @@ EoSELECT
 sub other_issues {
     my ($issue_name, $voter) = @_;
     my ($group) = $issue_name =~ /^(\w+)/;
-    my $html = "<h2>Other Issues</h2>\n<center>";
+    my $html = "<h2>Other Issues</h2>\n<ol>";
     opendir my $dir, "$VOTE_ISSUEDIR/$group"
         or die "Can't open group dir: $!\n";
     for (sort grep /^\d+-\w+$/ && "$group-$_" ne $issue_name, readdir $dir) {
         my $issue_id = filestuff("$VOTE_ISSUEDIR/$group/$_/issue");
         my $h = get_hash_of("$issue_id:$voter");
-        $html .= qq(<a href="/cast/$group-$_/$h">$group-$_</a><br />\n);
+        $html .= qq(<li><a href="/cast/$group-$_/$h">$group-$_</a></li>\n);
     }
-    return $html . "</center>";
+    return $html . "</ol>";
 }
 
 
