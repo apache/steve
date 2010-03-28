@@ -339,9 +339,12 @@ This election will be decided according to the Single Transferable Vote
 rules described at
 
 <ul>
-   <li><a href="http://wiki.apache.org/general/BoardVoting">http://wiki.apache.org/general/BoardVoting</a></li>
-   <li><a href="http://www.electoral-reform.org.uk/votingsystems/stvi.htm">http://www.electoral-reform.org.uk/votingsystems/stvi.htm</a></li>
-   <li><a href="http://www.cix.co.uk/~rosenstiel/stvrules/index.htm">http://www.cix.co.uk/~rosenstiel/stvrules/index.htm</a></li>
+   <li><a href="http://wiki.apache.org/general/BoardVoting">
+                http://wiki.apache.org/general/BoardVoting</a></li>
+   <li><a href="http://www.electoral-reform.org.uk/votingsystems/stvi.htm">
+                http://www.electoral-reform.org.uk/votingsystems/stvi.htm</a></li>
+   <li><a href="http://www.cix.co.uk/~rosenstiel/stvrules/index.htm">
+                http://www.cix.co.uk/~rosenstiel/stvrules/index.htm</a></li>
 </ul>
 
 for an election with $num open slots.
