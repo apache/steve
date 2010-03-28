@@ -242,7 +242,7 @@ sub filestuff {
 
 sub yna_form {
     my ($voter, $issue_name, $issue_content, $trailer) = @_;
-    my $other_issues = other_issues($issue_name, $voter);
+    my $other_issues = eval { other_issues($issue_name, $voter) };
 
     return <<EoYNA;
 <html>
@@ -292,7 +292,7 @@ EoYNA
 
 sub stv_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
-    my $other_issues = other_issues($issue_name, $voter);
+    my $other_issues = eval { other_issues($issue_name, $voter) };
 
     return <<EoSTV;
 <html>
@@ -370,7 +370,7 @@ EoSTV
 
 sub select_form {
     my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
-    my $other_issues = other_issues($issue_name, $voter);
+    my $other_issues = eval { other_issues($issue_name, $voter) };
 
     return <<EoSELECT;
 <html>
