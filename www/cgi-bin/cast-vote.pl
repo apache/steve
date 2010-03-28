@@ -146,14 +146,13 @@ EOT
         die "Couldn't open $tmpfile: vote status=$vote_status: $!\n";
     }
 
-    my $comment = qq(<a href="/cast/$issue_name/$hash">Please try again</a>,)
-        . " it appears there was a problem with your vote.<br />";
+    my $comment = $vote_status == 0
+        ? "Congratulations, it appears your vote was successfully cast.<br />";
+            : qq(<a href="/cast/$issue_name/$hash">Please try again</a>,)
+                . " it appears there was a problem with your vote.<br />";
 
-    if ($vote_status == 0) {
-        $comment = "Congratulations, it appears your vote was successfully cast.<br />";
-        $comment .= eval { other_issues($issue_name, $voter) };
-        die "Can't list other issues: vote status=$vote_status: $@" if $@;
-    }
+    my $other_issues = eval { other_issues($issue_name, $voter) };
+    die "Can't list other issues: vote status=$vote_status: $@" if $@;
 
     print <<EoVOTE;
 Status: $http_status
@@ -175,6 +174,7 @@ Content-Type: text/html
 $comment
 <a href="javascript:unhide('details');">Details</a><br />
 <textarea id='details' style='display: none'>$vote_log</textarea>
+$other_issues
 </body>
 </html>
 EoVOTE
