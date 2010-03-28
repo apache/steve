@@ -150,7 +150,8 @@ EOT
 
     if ($vote_status == 0) {
         $comment = "Congratulations, it appears your vote was successfully cast.<br />";
-        $comment .= other_issues($issue_name, $voter);
+        $comment .= eval { other_issues($issue_name, $voter) };
+        die "Can't list other issues: vote status=$vote_status: $@" if $@;
     }
 
     print <<EoVOTE;
