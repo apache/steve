@@ -422,7 +422,7 @@ sub other_issues {
     my $html = "<h2>Other Issues</h2>\n<center>";
     opendir my $dir, "$VOTE_ISSUEDIR/$group"
         or die "Can't open group dir: $!\n";
-    for (sort grep /^\d+-\w+$/ && $_ ne $issue_name, readdir $dir) {
+    for (sort grep /^\d+-\w+$/ && "$group-$_" ne $issue_name, readdir $dir) {
         my $issue_id = filestuff("$VOTE_ISSUEDIR/$group/$_/issue");
         my $h = get_hash_of("$issue_id:$voter");
         $html .= qq(<a href="/cast/$group-$_/$h">$group-$_</a><br />\n);
