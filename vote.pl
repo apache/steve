@@ -97,7 +97,8 @@ if (/^(\w+)$/) {
 else { die "Invalid voting key\n"; }
 
 $_ = (shift || &get_input_line("your vote on issue $issuename", 0));
-if (/^(\w+)$/) {
+# Allow vote to be quoted, i.e. allow "yes" as well as yes
+if (/^"?(\w+)"?$/) {
     $vote = $1;
 }
 else { die "Invalid vote; please read the voting instructions.\n"; }
