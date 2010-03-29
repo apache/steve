@@ -1,4 +1,8 @@
 #!/usr/bin/perl -T
+
+# cast-vote.pl - REST-compliant CGI script that invokes the vote tool
+#                on validated input.
+
 use strict;
 use warnings;
 use CGI;
