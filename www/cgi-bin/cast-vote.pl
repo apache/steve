@@ -2,6 +2,7 @@
 
 # cast-vote.pl - REST-compliant CGI script that invokes the vote tool
 #                on validated input.
+#                Assumes the url-path for this script is /cast.
 
 use strict;
 use warnings;
