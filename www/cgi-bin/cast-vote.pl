@@ -153,7 +153,7 @@ elsif ($ENV{REQUEST_METHOD} eq "POST") {
     }
 
     my $comment = $vote_status == 0
-        ? "Congratulations, it appears your vote was successfully cast.<br />";
+        ? "Congratulations, it appears your vote was successfully cast.<br />"
             : qq(<a href="/cast/$issue_name/$hash">Please try again</a>,)
                 . " it appears there was a problem with your vote.<br />";
 
