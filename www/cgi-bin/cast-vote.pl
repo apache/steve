@@ -94,6 +94,7 @@ elsif ($ENV{REQUEST_METHOD} eq "POST") {
     my $vote = $q->param("vote");
     die "Vote undefined\n" unless defined $vote;
     $vote =~ tr/A-Z/a-z/;
+    $vote =~ tr/"'//d;
 
     if ($type eq "yna") {
         grep $_ eq $vote, @valid_vote or die "Invalid yna vote: $vote\n";
