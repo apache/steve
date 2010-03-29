@@ -180,7 +180,7 @@ Content-Type: text/html
 <h2>Vote Tool Exit Status: $vote_status (0 means success!)</h2>
 $comment
 <a href="javascript:unhide('details');">Details</a><br />
-<textarea id='details' style='display: none'>$vote_log</textarea>
+<textarea id='details' style='display: none' readonly>$vote_log</textarea>
 $other_issues
 </body>
 </html>
@@ -265,7 +265,7 @@ sub yna_form {
 <body>
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <center>
-<textarea>$issue_content</textarea>
+<textarea readonly>$issue_content</textarea>
 </center>
 
 <hr />
@@ -314,7 +314,7 @@ sub stv_form {
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <center>
-<textarea>$issue_content</textarea>
+<textarea readonly>$issue_content</textarea>
 </center>
 <hr />
 
@@ -393,7 +393,7 @@ sub select_form {
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <center>
-<textarea>$issue_content</textarea>
+<textarea readonly>$issue_content</textarea>
 </center>
 <hr />
 
