@@ -425,15 +425,18 @@ sub other_issues {
     my ($issue_name, $voter) = @_;
     my ($group) = $issue_name =~ /^(\w+)/;
     my $html = "<h2>Issues in Group $group</h2>\n<ol>";
+
     opendir my $dir, "$VOTE_ISSUEDIR/$group"
         or die "Can't open group dir: $!\n";
-    for (sort grep /^\d+-\w+$/, readdir $dir) {
-        my $issue_id = filestuff("$VOTE_ISSUEDIR/$group/$_/issue");
-        my $h = get_hash_of("$issue_id:$voter");
-        $html .= "$group-$_" eq $issue_name
-            ?  qq(<li>$_</li>\n)
-                : qq(<li><a href="/cast/$group-$_/$h">$_</a></li>\n);
+
+    for my $issue (sort grep /^\d+-\w+$/, readdir $dir) {
+        my $issue_id = filestuff("$VOTE_ISSUEDIR/$group/$issue/issue");
+        my $hash = get_hash_of("$issue_id:$voter");
+        $html .= "$group-$issue" eq $issue_name
+            ?  qq(<li>$issue</li>\n)
+                : qq(<li><a href="/cast/$group-$issue/$hash">$issue</a></li>\n);
     }
+
     return $html . "</ol>";
 }
 
