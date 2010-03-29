@@ -82,7 +82,8 @@ EOT
     print $output;
     exit;
 
-} elsif ($ENV{REQUEST_METHOD} eq "POST") {
+}
+elsif ($ENV{REQUEST_METHOD} eq "POST") {
 
     my $q = CGI->new;
     my $vote = $q->param("vote");
@@ -181,7 +182,8 @@ EoVOTE
 
     exit;
 
-} else {
+}
+else {
     die "Unsupported method $ENV{REQUEST_METHOD}\n";
 }
 
@@ -191,7 +193,6 @@ sub fetch_type_info {
     chomp(my @data = <$fh>);
     return @data;
 }
-
 
 sub fetch_voter {
     my ($group, $issue, $hash) = @_;
@@ -209,7 +210,6 @@ sub get_hash_of {
     $md5->add($item);
     return $md5->hexdigest;
 }
-
 
 sub get_group {
     my ($groupfile) = @_;
@@ -439,7 +439,6 @@ sub other_issues {
 
     return $html . "</ol>";
 }
-
 
 =head1 COPYRIGHT
 
