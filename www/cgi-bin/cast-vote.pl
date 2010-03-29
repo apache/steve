@@ -288,9 +288,9 @@ on the "Submit" button.
 </form>
 </center>
 <a href="javascript:unhide('details');">Details</a><br />
-<pre id='details' style='display: none'>
+<div id='details' style='display: none'>
 $trailer
-</pre>
+</div>
 $other_issues
 </body>
 </html>
