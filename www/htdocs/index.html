@@ -1,6 +1,12 @@
 <html>
   <head>
     <title>Apache Voting Using the Vote Tool Web Interface</title>
+    <script type="text/javascript"> 
+    function cast(form) { 
+        window.location = "https://vote.apache.org/cast/" + form.issue.value + "/" + form.hash.value; 
+        return false; 
+    } 
+    </script> 
   </head>
 
   <body>
@@ -10,7 +16,19 @@ yna vs stv1-9 vs select1-9
 
     <h1>Mechanics of Casting a Vote</h1>
 
-VOTE URL:  https://vote.apache.org/cast/$group-$issue/$hash
+    <p>
+    You can access the VOTE URL directly at : https://vote.apache.org/cast/$group-$issue/$hash
+    </p>
+    <p>or use the following form</p>
+    <p> 
+        <form name="input" method="get">
+        <table>
+        <tr><td>Issue</td><td><input type="text" name="issue" /></td></tr>
+        <tr><td>Hash</td><td><input type="text" name="hash" /></td></tr>
+        <tr><td><input type="submit" onclick="return cast(this.form)" value="Vote"/></td></tr>
+        </table>
+        </form> 
+    <p>
 
     <h1>How the Web Interface to the Vote Tool Works</h1>
 
@@ -18,3 +36,4 @@ VOTE URL:  https://vote.apache.org/cast/$group-$issue/$hash
 
   </body>
 </html>
+
