@@ -14,7 +14,7 @@
 
     <ul>
         <li>yna - yes, no, abstain</li>
-        <li>stv - Single Transferrable Vote</li>
+        <li>stv1-9 - Single Transferable Vote for 1-9 Slots</li>
         <li>select1-9 - tba</li>
     </ul>
 
@@ -27,21 +27,36 @@
     <p> 
         <form name="input" method="get">
         <table>
-        <tr><td>Issue</td><td><input type="text" name="issue" /></td></tr>
-        <tr><td>Hash</td><td><input type="text" name="hash" /></td></tr>
+        <tr><td>Issue</td><td><input type="text" name="issue" style="width:32em" /></td></tr>
+        <tr><td>Hash</td><td><input type="text" name="hash" style="width:32em" /></td></tr>
         <tr><td><input type="submit" onclick="return cast(this.form)" value="Vote"/></td></tr>
         </table>
         </form> 
-    <p>
+    </p>
 
     <h1>How the Web Interface to the Vote Tool Works</h1>
-
+    <p>
+      Firstly, the URL is validated and used to determine your voter email
+      address. If you are doing a GET, the web interface will print out the
+      proper ballot for the issue.  If you are doing a POST, the web
+      interface will treat that as an attempt to vote on the issue and will
+      validate your vote before passing it along to the vote tool.
+    </p>
+    <p>
+      The web interface is REST compliant, so you can determine the outcome
+      of your cast vote by looking at the resulting HTTP response status code.
+      If the status code is 200 your vote was successfully cast; otherwise it
+      will be 500.  This means you can vote using the web interface with
+      standard web-client tools like curl if you so desire.  The POST should
+      contain a single parameter: "vote", whose corresponding value will be
+      your actual vote on the issue.
+    </p>
     <h1>Additional References</h1>
 
     <ul>
         <li>Apache Wiki: <a href="http://wiki.apache.org/general/MemberVoting">Description of Member Voting process</a></li>
         <li>Apache Wiki: <a href="http://wiki.apache.org/general/BoardVoting">Description of Board Voting process</a></li>
-        <li>Wikipedia: <a href="http://en.wikipedia.org/wiki/Single_Transferable_Vote">Single Transferrable Vote</a></li>
+        <li>Wikipedia: <a href="http://en.wikipedia.org/wiki/Single_Transferable_Vote">Single Transferable Vote</a></li>
     </ul>
     
   </body>
