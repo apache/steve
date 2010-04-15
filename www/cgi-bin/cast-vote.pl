@@ -11,7 +11,7 @@ use CGI::Carp qw/fatalsToBrowser/;
 use Digest::MD5;
 
 BEGIN {
-    push @INC, "/home/voter/bin";
+    unshift @INC, "/home/voter/bin";
 }
 use randomize;
 

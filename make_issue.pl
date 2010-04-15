@@ -20,6 +20,9 @@
 #
 # Originally created by Roy Fielding
 #
+BEGIN {
+    unshift @INC, "/home/voter/bin";
+}
 require "getopts.pl";
 use randomize;
 use ballots;

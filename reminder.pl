@@ -9,6 +9,9 @@
 # 
 # Originally created by Roy Fielding
 #
+BEGIN {
+    unshift @INC, "/home/voter/bin";
+}
 use randomize;
 
 $ECHO     = '/bin/echo';
