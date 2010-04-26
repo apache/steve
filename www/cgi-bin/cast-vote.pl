@@ -339,18 +339,7 @@ Then click on the "Submit" button to ultimately cast your vote.
 <div id='details' style='display: none'>
 <p>
 This election will be decided according to the Single Transferable Vote
-rules described at
-
-<ul>
-   <li><a href="http://wiki.apache.org/general/BoardVoting">
-                http://wiki.apache.org/general/BoardVoting</a></li>
-   <li><a href="http://www.electoral-reform.org.uk/votingsystems/stvi.htm">
-                http://www.electoral-reform.org.uk/votingsystems/stvi.htm</a></li>
-   <li><a href="http://www.cix.co.uk/~rosenstiel/stvrules/index.htm">
-                http://www.cix.co.uk/~rosenstiel/stvrules/index.htm</a></li>
-</ul>
-
-for an election with $num open slots.
+rules described <a href="/">here</a> for an election with $num open slots.
 </p>
 <p>
 You have one vote.  Use your vote by entering the label of your
