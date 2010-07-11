@@ -72,7 +72,7 @@ for this issue: <a href="mailto:$monitors">$monitors</a>.
 </p>
 EOT
 
-    my $output = "Content-Type: text/html\n\n";
+    my $output = "Content-Type: text/html; charset=utf-8\n\n";
 
     if ($type eq "yna") {
         $output .= yna_form($voter, $issue_name, $issue_content, $trailer);
@@ -164,7 +164,7 @@ elsif ($ENV{REQUEST_METHOD} eq "POST") {
 
     print <<EoVOTE;
 Status: $http_status
-Content-Type: text/html
+Content-Type: text/html; charset=utf-8
 
 <html>
 <head>
