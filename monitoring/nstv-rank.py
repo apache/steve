@@ -73,7 +73,7 @@ nominees = {
  'e':  'Doug',
  'f':  'Roy',
  'g':  'Jim',
- 'h':  'Grett',
+ 'h':  'Brett',
  'i':  'Bertrand',
  'j':  'Shane',
  'k':  'Craig',
