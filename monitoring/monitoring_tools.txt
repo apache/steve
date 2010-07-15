@@ -1,6 +1,11 @@
 Included are some helpful tools/scripts to make the
 vote monitor's job easier.
 
+When votes are closed, each monitor will get, via EMail,
+a final tally (list) of all votes cast, with hash ID and
+timestamp. The list is time-ordered as well, so the later
+cast ballot are later on in the tally (closer to the bottom).
+
 For STV, we use
 
     http://sourceforge.net/projects/votesystem
@@ -8,20 +13,39 @@ For STV, we use
 to do the actual STV determination. To get the voter tool
 results in the format it expects, we have
 
-    stv-rank.pl
+    nstv-rank.py.
+
+Simply feed as input the STV-tally email (typically used for the board
+elections) and direct the output to 'outputFile' (or whatever
+you'd like):
+
+   ./nstv-rank.py board-tally.txt > outputFile
 
 After installing Voting Systems Toolbox, you can execute the 'VoteMain'
 program as
 
     java -cp Vote-0-4.jar VoteMain -system stv-meek -seats 9 outputFile
 
-where outputFile is the output of stv-rank.pl above.
+where outputFile is the output of nstv-rank.py above.
 
 For simply YNA, we have
 
     yna-summary.pl
 
-which does the checks for you.   
+which does the checks for you.
+
+This script is smart enough that you can actually concat
+*all* the final vote tallies for yna elections into 1 big
+file, and it will pull out the issue name and the results
+for each issue.
+
+   ./yna-summary.pl all30tally.txt
+
+In all cases, both the yna-summary.pl and nstv-rank.py only honor
+the last vote count per voter.
+
+--
+Jim
 
   *) The board has decided to change the voting process on multi-choice
      votes to Single Transferable Vote (STV).  Each voter lists all the
