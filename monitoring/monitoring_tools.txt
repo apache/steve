@@ -28,6 +28,16 @@ program as
 
 where outputFile is the output of nstv-rank.py above.
 
+You can also verify using other STV tools, such as OpenSTV (from
+www.openstv.org). This uses blt format, so:
+
+   ./nstv-rank.py -b board-tally.txt > outputFile.blt
+
+and load in the blt file to OpenSTV. Please note the ASF uses Meek STV with:
+
+    Precision: 6
+    Threshold:  Droop | Dynamic | Fractional
+
 For simply YNA, we have
 
     yna-summary.pl
