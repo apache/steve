@@ -46,6 +46,7 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
         or die "Can't open monitor file: $!\n";
     read $fh, my $monitors, -s $fh;
     close $fh;
+    chomp $monitors;
 
     my $trailer = <<EOT;
 <p>
