@@ -322,7 +322,7 @@ sub stv_form {
 
 <p>
 To cast your vote, fill in the form entry for your vote below with a
-single word containing the concatenated labels of the candidates in the
+single word containing the concatenated <b>labels</b> of the candidates in the
 order that you wish them to be selected.  In other words, if you want to
 vote for the candidates labeled [x], [s], and [p], in that order, then
 your vote should be "xsp".
@@ -390,7 +390,7 @@ sub select_form {
 
 <p>
 To cast your vote, fill in the form entry for your vote below with a
-single word containing the concatenated labels of the candidates of your
+single word containing the concatenated <b>labels</b> of the candidates of your
 $num choices.  In other words, if you want to vote for the candidates
 labeled [x], [s], and [p], then your vote should be "xsp" (order does
 not matter).
