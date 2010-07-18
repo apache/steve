@@ -106,17 +106,17 @@ elsif ($ENV{REQUEST_METHOD} eq "POST") {
 
         if ($type =~ /^select/) {
             length($vote) <= $selection
-                or die "Too many candidates: only select up to $selection: $vote\n";
+                or die "Too many candidates: only select up to $selection labels: $vote\n";
         }
 
         my $char_class = "[" . join("",@valid_vote) . "]";
         $vote =~ /^$char_class+$/
-            or die "$type vote out of range (no such candidate): $vote\n";
+            or die "$type vote out of range (no such candidate label): $vote\n";
 
         my %uniq;
         @uniq{split //, $vote} = ();
         length($vote) == keys %uniq
-            or die "Duplicate candidates in $type vote: $vote\n";
+            or die "Duplicate candidate labels in $type vote: $vote\n";
     }
 
     # vote is valid, time to execute the program...
