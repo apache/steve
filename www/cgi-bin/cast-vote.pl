@@ -33,6 +33,8 @@ my ($type, @valid_vote) = fetch_type_info($group, $issue)
 
 my $issue_name = "$group-$issue";
 
+my $q = CGI->new;
+
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
     open my $fh, "$VOTE_ISSUEDIR/$group/$issue/issue"
@@ -40,6 +42,7 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
     read $fh, my $issue_content, -s $fh;
     close $fh;
 
+    $issue_content = $q->escapeHTML($issue_content);
     $issue_content = join "\n", randomize split /\n/, $issue_content;
     $issue_content .= "\n"; # split knocks off the last newline
     $issue_content =~ s#\b(https?://\S+)#"<a href=\"/redirect?uri=" . uri_escape_utf8($1) . "\">$1</a>"#ge;
@@ -93,7 +96,6 @@ EOT
 }
 elsif ($ENV{REQUEST_METHOD} eq "POST") {
 
-    my $q = CGI->new;
     my $vote = $q->param("vote");
     die "Vote undefined\n" unless defined $vote;
     $vote =~ tr/A-Z/a-z/;
