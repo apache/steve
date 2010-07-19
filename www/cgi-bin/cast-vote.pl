@@ -269,7 +269,7 @@ sub yna_form {
 <body>
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <center>
-<textarea readonly>$issue_content</textarea>
+<div id="issue"><pre>$issue_content</pre></div>
 </center>
 
 <hr />
@@ -318,7 +318,7 @@ sub stv_form {
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <center>
-<textarea readonly>$issue_content</textarea>
+<div id="issue"><pre>$issue_content</pre></div>
 </center>
 <hr />
 
@@ -386,7 +386,7 @@ sub select_form {
 
 <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
 <center>
-<textarea readonly>$issue_content</textarea>
+<div id="issue"><pre>$issue_content</pre></div>
 </center>
 <hr />
 

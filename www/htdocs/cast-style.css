@@ -2,3 +2,4 @@ textarea { width: 80%; height: 50% }
 h1 { font-size: 14pt }
 h2 { font-size: 12pt }
 body { font-size: 10pt }
+#issue {text-align:left; height:50%; width:80%; overflow:auto; border:solid 1px}
