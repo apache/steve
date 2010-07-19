@@ -42,7 +42,7 @@ if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
     $issue_content = join "\n", randomize split /\n/, $issue_content;
     $issue_content .= "\n"; # split knocks off the last newline
-    $issue_content =~ s#\b(https?://\S+)#"<a href=\"/redirect?uri=" . uri_escape_utf8($1) . "\">$1</a>#ge;
+    $issue_content =~ s#\b(https?://\S+)#"<a href=\"/redirect?uri=" . uri_escape_utf8($1) . "\">$1</a>"#ge;
 
     open $fh, "$VOTE_ISSUEDIR/$group/$issue/monitors"
         or die "Can't open monitor file: $!\n";
