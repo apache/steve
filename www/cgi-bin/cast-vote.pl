@@ -9,7 +9,7 @@ use warnings;
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
 use Digest::MD5;
-use URI::escape;
+use URI::Escape;
 
 BEGIN {
     unshift @INC, "/home/voter/bin";
