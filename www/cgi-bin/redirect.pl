@@ -1,7 +1,7 @@
 #!/usr/bin/perl -T
 
 #
-# redirect.pl - simple redirect CGI script
+# redirect.pl - simple redirect CGI script that changes the referer header
 #
 
 use strict;
@@ -11,5 +11,15 @@ use CGI qw/fatalsToBrowser/;
 
 my $q = CGI->new;
 my $uri = $q->param("uri") or die "Can't find uri param";
-print $q->redirect(-uri => $uri, -status => 301);
+print $q->header;
+print <<EOT;
+<html>
+<head>
+<meta http-equiv="refresh" content="0;url=$uri" />
+</head>
+<body>
+Redirecting to $uri ...
+</body>
+</html>
+EOT
 exit;
