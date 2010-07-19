@@ -7,7 +7,7 @@
 use strict;
 use warnings;
 use CGI;
-use CGI qw/fatalsToBrowser/;
+use CGI::Carp qw/fatalsToBrowser/;
 
 my $q = CGI->new;
 my $uri = $q->param("uri") or die "Can't find uri param";
