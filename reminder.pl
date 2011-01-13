@@ -24,7 +24,7 @@ $homedir  = '/home/voter';
 $issuedir = "$homedir/issues";
 $host     = 'people.apache.org';
 
-$ENV{'PATH'}    = '$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin';
+$ENV{'PATH'}    = "$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin";
 $ENV{'LOGNAME'} = 'voter';
 $ENV{'GROUP'}   = 'voter';
 $ENV{'USER'}    = 'voter';
