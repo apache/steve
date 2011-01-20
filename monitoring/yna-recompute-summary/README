@@ -9,3 +9,10 @@ notification mails sent by voter@ after each and every vote, and generate:
 These can then be compared with the tallies sent by the voter script upon
 close_issue.
 
+
+INSTRUCTIONS:
+
+* Unpack a maildir containing the vote mails somewhere
+* Run driver.sh with /path/to/maildir as argv[1]
+
+* driver.sh is the only one marked 'executable' in the repository.  That's intentional.
