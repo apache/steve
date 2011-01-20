@@ -1,0 +1,11 @@
+These scripts parse a maildir that contains (among other things) the
+notification mails sent by voter@ after each and every vote, and generate:
+
+* For multiple votes with the same hash, list them
+  (because no one implemented date-based choice of the most recent vote yet)
+
+* Display the results (modulo those warnings)
+
+These can then be compared with the tallies sent by the voter script upon
+close_issue.
+
