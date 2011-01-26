@@ -188,7 +188,7 @@ if (!defined($vhash2)) { die "I can't find your hashed-hash-ID\n"; }
 # ==========================================================================
 # construct vote entry
 $date  = &get_date;
-$entry = "[$date] $vhash2 $vote\n";
+$entry = "[$date] $vhash2 $vote";
 
 # ==========================================================================
 # write vote entry to tally file -- this should be atomic
@@ -206,8 +206,8 @@ do {
     $off -= $written;
 } while ($len > 0);
 
-close(TALLY);
-
+# Close TALLY later, to "keep the books balanced" (well, noisily unbalanced)
+# in case someone ^C's us just before sendmail is run.
 print "Your vote has been accepted on issue $issuename\n";
 
 # ==========================================================================
@@ -251,6 +251,11 @@ foreach $vf (@vfiles) {
     print(MAIL &hash_file($vf), ': ', $pf, "\n");
 }
 close(MAIL);
+
+# Finish log entry
+syswrite(TALLY, "\n") or die "$pname: cannot finalize tally: $!\n";
+close(TALLY);
+
 
 # ==========================================================================
 # Send mail to voter telling them that someone voted using their hash-ID
