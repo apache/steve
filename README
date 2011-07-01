@@ -1,3 +1,9 @@
+README for the Foundation voter tool
+
+Users/voters - read this: http://wiki.apache.org/general/BoardVoting
+
+Monitors/coders - read below:
+
 This directory is the source code for the Apache on-line voting tool.
 Although it is maintained in this repository, the actual working
 code has to be manually copied by the "voter" user to the
