@@ -9,7 +9,7 @@
 #   * Java 1.1 or later
 #   * Vote-0-4.jar from http://www.vdig.com/stv/download.html
 #   * cgi-spa gem ([sudo] gem install cgi-spa)
-#   * (optional) jQuery http://code.jquery.com/jquery-1.4.2.min.js
+#   * (optional) jQuery http://code.jquery.com/jquery.min.js
 #
 # Installation instructions:
 #
@@ -18,15 +18,15 @@
 #    1) Specify a path that supports cgi, like public-html or Sites.
 #    2) Modify the VOTER variable in the generated whatif.cgi to point to
 #       your copy of Vote-0-4.jar
-#    3) (optional, but recommended) download jquery-1.4.2.min.js into
+#    3) (optional, but recommended) download jquery.min.js into
 #       your installation directory.
 #
 # Execution instructions:
 #
-#   Point your web browser at your cgi script.  For best results, use a
-#   WebKit based browser, like Google Chrome.
+#   Point your web browser at your cgi script.  For best results, use
+#   Firefox 4 or a WebKit based browser, like Google Chrome.
 
-VOTES  = '../Meetings/20100713/raw_board_votes.txt' unless defined? VOTES
+VOTES  = Dir['../Meetings/*/raw_board_votes.txt'].sort.last if !defined? VOTES
 NSTV   = 'monitoring/nstv-rank.py'
 FILTER = 'vote-filter.py'
 VOTER  = '/home/rubys/tmp/Vote-0-4.jar' unless defined? VOTER
@@ -73,7 +73,7 @@ $cgi.html do |x|
        .not-elected {background: #F00}
        .none {background: yellow}
     EOF
-    x.script '', :src =>'/workbench/jquery-1.2.6.min.js'
+    x.script '', :src =>'jquery.min.js'
     x.script! <<-EOF
       $(document).ready(function() {
         // submit form using XHR; update class for labels based on results
@@ -131,8 +131,8 @@ $cgi.html do |x|
     x.form :method => 'post', :id => 'vote' do
       NOMINEES.sort_by {|letter, name| name}.each do |letter, name|
 
-        attrs = {:type=>'checkbox', :name=>letter, :id => letter}
-        unless $param[letter].empty? and $param.keys.length>0
+        attrs = {:type=>'checkbox', :name=>letter, :id=>letter}
+        if $param.keys.empty? or not $param[letter].empty?
           attrs[:checked]='checked'
         end
         x.input attrs
@@ -150,6 +150,8 @@ $cgi.html do |x|
 
     x.p do
       x.a 'Background Info', :href=>'http://wiki.apache.org/general/BoardVoting'
+      x.br
+      x.a 'Raw Votes', :href=>`svn info #{VOTES}`[/URL: (.*)/,1]
     end
   end
 end
