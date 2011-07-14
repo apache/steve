@@ -66,15 +66,14 @@
 import getopt, sys, re, string, ConfigParser
 
 def read_nominees(fname):
-    ini_fname = fname.replace('/raw_','/')
-    ini_fname = ini_fname.replace('votes.','nominations.')
-    ini_fname = ini_fname.replace('.txt','.ini')
+    idx = fname.rindex('/')
+    assert idx != -1
+    ini_fname = fname[:idx] + '/board_nominations.ini'
 
     config = ConfigParser.ConfigParser()
     config.read(ini_fname)
     try:
-        return dict([[letter,config.get('nominees',letter)] 
-	    for letter in config.options('nominees')])
+        return dict(config.items('nominees'))
     except:
         print >> sys.stderr, "Error processing input file: " + ini_fname
         print >> sys.stderr, " Goodbye!"
