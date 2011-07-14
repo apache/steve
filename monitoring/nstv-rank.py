@@ -63,24 +63,22 @@
 #   Threshold:  Droop | Dynamic | Fractional
 #
 
-import getopt, sys, re, string
+import getopt, sys, re, string, ConfigParser
 
-nominees = {
- 'a':  'Daniel',
- 'b':  'Brett',
- 'c':  'Bertrand',
- 'd':  'Doug',
- 'e':  'Noirin',
- 'f':  'Lawrence',
- 'g':  'Jim',
- 'h':  'Shane',
- 'i':  'Geir',
- 'j':  'Chris',
- 'k':  'Greg',
- 'l':  'Roy',
- 'm':  'Sam',
- }
+def read_nominees(fname):
+    ini_fname = fname.replace('/raw_','/')
+    ini_fname = ini_fname.replace('votes.','nominations.')
+    ini_fname = ini_fname.replace('.txt','.ini')
 
+    config = ConfigParser.ConfigParser()
+    config.read(ini_fname)
+    try:
+        return dict([[letter,config.get('nominees',letter)] 
+	    for letter in config.options('nominees')])
+    except:
+        print >> sys.stderr, "Error processing input file: " + ini_fname
+        print >> sys.stderr, " Goodbye!"
+        sys.exit(2)
 
 def usage(error=None):
     print >> sys.stderr, "nstv-rank.py:"
@@ -108,8 +106,8 @@ def read_votes(args):
     return votes
 
 def print_tally(args, output, blt):
-    global nominees
     votes = read_votes(args)
+    nominees = read_nominees(args[0])
     nomkeys = sorted(nominees)
     numseats = 9
 
