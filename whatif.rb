@@ -57,7 +57,7 @@ def filtered_election(seats, candidates)
   votes.unlink
   output.scan(/.*elected$/).inject(Hash.new('none')) do |results, line|
     name, status = line.scan(/^(.*?)\s+(n?o?t?\s?elected)$/).flatten
-    results.merge({name.gsub(/\s/,'') => status.gsub(/\s/, '-')})
+    results.merge({name[0..8].gsub(/\W/,'') => status.gsub(/\s/, '-')})
   end
 end
 
@@ -168,7 +168,7 @@ $cgi.html do |x|
         end
         x.input attrs
 
-        id = name.gsub(/\s/,'')
+        id = name[0..8].gsub(/\W/,'')
         x.label name, :id=>id, :for=>letter, :class=>results[id] 
         x.br
       end
