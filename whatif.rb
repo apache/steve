@@ -7,7 +7,8 @@
 #   * Python 2.6.x
 #   * Ruby 1.8.x
 #   * Java 1.1 or later
-#   * Vote-0-4.jar from http://www.vdig.com/stv/download.html
+#   * Vote-0-4.jar from the vote-0-4.zip found at:
+#       http://sourceforge.net/projects/votesystem/files/votesystem/0.4/
 #   * cgi-spa gem ([sudo] gem install cgi-spa)
 #   * (optional) jQuery http://code.jquery.com/jquery.min.js
 #
