@@ -26,6 +26,7 @@
 #
 #   Point your web browser at your cgi script.  For best results, use
 #   Firefox 4 or a WebKit based browser, like Google Chrome.
+$SAFE = 1
 
 MEETINGS  = File.expand_path('../Meetings') unless defined? MEETINGS
 NSTV   = 'monitoring/nstv-rank.py'
@@ -37,20 +38,24 @@ require 'cgi-spa'
 require 'tempfile'
 
 date = $param.delete('date');
+all_votes = Dir["#{MEETINGS}/*/raw_board_votes.txt"]
 if date
   $raw_votes = "#{MEETINGS}/#{date}/raw_board_votes.txt"
 else
-  $raw_votes = Dir["#{MEETINGS}/*/raw_board_votes.txt"].sort.last
+  $raw_votes = all_votes.sort.last
 end
+$raw_votes.untaint if all_votes.include? $raw_votes
 
 def ini(vote)
   vote.sub('/raw_','/').sub('votes.','nominations.').sub('.txt','.ini')
 end
 
 def filtered_election(seats, candidates)
+  list = candidates.join(' ')
+  list.untaint if list =~ /^\w( \w)*$/
+
   votes = Tempfile.new('votes')
-  votes << `python #{NSTV} #{$raw_votes} |
-            python #{FILTER} #{candidates.join(' ')}`
+  votes << `python #{NSTV} #{$raw_votes} | python #{FILTER} #{list}`
   votes.flush
   output = `java -cp  #{VOTER} VoteMain -system stv-meek \
             -seats #{seats} #{votes.path}`
@@ -63,6 +68,7 @@ end
 
 # XMLHttpRequest (AJAX)
 $cgi.json do
+  $param.seats.untaint_if_match /^\d+$/
   filtered_election($param.delete('seats'), $param.keys)
 end
 
@@ -131,7 +137,7 @@ $cgi.html do |x|
     EOF
   end
 
-  x.body do
+  x.body? do
     x.h1 'STV Explorer'
     
     $nominees = Hash[*File.read(ini($raw_votes)).scan(/^(\w):\s*(.*)/).flatten]
@@ -152,7 +158,7 @@ $cgi.html do |x|
     x.form :method => 'post', :id => 'vote' do
       x.select :name => 'date' do
         Dir["#{MEETINGS}/*/raw_board_votes.txt"].sort.reverse.each do |votes|
-	  next unless File.exist? ini(votes)
+	  next unless File.exist? ini(votes.untaint)
 	  date = votes[/(\d+)\/raw_board_votes.txt$/,1]
           display = date.sub(/(\d{4})(\d\d)(\d\d)/,'\1-\2-\3')
           attrs = {:value => date}
