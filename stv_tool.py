@@ -108,6 +108,13 @@ class Candidate(object):
     assert quota is not None
     self.weight = (self.weight * quota) / self.vote
 
+  def __cmp__(self, other):
+    if self.ahead < other.ahead:
+      return -1
+    if self.ahead == other.ahead:
+      return cmp(self.vote, other.vote)
+    return 1
+
 
 def iterate_one(quota, votes, candidates, num_seats):
   # assume that: count(ELECTED) < num_seats
@@ -166,18 +173,10 @@ def calc_totals(votes, candidates):
 
 
 def calc_aheads(candidates):
-  def compare_candidates(c1, c2):
-    if c1.ahead < c2.ahead:
-      return -1
-    if c1.ahead == c2.ahead:
-      return cmp(c1.vote, c2.vote)
-    return 1
-
-  c_sorted = sorted(candidates, compare_candidates)
+  c_sorted = sorted(candidates)
   last = 0
   for i in range(1, len(c_sorted)+1):
-    if i == len(c_sorted) \
-          or compare_candidates(c_sorted[last], c_sorted[i]) != 0:
+    if i == len(c_sorted) or c_sorted[last] != c_sorted[i]:
       for c in c_sorted[last:i]:
         c.ahead = (i - 1) + last
       last = i
