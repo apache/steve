@@ -49,43 +49,73 @@ def load_votes(fname):
 
 
 def run_vote(names, votes, num_seats):
-  num_cand = len(names)
-  randset = generate_random(num_cand)
+  candidates = CandidateList(names)
 
-  remap = { }  # name -> Candidate
-  candidates = [ ]
-  for n, r in zip(names, randset):
-    c = Candidate(n, r, num_cand-1)
-    remap[n] = c
-    candidates.append(c)
+  # name -> Candidate
+  remap = dict((c.name, c) for c in candidates.l)
 
-  for choices in votes.values():
-    for i in range(len(choices)):
-      choices[i] = remap[choices[i]]
+  # Turn VOTES into a list of ordered-lists of Candidate objects
+  votes = [[remap[n] for n in choices] for choices in votes.values()]
 
-  if count_state(candidates, ELECTED + HOPEFUL) <= num_seats:
+  if candidates.count(ELECTED + HOPEFUL) <= num_seats:
     dbg('All candidates elected')
-    change_state(candidates, HOPEFUL, ELECTED)
+    candidates.change_state(HOPEFUL, ELECTED)
     return
   if num_seats <= 0:
-    change_state(candidates, HOPEFUL, ELIMINATED)
+    candidates.change_state(HOPEFUL, ELIMINATED)
     return
 
   quota = None  # not used on first pass
   iteration = 1
-  while count_state(candidates, ELECTED) < num_seats:
+  while candidates.count(ELECTED) < num_seats:
     dbg('Iteration %d', iteration)
     iteration += 1
     quota = iterate_one(quota, votes, candidates, num_seats)
-    reverse_random(candidates)
+    candidates.reverse_random()
 
   dbg('All seats full')
-  change_state(candidates, HOPEFUL, ELIMINATED)
+  candidates.change_state(HOPEFUL, ELIMINATED)
 
-  for c in candidates:
+  for c in candidates.l:
     print '%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not ')
 
-  
+
+class CandidateList(object):
+  def __init__(self, names):
+    num_cand = len(names)
+    randset = generate_random(num_cand)
+
+    self.l = [ ]
+    for n, r in zip(names, randset):
+      c = Candidate(n, r, num_cand-1)
+      self.l.append(c)
+
+  def count(self, state):
+    count = 0
+    for c in self.l:
+      if (c.status & state) != 0:
+        count += 1
+    return count
+
+  def change_state(self, from_state, to_state):
+    any_changed = False
+    for c in self.l:
+      if (c.status & from_state) != 0:
+        c.status = to_state
+        if to_state == ELECTED:
+          c.elect()
+        elif to_state == ELIMINATED:
+          c.eliminate()
+        any_changed = True
+    return any_changed
+
+  def reverse_random(self):
+    # Flip the values to create a different ordering among candidates. Note
+    # that this will alternate the domain between [0.0, 1.0) and (0.0, 1.0]
+    for c in self.l:
+      c.rand = 1.0 - c.rand
+
+
 class Candidate(object):
   def __init__(self, name, rand, ahead):
     self.name = name
@@ -118,36 +148,35 @@ class Candidate(object):
 
 def iterate_one(quota, votes, candidates, num_seats):
   # assume that: count(ELECTED) < num_seats
-  if count_state(candidates, ELECTED + HOPEFUL) <= num_seats:
+  if candidates.count(ELECTED + HOPEFUL) <= num_seats:
     dbg('All remaining candidates elected')
-    change_state(HOPEFUL, ELECTED)
+    candidates.change_state(HOPEFUL, ELECTED)
     return None
 
   changed, new_quota, surplus = converge_one(quota, votes, candidates,
                                              num_seats)
   if not changed and surplus < ERROR_MARGIN:
     dbg('Remove Lowest (forced)')
-    exclude_lowest(candidates)
+    exclude_lowest(candidates.l)
   return new_quota
 
 
 def converge_one(quota, votes, candidates, num_seats):
-  for c in candidates:
+  for c in candidates.l:
     if c.status == ELECTED:
       c.adjust_weight(quota)
   return recalc(votes, candidates, num_seats)
 
 
 def recalc(votes, candidates, num_seats):
-  any_changed = False
-  excess = calc_totals(votes, candidates)
-  calc_aheads(candidates)
+  excess = calc_totals(votes, candidates.l)
+  calc_aheads(candidates.l)
   ### if debug:
-  display_tables(excess, candidates)
+  display_tables(excess, candidates.l)
   quota = calc_quota(len(votes), excess, num_seats)
-  elect(quota, candidates, num_seats)
-  surplus = calc_surplus(quota, candidates)
-  any_changed |= try_remove_lowest(surplus, candidates)
+  any_changed = elect(quota, candidates, num_seats)
+  surplus = calc_surplus(quota, candidates.l)
+  any_changed |= try_remove_lowest(surplus, candidates.l)
   return any_changed, quota, surplus
 
 
@@ -155,7 +184,7 @@ def calc_totals(votes, candidates):
   for c in candidates:
     c.vote = 0.0
   excess = 0.0
-  for choices in votes.values():
+  for choices in votes:
     vote = 1.0
     for c in choices:
       if c.status == HOPEFUL:
@@ -194,20 +223,20 @@ def calc_quota(num_voters, excess, num_seats):
 
 
 def elect(quota, candidates, num_seats):
-  for c in candidates:
+  for c in candidates.l:
     if c.status == HOPEFUL and c.vote >= quota:
       c.status = ALMOST
 
   any_changed = False
 
-  while count_state(candidates, ELECTED + ALMOST) > num_seats:
+  while candidates.count(ELECTED + ALMOST) > num_seats:
     dbg('Vote tiebreaker! voters: %d  seats: %d',
-        count_state(ELECTED + ALMOST), num_seats)
-    change_state(candidates, HOPEFUL, ELIMINATED)
-    exclude_lowest(candidates)
+        candidates.count(ELECTED + ALMOST), num_seats)
+    candidates.change_state(HOPEFUL, ELIMINATED)
+    exclude_lowest(candidates.l)
     any_changed = True  # we changed the candidates via exclude_lowest()
 
-  any_changed |= change_state(candidates, ALMOST, ELECTED)
+  any_changed |= candidates.change_state(ALMOST, ELECTED)
   return any_changed
 
 
@@ -241,6 +270,7 @@ def try_remove_lowest(surplus, candidates):
     return True
   return False
 
+
 def exclude_lowest(candidates):
   ### use: ahead = len(candidates) ??
   ahead = 1000000000.  # greater than any possible candidate.ahead
@@ -268,27 +298,6 @@ def exclude_lowest(candidates):
   which.eliminate()
 
 
-def count_state(candidates, state):
-  count = 0
-  for c in candidates:
-    if (c.status & state) != 0:
-      count += 1
-  return count
-
-
-def change_state(candidates, from_state, to_state):
-  any_changed = False
-  for c in candidates:
-    if (c.status & from_state) != 0:
-      c.status = to_state
-      if to_state == ELECTED:
-        c.elect()
-      elif to_state == ELIMINATED:
-        c.eliminate()
-      any_changed = True
-  return any_changed
-
-
 def generate_random(count):
   random.seed(0)  ### choose a seed based on input?
   while True:
@@ -302,13 +311,6 @@ def generate_random(count):
     else:
       # The loop finished without breaking out
       return values
-
-
-def reverse_random(candidates):
-  # Flip the values to create a different ordering among candidates. Note
-  # that this will alternate the domain between [0.0, 1.0) and (0.0, 1.0]
-  for c in candidates:
-    c.rand = 1.0 - c.rand
 
 
 def dbg(fmt, *args):
