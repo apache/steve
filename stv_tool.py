@@ -76,8 +76,7 @@ def run_vote(names, votes, num_seats):
   dbg('All seats full')
   candidates.change_state(HOPEFUL, ELIMINATED)
 
-  for c in candidates.l:
-    print '%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not ')
+  candidates.print_results()
 
 
 class CandidateList(object):
@@ -114,6 +113,23 @@ class CandidateList(object):
     # that this will alternate the domain between [0.0, 1.0) and (0.0, 1.0]
     for c in self.l:
       c.rand = 1.0 - c.rand
+
+  def adjust_weights(self, quota):
+    for c in self.l:
+      if c.status == ELECTED:
+        c.adjust_weight(quota)
+
+  def print_results(self):
+    for c in self.l:
+      print '%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not ')
+
+  def dbg_display_tables(self, excess):
+    total = excess
+    for c in self.l:
+      dbg('%-20s %15.9f %15.9f', c.name, c.weight, c.vote)
+      total += c.vote
+    dbg('%-20s %15s %15.9f', 'Non-transferable', ' ', excess)
+    dbg('%-20s %15s %15.9f', 'Total', ' ', total)
 
 
 class Candidate(object):
@@ -153,35 +169,28 @@ def iterate_one(quota, votes, candidates, num_seats):
     candidates.change_state(HOPEFUL, ELECTED)
     return None
 
-  changed, new_quota, surplus = converge_one(quota, votes, candidates,
-                                             num_seats)
+  candidates.adjust_weights(quota)
+
+  changed, new_quota, surplus = recalc(votes, candidates, num_seats)
   if not changed and surplus < ERROR_MARGIN:
     dbg('Remove Lowest (forced)')
     exclude_lowest(candidates.l)
   return new_quota
 
 
-def converge_one(quota, votes, candidates, num_seats):
-  for c in candidates.l:
-    if c.status == ELECTED:
-      c.adjust_weight(quota)
-  return recalc(votes, candidates, num_seats)
-
-
 def recalc(votes, candidates, num_seats):
-  excess = calc_totals(votes, candidates.l)
-  calc_aheads(candidates.l)
-  ### if debug:
-  display_tables(excess, candidates.l)
+  excess = calc_totals(votes, candidates)
+  calc_aheads(candidates)
+  candidates.dbg_display_tables(excess)
   quota = calc_quota(len(votes), excess, num_seats)
   any_changed = elect(quota, candidates, num_seats)
-  surplus = calc_surplus(quota, candidates.l)
-  any_changed |= try_remove_lowest(surplus, candidates.l)
+  surplus = calc_surplus(quota, candidates)
+  any_changed |= try_remove_lowest(surplus, candidates)
   return any_changed, quota, surplus
 
 
 def calc_totals(votes, candidates):
-  for c in candidates:
+  for c in candidates.l:
     c.vote = 0.0
   excess = 0.0
   for choices in votes:
@@ -202,7 +211,7 @@ def calc_totals(votes, candidates):
 
 
 def calc_aheads(candidates):
-  c_sorted = sorted(candidates)
+  c_sorted = sorted(candidates.l)
   last = 0
   for i in range(1, len(c_sorted)+1):
     if i == len(c_sorted) or c_sorted[last] != c_sorted[i]:
@@ -242,7 +251,7 @@ def elect(quota, candidates, num_seats):
 
 def calc_surplus(quota, candidates):
   surplus = 0.0
-  for c in candidates:
+  for c in candidates.l:
     if c.status == ELECTED:
       surplus += c.vote - quota
   dbg('Total Surplus = %.9f', surplus)
@@ -253,11 +262,11 @@ def try_remove_lowest(surplus, candidates):
   lowest1 = 1e18
   lowest2 = 1e18
   which = None
-  for c in candidates:
+  for c in candidates.l:
     if c.status == HOPEFUL and c.vote < lowest1:
       lowest1 = c.vote
       which = c
-  for c in candidates:
+  for c in candidates.l:
     if c != which and c.status != ELIMINATED and c.vote < lowest2:
       lowest2 = c.vote
 
@@ -315,15 +324,6 @@ def generate_random(count):
 
 def dbg(fmt, *args):
   print fmt % args
-
-
-def display_tables(excess, candidates):
-  total = excess
-  for c in candidates:
-    dbg('%-20s %15.9f %15.9f', c.name, c.weight, c.vote)
-    total += c.vote
-  dbg('%-20s %15s %15.9f', 'Non-transferable', ' ', excess)
-  dbg('%-20s %15s %15.9f', 'Total', ' ', total)
 
 
 if __name__ == '__main__':
