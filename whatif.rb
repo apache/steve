@@ -1,15 +1,15 @@
-#!/usr/bin/ruby
+# STV Explorer using Historical data from ASF Board Votes
 #
 # Prereqs:
 #
 #   * svn checkout of foundation:voter and foundation:Meetings
 #   * Web server with the ability to run cgi (Apache httpd recommended)
 #   * Python 2.6.x
-#   * Ruby 1.8.x
+#   * Ruby 1.9.x
 #   * Java 1.1 or later
 #   * Vote-0-4.jar from the vote-0-4.zip found at:
 #       http://sourceforge.net/projects/votesystem/files/votesystem/0.4/
-#   * cgi-spa gem ([sudo] gem install cgi-spa)
+#   * wunderbar gem ([sudo] gem install wunderbar)
 #   * (optional) jQuery http://code.jquery.com/jquery.min.js
 #
 # Installation instructions:
@@ -26,25 +26,25 @@
 #
 #   Point your web browser at your cgi script.  For best results, use
 #   Firefox 4 or a WebKit based browser, like Google Chrome.
-$SAFE = 1
 
-MEETINGS  = File.expand_path('../Meetings') unless defined? MEETINGS
+MEETINGS  = File.expand_path('../Meetings').untaint unless defined? MEETINGS
 NSTV   = 'monitoring/nstv-rank.py'
 FILTER = 'vote-filter.py'
 VOTER  = '/home/rubys/tmp/Vote-0-4.jar' unless defined? VOTER
 
-require 'rubygems'
-require 'cgi-spa'
+require 'wunderbar'
 require 'tempfile'
 
-date = $param.delete('date');
-all_votes = Dir["#{MEETINGS}/*/raw_board_votes.txt"]
-if date
-  $raw_votes = "#{MEETINGS}/#{date}/raw_board_votes.txt"
-else
-  $raw_votes = all_votes.sort.last
+def raw_votes(date)
+  all_votes = Dir["#{MEETINGS}/*/raw_board_votes.txt"]
+  if date
+    result = "#{MEETINGS}/#{date}/raw_board_votes.txt"
+  else
+    result = all_votes.sort.last
+  end
+  result.untaint if all_votes.include? result
+  result
 end
-$raw_votes.untaint if all_votes.include? $raw_votes
 
 def ini(vote)
   vote.sub('/raw_','/').sub('votes.','nominations.').sub('.txt','.ini')
@@ -53,13 +53,13 @@ end
 def filtered_election(seats, candidates)
   list = candidates.join(' ')
   list.untaint if list =~ /^\w( \w)*$/
+  seats.untaint if seats =~ /^\d+$/
 
-  votes = Tempfile.new('votes')
-  votes << `python #{NSTV} #{$raw_votes} | python #{FILTER} #{list}`
+  votes = Tempfile.new('votes', Dir.tmpdir.untaint)
+  votes << `python #{NSTV} #{raw_votes(@date)} | python #{FILTER} #{list}`
   votes.flush
   output = `java -cp  #{VOTER} VoteMain -system stv-meek \
             -seats #{seats} #{votes.path}`
-  votes.unlink
   output.scan(/.*elected$/).inject(Hash.new('none')) do |results, line|
     name, status = line.scan(/^(.*?)\s+(n?o?t?\s?elected)$/).flatten
     results.merge({name[0..8].gsub(/\W/,'') => status.gsub(/\s/, '-')})
@@ -67,128 +67,112 @@ def filtered_election(seats, candidates)
 end
 
 # XMLHttpRequest (AJAX)
-$cgi.json do
-  $param.seats.untaint_if_match /^\d+$/
-  filtered_election($param.delete('seats'), $param.keys)
+_json do
+  _! filtered_election(@seats, params.keys.select {|key| key =~ /^\w$/})
 end
 
 # main output
-$cgi.html do |x|
-  x.header do
-    x.title 'STV Explorer'
-    x.style! <<-EOF
-       body {background-color: #F9F7ED}
-       h1 {font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
-       h1 {font-size: 2em; font-weight: normal}
-       label {-webkit-transition: background-color 1s}
-       label {-moz-transition: background-color 1s} /* firefox 4 */
-       label {display: inline-block; min-width: 5em; font-size: x-large}
-       label[for=seats] {display: inline; line-height: 250%}
+_html do
+  _head_ do
+    _title 'STV Explorer'
+    _style! %{
+       h1 {font-family: sans-serif; font-weight: normal}
+       select {display: block; margin: 0 0 1em 1em; font-size: 140%}
+       label div {display: inline-block; min-width: 5em; font-size: x-large}
+       label div {-webkit-transition: background-color 1s}
+       label div {-moz-transition: background-color 1s}
+       label {float: left; clear: both}
+       label[for=seats] {display: inline; line-height: 500%}
        p, input[type=checkbox] {margin-left: 1em}
+       p, input[type=submit] {display: block; clear: both}
        .elected {background: #0F0}
        .not-elected {background: #F00}
        .none {background: yellow}
-       select {display: block; margin: 0 0 1em 1em; font-size: 140%}
-    EOF
-    x.script '', :src =>'jquery.min.js'
-    x.script! <<-EOF
-      $(document).ready(function() {
-        // submit form using XHR; update class for labels based on results
-        var refresh = function() {
-          $.getJSON('', $('#vote').serialize(), function(results) {
-            for (var name in results) {
-              $('#'+name).attr('class', results[name]);
-            }
-          });
-          return false;
-        }
-
-        // On checkbox click, remove class from associated label & refresh
-        $(':checkbox').click(function() {
-          $('label[for='+$(this).attr('id')+']').attr('class', 'none');
-          refresh();
-        });
-
-        // On checkbox click, remove class from associated label & refresh
-        $('select').change(function() {
-          $('input[value=submit]').attr('name', 'reset');
-          $('input[value=submit]').click();
-        });
-
-        // If JS is enabled, we don't need a submit button
-        $('input[type=submit]').hide();
-
-        // Add up and down arrows and refresh on change
-        var seats = $('#seats');
-        seats.keyup(function() {return refresh()});
-        seats.before($('<input type="submit" value="&#x21D3;"/>').click(
-          function() {
-            if (seats.val()>1) {seats.val(seats.val()-1);}
-            return refresh();
-          }
-        ));
-        seats.after($('<input type="submit" value="&#x21D1;"/>').click(
-          function() {
-            if (seats.val()<$(':checkbox').length) {seats.val(seats.val()-0+1);}
-            return refresh();
-          }
-        ));
-      });
-    EOF
+    }
+    _script src: 'jquery.min.js'
   end
 
-  x.body? do
-    x.h1 'STV Explorer'
-    
-    $nominees = Hash[*File.read(ini($raw_votes)).scan(/^(\w):\s*(.*)/).flatten]
+  _body? do
+    _h1_ 'STV Explorer'
 
-    if $HTTP_POST and not $param.delete('reset')
-      # if JS is disabled or jQuery not found, fall back to simple forms.
-      seats   = $param.delete('seats')
-      $param.delete('submit')
-      results = filtered_election(seats, $param.keys)
-    else
-      # Initial display
-      seats   = '9'
-      results = filtered_election(seats, $nominees.keys)
-      $param.clear
-    end
+    nominees = Hash[File.read(ini(raw_votes(@date))).scan(/^(\w):\s*(.*)/)]
+    candidates = params.keys & nominees.keys
+    candidates = nominees.keys if candidates.empty? or @reset
+
+    @seats ||= '9'
+    results = filtered_election(@seats, candidates)
 
     # form of nominees and seats
-    x.form :method => 'post', :id => 'vote' do
-      x.select :name => 'date' do
+    _form method: 'post', id: 'vote' do
+      _select name: 'date' do
         Dir["#{MEETINGS}/*/raw_board_votes.txt"].sort.reverse.each do |votes|
 	  next unless File.exist? ini(votes.untaint)
 	  date = votes[/(\d+)\/raw_board_votes.txt$/,1]
           display = date.sub(/(\d{4})(\d\d)(\d\d)/,'\1-\2-\3')
-          attrs = {:value => date}
-	  attrs[:selected] = 'selected' if votes == $raw_votes
-          x.option display, attrs
+          _option display, value: date, selected: (votes == raw_votes(@date))
 	end
       end
 
-      $nominees.sort_by {|letter, name| name}.each do |letter, name|
-        attrs = {:type=>'checkbox', :name=>letter, :id=>letter}
-        if $param.keys.empty? or not $param[letter].empty?
-          attrs[:checked]='checked'
-        end
-        x.input attrs
-
+      nominees.sort_by {|letter, name| name}.each do |letter, name|
         id = name[0..8].gsub(/\W/,'')
-        x.label name, :id=>id, :for=>letter, :class=>results[id] 
-        x.br
+        _label_ id: id do
+          _input type: 'checkbox', name: letter, id: letter, 
+            checked: candidates.include?(letter)
+
+          _div name, class: results[id]
+        end
       end
 
-      x.label 'seats:', :for=>'seats'
-      x.input :name=>'seats', :id=>'seats', :value=>seats, :size=>1
-      x.br
+      _label_ for: 'seats' do
+        _span 'seats:'
+        _input name: 'seats', id: 'seats', value: @seats, size: 1
+      end
 
-      x.input :type=>'submit', :value=>'submit', :name => 'submit'
+      _input type: 'submit', value: 'submit', name: 'submit'
     end
 
-    x.p do
-      x.a 'Background Info', :href=>'http://wiki.apache.org/general/BoardVoting'
+    _p_ do
+      _a 'Background Info', href: 'http://wiki.apache.org/general/BoardVoting'
     end
+
+    _script %{
+      // submit form using XHR; update class for labels based on results
+      var refresh = function() {
+        $.getJSON('', $('#vote').serialize(), function(results) {
+          for (var name in results) {
+            $('#'+name+' div').attr('class', results[name]);
+          }
+        });
+        return false;
+      }
+
+      // On checkbox click, remove class from associated label & refresh
+      $(':checkbox').click(function() {
+        $('div', $(this).parent()).attr('class', 'none');
+        refresh();
+      });
+
+      // reset whenever the date changes
+      $('select').change(function() {
+        $('input[value=submit]').attr('name', 'reset');
+        $('input[value=submit]').click();
+      });
+
+      // If JS is enabled, we don't need a submit button
+      $('input[type=submit]').hide();
+
+      // Add up and down arrows and refresh on change
+      var seats = $('#seats');
+      seats.keyup(function() {return refresh()});
+      seats.before($('<button>&#x21D3;</button>').click(function() {
+        if (seats.val()>1) {seats.val(seats.val()-1);}
+        return refresh();
+      }));
+      seats.after($('<button>&#x21D1;</button>').click(function() {
+        if (seats.val()<$(':checkbox').length) {seats.val(seats.val()-0+1);}
+        return refresh();
+      }));
+    }
   end
 end
 
