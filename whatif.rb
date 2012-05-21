@@ -78,7 +78,7 @@ _html do
     _style! %{
        h1 {font-family: sans-serif; font-weight: normal}
        select {display: block; margin: 0 0 1em 1em; font-size: 140%}
-       label div {display: inline-block; min-width: 5em; font-size: x-large}
+       label div {display: inline-block; min-width: 12em; font-size: x-large}
        label div {-webkit-transition: background-color 1s}
        label div {-moz-transition: background-color 1s}
        label {float: left; clear: both}
