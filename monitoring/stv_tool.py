@@ -46,6 +46,8 @@ RE_VOTE = re.compile(r'\[.{19}\]\s+'
                      r'(?P<votes>[a-z]{1,26})',
                      re.I)
 
+VERBOSE = False
+
 
 def load_votes(fname):
   lines = open(fname).readlines()
@@ -371,19 +373,23 @@ def generate_random(count):
 
 
 def dbg(fmt, *args):
-  print fmt % args
+  if VERBOSE:
+    print fmt % args
 
 
 def usage():
-  print 'USAGE: %s RAW_VOTES_FILE' % (os.path.basename(sys.argv[0]),)
+  print 'USAGE: %s [-v] RAW_VOTES_FILE' % (os.path.basename(sys.argv[0]),)
   sys.exit(1)
 
 
 if __name__ == '__main__':
-  if len(sys.argv) != 2:
+  if len(sys.argv) < 2 or len(sys.argv) > 3:
     usage()
 
-  votefile = sys.argv[1]
+  if sys.argv[1] == '-v':
+    VERBOSE = True
+
+  votefile = sys.argv[-1]
   if not os.path.exists(votefile):
     usage()
 
