@@ -63,21 +63,25 @@
 #   Threshold:  Droop | Dynamic | Fractional
 #
 
-import getopt, sys, re, string, ConfigParser
+import getopt
+import os.path
+import sys
+import re
+import string
+import ConfigParser
 
-def read_nominees(fname):
-    idx = fname.rindex('/')
-    assert idx != -1
-    ini_fname = fname[:idx] + '/board_nominations.ini'
+def read_nominees(votefile):
+  ini_fname = os.path.join(os.path.dirname(votefile),
+                           'board_nominations.ini')
 
-    config = ConfigParser.ConfigParser()
-    config.read(ini_fname)
-    try:
-        return dict(config.items('nominees'))
-    except:
-        print >> sys.stderr, "Error processing input file: " + ini_fname
-        print >> sys.stderr, " Goodbye!"
-        sys.exit(2)
+  config = ConfigParser.ConfigParser()
+  config.read(ini_fname)
+  try:
+    return dict(config.items('nominees'))
+  except:
+    print >> sys.stderr, "Error processing input file: " + ini_fname
+    print >> sys.stderr, " Goodbye!"
+    sys.exit(2)
 
 def usage(error=None):
     print >> sys.stderr, "nstv-rank.py:"
