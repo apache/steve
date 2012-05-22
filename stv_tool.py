@@ -21,9 +21,17 @@
 #
 # The algorithms in this file are lifted from:
 #   http://votesystem.cvs.sourceforge.net/viewvc/votesystem/votesystem/src/VoteMain.java?view=markup
+# ... there is possibly some room for a "more Pythonic" approach. The
+# conversion below was done in a straight-forward manner to ensure a
+# true and correct algorithm conversion. The debug output precisely
+# matches the output of VoteMain.java.
 #
 
+import sys
+import os.path
 import random
+import ConfigParser
+import re
 
 ELECTED = 1
 HOPEFUL = 2
@@ -33,19 +41,59 @@ ALMOST = 8
 ERROR_MARGIN = 0.00001
 BILLIONTH = 0.000000001
 
+RE_VOTE = re.compile(r'\[.{19}\]\s+'
+                     r'(?P<voterhash>[\w\d]{32})\s+'
+                     r'(?P<votes>[a-z]{1,26})',
+                     re.I)
+
 
 def load_votes(fname):
   lines = open(fname).readlines()
-  names = [s.strip() for s in lines[1].strip().split(',')][1:]
-  labels = [s.strip() for s in lines[2].strip().split(',')][1:]
-  assert len(names) == len(labels)
-  remap = dict(zip(labels, names))
+  if lines[0].strip() == 'rank order':
+    # The input file was processed by nstv-rank.py, or somehow otherwise
+    # converted to the standard input for VoteMain.jar
+    names = [s.strip() for s in lines[1].strip().split(',')][1:]
+    labels = [s.strip() for s in lines[2].strip().split(',')][1:]
+    assert len(names) == len(labels)
+    remap = dict(zip(labels, names))
+
+    votes = { }
+    for line in lines[3:]:
+      parts = line.strip().split(',')
+      votes[parts[0]] = [remap[l] for l in parts[1:]]
+    return names, votes
+
+  # Let's assume we're looking at a raw_board_votes.txt file, and a
+  # companion board_nominations.ini file.
+  nominees = read_nominees(fname)
 
   votes = { }
-  for line in lines[3:]:
-    parts = line.strip().split(',')
-    votes[parts[0]] = [remap[l] for l in parts[1:]]
+  for line in lines:
+    match = RE_VOTE.match(line)
+    if match:
+      # For a given voter hashcode, record their latest set of votes,
+      # mapped from (character) labels to the nominee's name.
+      votes[match.group('voterhash')] = [nominees[label]
+                                         for label in match.group('votes')]
+
+  # Map the nominee dictionary into a label-sorted list of names
+  names = [nominees[label] for label in sorted(nominees)]
+
   return names, votes
+
+
+def read_nominees(votefile):
+  ini_fname = os.path.join(os.path.dirname(votefile),
+                           'board_nominations.ini')
+
+  config = ConfigParser.ConfigParser()
+  config.read(ini_fname)
+  try:
+    return dict(config.items('nominees'))
+  except:
+    print >> sys.stderr, "Error processing input file: " + ini_fname
+    print >> sys.stderr, " Goodbye!"
+    sys.exit(2)
 
 
 def run_vote(names, votes, num_seats):
@@ -308,7 +356,7 @@ def exclude_lowest(candidates):
 
 
 def generate_random(count):
-  random.seed(0)  ### choose a seed based on input?
+  random.seed(0)  ### choose a seed based on input? for now: repeatable.
   while True:
     # Generate COUNT values in [0.0, 1.0)
     values = [random.random() for x in range(count)]
@@ -326,8 +374,21 @@ def dbg(fmt, *args):
   print fmt % args
 
 
+def usage():
+  print 'USAGE: %s RAW_VOTES_FILE' % (os.path.basename(sys.argv[0]),)
+  sys.exit(1)
+
+
 if __name__ == '__main__':
-  ### use cmdline params...
-  names, votes = load_votes('/tmp/votes')
+  if len(sys.argv) != 2:
+    usage()
+
+  votefile = sys.argv[1]
+  if not os.path.exists(votefile):
+    usage()
+
+  names, votes = load_votes(votefile)
+
+  ### take the count from options? (for whatif.cgi)
   run_vote(names, votes, 9)
   print 'Done!'
