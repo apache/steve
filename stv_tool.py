@@ -335,7 +335,7 @@ def exclude_lowest(candidates):
   which = None
   used_rand = False
 
-  for c in candiates:
+  for c in candidates:
     if c.status == HOPEFUL or c.status == ALMOST:
       if c.ahead < ahead:
         ahead = c.ahead
