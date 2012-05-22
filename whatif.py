@@ -34,7 +34,7 @@ if __name__ == '__main__':
   names, votes = stv_tool.load_votes(votefile)
 
   # extract optional number of seats argument
-  if len(sys.argv) > 0 and sys.argv[0].isdigit():
+  if sys.argv and sys.argv[0].isdigit():
     seats = int(sys.argv.pop(0))
   else:
     seats = 9
@@ -53,7 +53,7 @@ if __name__ == '__main__':
       sys.stderr.write('invalid selection: %s\n' % arg)
       usage()
 
-  if len(sys.argv) == 0:
+  if not sys.argv:
     # no changes to the candidates running
     pass
   elif sys.argv[0][0] == '-':
