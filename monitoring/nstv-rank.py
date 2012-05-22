@@ -141,12 +141,12 @@ def print_tally(args, output, blt):
         print "rank order"
         line = [ ]
         for id in nomkeys:
-            line.append("%10.10s" % nominees[id])
+            line.append("%20.20s" % nominees[id])
         line = "NAME, " + ", ".join(line)
         print line
         line = [ ]
         for id in nomkeys:
-            line.append("%10.10s" % id)
+            line.append("%20.20s" % id)
         line = "LABEL," + ", ".join(line)
         print line
         for id in votes.keys():
