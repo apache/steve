@@ -6,9 +6,6 @@
 #   * Web server with the ability to run cgi (Apache httpd recommended)
 #   * Python 2.6.x
 #   * Ruby 1.9.x
-#   * Java 1.1 or later
-#   * Vote-0-4.jar from the vote-0-4.zip found at:
-#       http://sourceforge.net/projects/votesystem/files/votesystem/0.4/
 #   * wunderbar gem ([sudo] gem install wunderbar)
 #   * (optional) jQuery http://code.jquery.com/jquery.min.js
 #
@@ -17,9 +14,7 @@
 #    ruby whatif.rb --install=/var/www
 #
 #    1) Specify a path that supports cgi, like public-html or Sites.
-#    2) Modify the VOTER variable in the generated whatif.cgi to point to
-#       your copy of Vote-0-4.jar
-#    3) (optional, but recommended) download jquery.min.js into
+#    2) (optional, but highly recommended) download jquery.min.js into
 #       your installation directory.
 #
 # Execution instructions:
@@ -28,9 +23,7 @@
 #   Firefox 4 or a WebKit based browser, like Google Chrome.
 
 MEETINGS  = File.expand_path('../Meetings').untaint unless defined? MEETINGS
-NSTV   = 'monitoring/nstv-rank.py'
-FILTER = 'vote-filter.py'
-VOTER  = '/home/rubys/tmp/Vote-0-4.jar' unless defined? VOTER
+WHATIF = './whatif.py' unless defined? WHATIF
 
 require 'wunderbar'
 require 'tempfile'
@@ -50,25 +43,23 @@ def ini(vote)
   vote.sub('/raw_','/').sub('votes.','nominations.').sub('.txt','.ini')
 end
 
-def filtered_election(seats, candidates)
+def filtered_election(votes, seats, candidates)
   list = candidates.join(' ')
-  list.untaint if list =~ /^\w( \w)*$/
+  list.untaint if list =~ /^\w+( \w+)*$/
   seats.untaint if seats =~ /^\d+$/
 
-  votes = Tempfile.new('votes', Dir.tmpdir.untaint)
-  votes << `python #{NSTV} #{raw_votes(@date)} | python #{FILTER} #{list}`
-  votes.flush
-  output = `java -cp  #{VOTER} VoteMain -system stv-meek \
-            -seats #{seats} #{votes.path}`
+  output = `#{WHATIF} #{votes} #{seats} #{list}`
   output.scan(/.*elected$/).inject(Hash.new('none')) do |results, line|
     name, status = line.scan(/^(.*?)\s+(n?o?t?\s?elected)$/).flatten
-    results.merge({name[0..8].gsub(/\W/,'') => status.gsub(/\s/, '-')})
+    results.merge({name.gsub(/\W/,'') => status.gsub(/\s/, '-')})
   end
 end
 
 # XMLHttpRequest (AJAX)
 _json do
-  _! filtered_election(@seats, params.keys.select {|key| key =~ /^\w$/})
+  nominees = File.read(ini(raw_votes(@date))).scan(/^\w:\s*(.*)/).flatten
+  candidates = params.keys & nominees.map {|name| name.gsub(/\W/,'')}
+  _! filtered_election(raw_votes(@date), @seats, candidates)
 end
 
 # main output
@@ -95,12 +86,13 @@ _html do
   _body? do
     _h1_ 'STV Explorer'
 
-    nominees = Hash[File.read(ini(raw_votes(@date))).scan(/^(\w):\s*(.*)/)]
+    nominees = Hash[File.read(ini(raw_votes(@date))).scan(/^\w:\s*(.*)/).
+      flatten.map {|name| [name.gsub(/\W/,''), name]}]
     candidates = params.keys & nominees.keys
     candidates = nominees.keys if candidates.empty? or @reset
 
     @seats ||= '9'
-    results = filtered_election(@seats, candidates)
+    results = filtered_election(raw_votes(@date), @seats, candidates)
 
     # form of nominees and seats
     _form method: 'post', id: 'vote' do
@@ -113,12 +105,9 @@ _html do
 	end
       end
 
-      nominees.sort_by {|letter, name| name}.each do |letter, name|
-        id = name[0..8].gsub(/\W/,'')
+      nominees.sort.each do |id, name|
         _label_ id: id do
-          _input type: 'checkbox', name: letter, id: letter, 
-            checked: candidates.include?(letter)
-
+          _input type: 'checkbox', name: id, checked: candidates.include?(id)
           _div name, class: results[id]
         end
       end
@@ -137,12 +126,12 @@ _html do
 
     _script %{
       // submit form using XHR; update class for labels based on results
-      var refresh = function() {
-        $.getJSON('', $('#vote').serialize(), function(results) {
+      function refresh() {
+        $.post('', $('#vote').serialize(), function(results) {
           for (var name in results) {
             $('#'+name+' div').attr('class', results[name]);
           }
-        });
+        }, 'json');
         return false;
       }
 
@@ -177,4 +166,4 @@ _html do
 end
 
 __END__
-VOTER = '/home/rubys/tmp/Vote-0-4.jar'
+MEETINGS = '../Meetings'
