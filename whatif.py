@@ -10,18 +10,29 @@
 #   whatif.py ../Meetings/20110712/raw_board_votes.txt -LawrenceRosen
 #   whatif.py ../Meetings/20110712/raw_board_votes.txt 1 kulp noirin geir chris
 
-import os,sys,re
+import os.path
+import sys
+import re
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'monitoring'))
 import stv_tool
 
 def usage():
-  print 'Usage: %s RAW_VOTES_FILE [seats] [-]name...' % scriptname
+  print 'Usage: %s [-v] RAW_VOTES_FILE [seats] [-]name...' % scriptname
   sys.exit(1)
 
 if __name__ == '__main__':
   scriptname = sys.argv.pop(0)
 
+  if len(sys.argv) == 0:
+    usage()
+
+  if sys.argv[0] == '-v':
+    stv_tool.VERBOSE = True
+    sys.argv.pop(0)
+
   # extract required vote file argument, and load votes from it
-  if len(sys.argv)==0 or not os.path.exists(sys.argv[0]): usage()
+  if not os.path.exists(sys.argv[0]): usage()
   votefile = sys.argv.pop(0)
   names, votes = stv_tool.load_votes(votefile)
 
