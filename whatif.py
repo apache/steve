@@ -24,15 +24,12 @@ def usage():
 if __name__ == '__main__':
   scriptname = sys.argv.pop(0)
 
-  if len(sys.argv) == 0:
-    usage()
-
-  if sys.argv[0] == '-v':
+  if sys.argv and sys.argv[0] == '-v':
     stv_tool.VERBOSE = True
     sys.argv.pop(0)
 
   # extract required vote file argument, and load votes from it
-  if not os.path.exists(sys.argv[0]): usage()
+  if not sys.argv or not os.path.exists(sys.argv[0]): usage()
   votefile = sys.argv.pop(0)
   names, votes = stv_tool.load_votes(votefile)
 
