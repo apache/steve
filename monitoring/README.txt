@@ -15,6 +15,31 @@ see Meetings/.../raw_board_votes.txt. Lines other than votes
 are ignored, and the votes are assumed to be time-ordered to
 ensure that only the latest vote is considered.
 
+We also support OpenSTV (www.openstv.org) or the deprecated VoteMain
+(http://sourceforge.net/projects/votesystem) systems. Most modern
+tools use the blt format.
+
+Simply feed as input the STV-tally email (typically used for the board
+elections) and direct the output to 'outputFile' (or whatever
+you'd like):
+
+   ./nstv-rank.py raw_votes.txt > outputFile
+
+After installing Voting Systems Toolbox, you can execute the 'VoteMain'
+program as
+
+    java -cp Vote-0-4.jar VoteMain -system stv-meek -seats 9 outputFile
+
+where outputFile is the output of nstv-rank.py above.
+
+Using blt-oriented STV tools, such as OpenSTV:
+
+   ./nstv-rank.py -b raw_votes.txt > outputFile.blt
+
+and load in the blt file to OpenSTV. Please note the ASF uses Meek STV with:
+
+    Precision: 6
+    Threshold:  Droop | Dynamic | Fractional
 
 ----
 
