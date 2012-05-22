@@ -6,39 +6,19 @@ a final tally (list) of all votes cast, with hash ID and
 timestamp. The list is time-ordered as well, so the later
 cast ballot are later on in the tally (closer to the bottom).
 
-For STV, we use
+For STV, we use voter/stv_tool.py to process the vote results:
 
-    http://sourceforge.net/projects/votesystem
+    ./stv_tool.py raw_votes.txt
 
-to do the actual STV determination. To get the voter tool
-results in the format it expects, we have
+where raw_votes.txt is emailed set of votes. For examples,
+see Meetings/.../raw_board_votes.txt. Lines other than votes
+are ignored, and the votes are assumed to be time-ordered to
+ensure that only the latest vote is considered.
 
-    nstv-rank.py.
 
-Simply feed as input the STV-tally email (typically used for the board
-elections) and direct the output to 'outputFile' (or whatever
-you'd like):
+----
 
-   ./nstv-rank.py board-tally.txt > outputFile
-
-After installing Voting Systems Toolbox, you can execute the 'VoteMain'
-program as
-
-    java -cp Vote-0-4.jar VoteMain -system stv-meek -seats 9 outputFile
-
-where outputFile is the output of nstv-rank.py above.
-
-You can also verify using other STV tools, such as OpenSTV (from
-www.openstv.org). This uses blt format, so:
-
-   ./nstv-rank.py -b board-tally.txt > outputFile.blt
-
-and load in the blt file to OpenSTV. Please note the ASF uses Meek STV with:
-
-    Precision: 6
-    Threshold:  Droop | Dynamic | Fractional
-
-For simply YNA, we have
+For simple YNA votes (Yes / No / Abstain), we have
 
     yna-summary.pl
 
@@ -51,136 +31,10 @@ for each issue.
 
    ./yna-summary.pl all30tally.txt
 
-In all cases, both the yna-summary.pl and nstv-rank.py only honor
-the last vote count per voter.
-
---
-Jim
-
-  *) The board has decided to change the voting process on multi-choice
-     votes to Single Transferable Vote (STV).  Each voter lists all the
-     people they want to see elected in order of preference. Excess votes
-     for people who have already reached their quota (i.e., enough votes
-     to ensure election) and also for the candidate with the least votes
-     are redistributed to lower-numbered choices. This process is repeated
-     until the required number are elected.
-
-       http://wiki.apache.org/incubator/BoardElectionVoteCounting
-       http://www.electoral-reform.org.uk/votingsystems/stvi.htm
-       http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
-
------------
-HISTORY:
------------
-From: Ceki Gülcü <ceki@qos.ch>
-Date: Fri Jun 20, 2003  7:31:14  AM America/Los_Angeles
-To: ian Holsman <ian.holsman@cnet.com>
-Cc: "Roy T. Fielding" <fielding@apache.org>, <gstein@apache.org>
-Subject: Scripts to help in monitoring STV elections
+yna-summary.pl will only honor the last vote count per voter.
 
 
-Hello Ian,
+----
 
-Here are the two small scripts I have written in order to monitor the
-board elections.
-
-With these two scripts and the 'VoteMain' application, it is rather
-easy to verify the results of the elections as reported to the
-monitors by our current voting system.
-
-# ============================================================
-#
-# SCRIPT NAME: rank
-#
-# This script takes in files in the form
-#
-# voter vote
-#
-# e.g
-#
-# 0422f389874d7a8ecfd2fabea0a152ed lagd
-# 9c58d57506a17c83b9d4cc8c0ed4a31e lgej
-# 9db55691a072f88d79968eed8297dc90 fcaki
-# a6d1332887e40af1dd2405cd2abf1e77 glfj
-# a9472aa4f7df905173acd8fe2d8edcb2 jkc
-# adc9914bb9112d8da4cddd6353e09ef1 eagk
-#
-# It prints out a file in the format expected by Voting Systems Toolbox
-#
-#   http://sourceforge.net/projects/votesystem
-#
-# After installing Voting Systems Toolbox, you can execute the 'VoteMain'
-# program as
-#
-#   java -cp Vote-0-4.jar VoteMain -system stv-meek -seats 9 outputFile
-#
-# where outputFile is the result of this script (rank).
-#
-# The output of  'VoteMain' program is the result of the elections.
-#
-# Note that the 'VoteMain' program can detect duplicate votes, as well as votes
-# with incorrect labels.
-
-print "rank order\n";
-print "NAME,  Ken, Justin, Fitz, Dirk, Jim, BenL, Geir, Stefano, Sam, Dims, Greg, Sander\n";
-print "LABEL, c,   k,      j,    f,    e,   g,    d,    b,       i,   h,    l,    a\n";
-
-open(INPUT, "$ARGV[0]");
-
-while(<INPUT>) {
-  if(/([\w\d]{32})\s([a-m]{1,12})/) {
-    @votes = split(//, $2);
-    $vstr = join(',', @votes);
-    print "$1,$vstr\n";
-  }
-}
-# ============================================================
-
-
-
-# ============================================================
-# SCRIPT NAME: check
-#
-# USAGE: check authorizedVotersFile actualVotersFile
-#
-# Checks whether the elements listed in 'actualVotersFile' are
-# contained in authorizedVotersFile
-#
-# Both files are expected to contain the hash of voters
-#
-
-open(AUTH, "$ARGV[0]");
-
-# Have @auth contain the valid voters
-@auth = ();
-while(<AUTH>) {
-  #chop $_;
-  push(@auth, $_);
-  #print $_;
-}
-
-# Now check against the votes
-
-open(VOTES, "$ARGV[1]");
-
-while(<VOTES>) {
-
-  $result = isInAuth($_);
-  unless($result) {
-    print "Voter [$_] is not in list of valid voters";
-  }
-}
-
-# ===================================
-sub isInAuth() {
-  $voter = $_[0];
-
-  foreach $v (@auth) {
-    if($voter =~ $v) {
-      return 1;
-    }
-  }
-  return 0;
-}
-# ============================================================
-
+Also see monitoring-check.pl to ensure the incoming votes are
+legitimate voters.
