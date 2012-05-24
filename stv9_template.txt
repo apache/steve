@@ -1,0 +1,53 @@
+
+The following candidates have been nominated for the nine
+available positions of Director within the Board of Directors of
+The Apache Software Foundation, as defined by Article V of the
+ASF Bylaws.   In order to maximize effective representation
+of all members of the ASF, the 2002-2003 Board of Directors
+has resolved that such an election will be decided according
+to the Single Transferable Vote (STV) election process, as
+described below.
+
+STV:
+Board elections are performed via Single Transferable Vote (STV). Each
+voter lists all the people they want to see elected in order of
+preference. Excess votes for people who have already reached their quota
+(i.e., enough votes to ensure election) and also for the candidate with
+the least votes are redistributed to lower-numbered choices. This process
+is repeated until the required number are elected. Please see:
+
+   http://en.wikipedia.org/wiki/Single_transferable_vote
+
+Election results are calculated using Meek's method for STV:
+
+   http://en.wikipedia.org/wiki/Counting_Single_Transferable_Votes#Meek.27s_method
+
+The key idea to keep in mind is that the ordering of your votes
+is crucial. Those who you *really* want to be elected should
+be at the beginning/start of the list. For example:
+
+    Aragorn, Frodo, Bilbo, Sam, Sauron, Gandalf, Treebeard, Gollum, Gimli
+
+means that you really want Aragorn to be elected (he's
+your primary preferred person), followed by Frodo (you want
+Frodo on the board more than you want Bilbo, Sam and Sauron, but
+not as much as you want Aragorn), followed by Bilbo, etc...
+
+There are 9 slots available; you should select all the candidates you
+want to be on the board, in the order in which you prefer them. You can
+select less than 9 people, and you can also select more than 9 people.
+
+More information can be found at: foundation:/voter
+
+---
+Nominations:
+
+Label     Name
+
+<list here>
+
+Candidate nomination and position statements can be found at:
+
+    https://svn.apache.org/repos/private/foundation/Meetings/YYYYMMDD/board_ballot_YYYY_MM.txt
+    https://svn.apache.org/repos/private/foundation/Meetings/YYYYMMDD/board_nominations.txt
+
