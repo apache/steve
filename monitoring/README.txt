@@ -29,6 +29,8 @@ After installing Voting Systems Toolbox, you can execute the 'VoteMain'
 program as
 
     java -cp Vote-0-4.jar VoteMain -system stv-meek -seats 9 outputFile
+        or
+    java -cp Quick_STV_1_2.jar VoteMain -system stv-meek -seats 9 outputFile
 
 where outputFile is the output of nstv-rank.py above.
 
