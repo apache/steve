@@ -26,11 +26,11 @@ The key idea to keep in mind is that the ordering of your votes
 is crucial. Those who you *really* want to be elected should
 be at the beginning/start of the list. For example:
 
-    Aragorn, Frodo, Bilbo, Sam, Sauron, Gandalf, Treebeard, Gollum, Gimli
+    Aragorn, Frodo, Bilbo, Sauron, Gandalf, Treebeard, Gollum, Gimli
 
 means that you really want Aragorn to be elected (he's
 your primary preferred person), followed by Frodo (you want
-Frodo on the board more than you want Bilbo, Sam and Sauron, but
+Frodo on the board more than you want Bilbo and Sauron, but
 not as much as you want Aragorn), followed by Bilbo, etc...
 
 There are 9 slots available; you should select all the candidates you
