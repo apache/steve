@@ -1,204 +1,58 @@
-README for the Foundation voter tool
+=============================================================
+ Welcome to Apache Steve <http://steve.apache.org/>
+=============================================================
 
-Users/voters - read this: http://wiki.apache.org/general/BoardVoting
+Apache Steve is...
 
-Monitors/coders - read below:
+Getting Started
+===============
 
-This directory is the source code for the Apache on-line voting tool.
-Although it is maintained in this repository, the actual working
-code has to be manually copied by the "voter" user to the
 
-    /home/voter/src
+License (see also LICENSE.txt)
+==============================
 
-directory on people.apache.org.  Running "make" in that directory and
-then "make install" will recompile the wrappers and install them
-and the scripts into
+Collective work: Copyright 2012-2013 The Apache Software Foundation.
 
-    /home/voter/bin
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
 
-where they can be used as directed by the voting instructions.
-Please try to avoid installing the software while a vote is
-in-progress, since that would cause the file MD5s to change and
-invalidate the vote.
+     http://www.apache.org/licenses/LICENSE-2.0
 
-The voter tool consists of six perl scripts and a C wrapper that
-invokes them with setuid voter -- this allows anyone with a login
-on people.apache.org to invoke the tool, but only users who can sudo
-to the voter account (or root) can do anything to the voting files
-beyond what is provided by the tools.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
-The six wrapped scripts are
 
-    votegroup    -- create a voting group with a list of e-mail addresses
-    make_issue   -- create a new issue for a group and send mail
-    vote         -- place a vote on an issue
-    reminder     -- send a reminder to user about their voting key
-    close_issue  -- end voting on the issue and send final summary
-    check_quorum -- get a list of people who voted on a closed issue
+Documentation
+=============
 
-Note that any user on people.apache.org can run these scripts, though vote
-requires a voter hash ID and close_issue requires a monitor hash ID.
+Mailing Lists
+=============
 
-The issue making and voting process is simple and guided by the scripts.
-First, determine what group matches the list of voters.  If no such
-group exists, or if the existing group is missing some new voters,
-you need to create it using votegroup and a file containing all of
-the voters' e-mail addresses, listed one per line.
+Discussion about Steve takes place on the following mailing lists:
 
-Second, create a file on people.apache.org, readable by everyone, that
-contains the text of the issue description.  This text will be sent
-to everyone, so be sure to get it right before continuing.  You CANNOT
-change the information after the vote has started.  The file should
-describe the issue, briefly explain the type of vote, and end with a
-end-date like "Voting ends at 11:59pm GMT (-0000) on Friday, 24 May 2002".
-The make_issue program will add detailed information, specific to
-each voter, on how they should go about voting on this issue and
-send it to each voter.  When a voter successfully runs the vote program,
-the vote is recorded in a tally, sent by e-mail to the monitor(s),
-and a notice is sent to every voter's address.  The vote does not end
-itself automatically -- at least one of the monitors must run the
-close_issue program to end voting and generate the final tally.
-After it is closed, the check_quorum command should be run to determine
-whether enough voters showed up to make a quorum of the group.
+    dev@steve.apache.org    - About using Steve and developing Steve
 
-If you have DOUBTS about how all of this will work, then Roy suggests
-that you start by creating a test group with a couple of your own e-mail
-addresses and then create a test vote (with you as monitor) as an issue
-for that group.  You will then be able to see what the e-mail trail
-looks like for the monitors and voters, and see how the tally works.
+Notification on all code changes are sent to the following mailing list:
 
-# ==========================================================================
-votegroup -- Make a group of voters for an on-line, anonymous voting process
+    commits@steve.apache.org
 
-A program for creating a list of voters in the given issue group
- o  creates a group directory (/home/voter/issues/group/),
-    and adds to it a "voters" file containing a list of e-mail addresses.
+The mailing lists are open to anyone and publicly archived.
 
-usage: votegroup [-h] [-g group] [-f votersfile]
+You can subscribe the mailing lists by sending a message to
+<LIST>-subscribe@steve.apache.org (for example
+dev-subscribe@steve...).  To unsubscribe, send a message to
+<LIST>-unsubscribe@steve.apache.org.  For more instructions, send a
+message to <LIST>-help@steve.apache.org.
 
-Options:
-     -h  (help) -- just display this message and quit
-     -g  group  -- create the named group of voters
-     -f  file   -- contains the list of voter e-mail addresses, one per line
+Issue Tracker
+=============
 
-# ==========================================================================
-make_issue -- Make an issue for managing an on-line, anonymous voting process
-
-A program for creating issues to be voted upon by the named "group"
- o  creates an issue directory (/home/voter/issues/group/YYYYMMDD-name/),
-    and fills it with files for the issue info, election monitors,
-    and tally file;
- o  creates tables of hash-ids and hashed-hash-ids for use in validating
-    votes, verifying that the values are unique;
- o  mails to the vote monitors an alert message to start tallying;
- o  mails to each voter their hash-id to be used, issue number, and
-    some text explaining the issue.
-
-usage: make_issue [-h] [-g group] [-s start_date] [-i issue] [-f infofile]
-                       [-m monitors] [-v vote_type )]
-Options:
-     -h  (help) -- just display this message and quit
-     -g  group  -- create an issue for an existing group of voters
-     -s  date   -- YYYYMMDD format of date that voting is allowed to start
-     -i  issue  -- append this alphanumeric string to start date as issue name
-     -f  file   -- send the contents of this file to each voter as explanation
-     -m  monitors -- e-mail address(es) for sending mail to vote monitor(s)
-     -v  type   -- type of vote: yna = Yes/No/Abstain,
-                   stvN = single transferable vote for [1-9] slots,
-                   selectN = vote for [1-9] of the candidates
-
-# ==========================================================================
-vote -- Vote anonymously using the Apache on-line voter process
-
-A program for mostly-anonymous voting.
-  o  a simple program that takes as arguments an issue name,
-     voter hash-id, and vote (yes/no/abstain or a multi-selection word);
-  o  validates arguments based on type of issue;
-  o  appends timestamp, hashed-hash-id, and vote to the tally;
-  o  sends mail to the election monitor(s) indicating the vote that
-     was received and the hashed-hash-id (to identify repeats).
-  o  sends mail to voter indicating that their vote has been received
-     (but not the contents of the vote);
-
-usage: vote [ group-issue-name [ hash-id [ vote ] ] ]
-
-# ==========================================================================
-reminder -- Remind a voter of their hash-ID for the given issue
-
-A program for reminding a voter about their hash-ID
-  o  a simple program that takes as arguments an issue name and voter address
-  o  sends mail to voter repeating the vote instructions
-
-usage: reminder [ group-issue-name [ voter ] ] ]
-
-# ==========================================================================
-close_issue -- Close voting on an issue
-
-A program for closing an issue to end voting and send summary results
-  o  accepts issue name and monitor hash-ID as arguments;
-  o  sets a marker indicating no more votes accepted for issue;
-  o  reads in tally, mails it to election monitor(s)
-  Not yet implemented:
-  -  reads in tally, counting only last recorded vote per hashed-hash-id;
-  -  mails summary to election monitor(s)
-  -  [maybe] creates an HTML summary of results as
-        /home/voter/public_html/issue_nnnnnn.html
-
-usage: close_issue [ group-issue-name [ hash-id ] ]
-
-# ==========================================================================
-check_quorum -- Check for quorum by listing the voters on a closed issue
-
-A program for checking if a closed issue reached quorum and
-providing a sorted list of people whose vote was received.
-
-  o  must be run by voter user (see wrapsuid.c for setuid wrapper)
-
-  o  takes as argument an issue name;
-
-  o  checks to be sure the issue has closed (to prevent abuse);
-
-  o  sends mail to the election monitor(s) indicating the sorted
-     list of voted addresses and ratio of votes cast to voters in group.
-
-usage: check_quorum [ group-issue-name ]
-
-# ==========================================================================
-
-KNOWN BUGS
-
-  *) The original intention was to have the program calculate the
-     results as part of close_issue and present a summary to the
-     monitors along with the raw voting log.  That would simply
-     make it easier to be a monitor and perhaps reduce the chance
-     of accounting errors, particularly when it comes to counting
-     repeated votes by the same voter (only the last vote counts).
-     Roy simply hasn't found time to do this yet.
-
-  *) The board has decided to change the voting process on multi-choice
-     votes to Single Transferable Vote (STV).  Each voter lists all the
-     people they want to see elected in order of preference. Excess votes
-     for people who have already reached their quota (i.e., enough votes
-     to ensure election) and also for the candidate with the least votes
-     are redistributed to lower-numbered choices. This process is repeated
-     until the required number are elected.
-
-       http://wiki.apache.org/incubator/BoardElectionVoteCounting
-       http://www.electoral-reform.org.uk/votingsystems/stvi.htm
-       http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
-
-     The vote type stvN has been created for an STV election of N.
-     The hard part (not yet automated) will be calculating the summary
-     and educating monitors on how to verify the results.
-     Ceki posted a nice script: see monitoring-tools.txt
-
-     Unfortunately, people don't understand STV and don't bother to
-     read the directions, so leaving the candidates in alphabetical
-     order creates a statistical advantage for those listed first.
-     This is addressed by randomizing the list of candidates prior
-     to printing (but keeping the same label per name so that the 
-     actual vote labels -- what people cast -- are not randomized).  
-     This should prevent lazy folks who vote in the order that the 
-     names are listed from having a statistical impact on the vote.
-
-     See randomize.pm for details.
+If you encounter errors in Steve or want to suggest an improvement or a new
+feature, please visit the Steve issue tracker at
