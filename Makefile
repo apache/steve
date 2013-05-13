@@ -37,9 +37,9 @@ install: check-directory        \
 	install-check_quorum
 
 check-directory:
-        if [ ! -d $(INSTALLBIN) ]; then  \
-                mkdir $(INSTALLBIN);     \
-        fi
+	if [ ! -d $(INSTALLBIN) ]; then  \
+		mkdir $(INSTALLBIN);     \
+	fi
 
 install-votegroup: votegroup
 	rm -f $(INSTALLBIN)/votegroup $(INSTALLBIN)/votegroup.pl
