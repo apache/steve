@@ -1,6 +1,20 @@
 #!/usr/bin/perl
-# Copyright (C) 2003  The Apache Software Foundation. All rights reserved.
-#                     This code is Apache-specific and not for distribution.
+#####
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#####
 # votegroup
 # A program for creating a list of voters in the given issue group
 #
@@ -37,12 +51,13 @@ $pname =~ s#^.*/##;
 sub usage
 {
     die <<"EndUsage";
-usage: $pname [-h] [-g group] [-f votersfile]
+usage: $pname [-h] [-b] [-g group] [-f votersfile]
 
 $pname -- Make a group of voters for an on-line, anonymous voting process
 
 Options:
      -h  (help) -- just display this message and quit
+     -b  (batch) -- batch processing: assume 'ok' unless errors
      -g  group  -- create the named group of voters
      -f  file   -- contains the list of voter e-mail addresses, one per line
 
@@ -53,8 +68,9 @@ EndUsage
 # Get the command-line options or input from the user
 
 undef $opt_h;
+undef $opt_b;
 
-if (!(&Getopts('hg:f:')) || defined($opt_h)) { &usage; }
+if (!(&Getopts('hbg:f:')) || defined($opt_h)) { &usage; }
 
 if (defined($opt_g)) {
     $group = $opt_g;
@@ -79,6 +95,12 @@ if ($infofile =~ /(\/etc\/|$issuedir)/) {
     die "$pname: forbidden to read files in that directory\n";
 }
 
+if (defined($opt_b)) {
+    $batch = 1;
+}
+else {
+    $batch = 0;
+}
 # ==========================================================================
 # Check the voter group and read the list of voter addresses
 
@@ -115,7 +137,7 @@ if ($dupes != 0) {
     die "$pname: $dupes duplicate voters must be removed from the list\n";
 }
 do {
-    $_ = &get_input_line('"ok" to accept or "abort" to exit', 0);
+    $_ = ($batch ? "ok" : &get_input_line('"ok" to accept or "abort" to exit', 0));
     if (/^abort$/i) {
         exit(1);
     }
@@ -132,7 +154,7 @@ if (-e $votersfile) {
     system($DIFF, "-u", $votersfile, $infofile);
     print "==============================================================\n";
     do {
-        $_ = &get_input_line('"ok" to accept or "abort" to exit', 0);
+        $_ = ($batch ? "ok" : &get_input_line('"ok" to accept or "abort" to exit', 0));
         if (/^abort$/i) {
             exit(1);
         }
