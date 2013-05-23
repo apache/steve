@@ -27,23 +27,8 @@ BEGIN {
     unshift @INC, "/home/voter/bin";
 }
 use randomize;
+use steve;
 
-$ECHO     = '/bin/echo';
-$CAT      = '/bin/cat';
-$MD5      = '/sbin/md5';
-$OPENSSL  = '/usr/bin/openssl';
-$SENDMAIL = '/usr/sbin/sendmail';
-
-$homedir  = '/home/voter';
-$issuedir = "$homedir/issues";
-$host     = 'people.apache.org';
-
-$ENV{'PATH'}    = "$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin";
-$ENV{'LOGNAME'} = 'voter';
-$ENV{'GROUP'}   = 'voter';
-$ENV{'USER'}    = 'voter';
-$ENV{'HOME'}    = '/home/voter';
-$ENV{'MAIL'}    = '/var/mail/voter';
 
 umask(0077);
 $| = 1;                                     # Make STDOUT unbuffered
@@ -250,68 +235,5 @@ If you have any problems or questions, send a reply to the vote monitors
 for this issue: $monitors
 
 EndExplain
-}
-
-# ==========================================================================
-sub get_input_line {
-    local ($prompt, $quit_able) = @_;
-    local ($_);
-
-    do {
-        print("Enter ", $prompt, $quit_able ? " (q=quit): " : ": ");
-        $_ = <STDIN>;
-        chomp;
-        exit(0) if ($quit_able && /^q$/i);
-    } while (/^$/);
-
-    return $_;
-}
-
-# ==========================================================================
-sub found_in_group {
-    local ($voter, $groupfile) = @_;
-    local ($_);
-
-    open(INFILE, $groupfile) || return 0;
-    while ($_ = <INFILE>) {
-        chomp;
-        s/#.*$//;
-        s/\s+$//;
-        s/^\s+//;
-        if ($_ eq $voter) {
-            close(INFILE);
-            return 1;
-        }
-    }
-    close(INFILE);
-    return 0;
-}
-
-# ==========================================================================
-sub filestuff {
-    local ($filename) = @_;
-    local ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-           $atime,$mtime,$ctime,$blksize,$blocks);
-
-    ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-     $atime,$mtime,$ctime,$blksize,$blocks) = stat($filename);
-
-    return "$ino:$mtime";
-}
-
-# ==========================================================================
-sub get_hash_of {
-    local ($item) = @_;
-    local ($rv);
-
-    if (-x $MD5) {
-        $rv = `$MD5 -q -s "$item"` || die "$pname: failed md5: $!\n";
-    }
-    else {
-        $rv = `$ECHO "$item" | $OPENSSL md5`
-              || die "$pname: failed openssl md5: $!\n";
-    }
-    chomp $rv;
-    return $rv;
 }
 

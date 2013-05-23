@@ -40,24 +40,7 @@ BEGIN {
 require "getopts.pl";
 use randomize;
 use ballots;
-
-$ECHO     = '/bin/echo';
-$CAT      = '/bin/cat';
-$MD5      = '/sbin/md5';
-$OPENSSL  = '/usr/bin/openssl';
-$TOUCH    = '/usr/bin/touch';
-$SENDMAIL = '/usr/sbin/sendmail';
-
-$homedir  = '/home/voter';
-$issuedir = "$homedir/issues";
-$host     = 'people.apache.org';
-
-$ENV{'PATH'}    = "$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin";
-$ENV{'LOGNAME'} = 'voter';
-$ENV{'GROUP'}   = 'voter';
-$ENV{'USER'}    = 'voter';
-$ENV{'HOME'}    = '/home/voter';
-$ENV{'MAIL'}    = '/var/mail/voter';
+use steve;
 
 umask(0077);
 $| = 1;                                     # Make STDOUT unbuffered
@@ -510,93 +493,5 @@ If you have any problems or questions, send a reply to the vote monitors
 for this issue: $monitors
 
 EndExplain
-}
-
-# ==========================================================================
-sub get_input_line {
-    local ($prompt, $quit_able) = @_;
-    local ($_);
-
-    do {
-        print("Enter ", $prompt, $quit_able ? " (q=quit): " : ": ");
-        $_ = <STDIN>;
-        chomp;
-        exit(0) if ($quit_able && /^q$/i);
-    } while (/^$/);
-
-    return $_;
-}
-
-# ==========================================================================
-sub get_group {
-    local ($groupfile) = @_;
-    local ($_, @rv);
-
-    open(INFILE, $groupfile) || die "$pname: cannot open $groupfile: $!\n";
-    while ($_ = <INFILE>) {
-        chomp;
-        s/#.*$//;
-        s/\s+$//;
-        s/^\s+//;
-        next if (/^$/);
-        die "$pname: voter must be an Internet e-mail address\n"
-            unless (/\@/);
-        push(@rv, $_);
-    }
-    close(INFILE);
-    return @rv;
-}
-
-# ==========================================================================
-sub filestuff {
-    local ($filename) = @_;
-    local ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-           $atime,$mtime,$ctime,$blksize,$blocks);
-
-    ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-     $atime,$mtime,$ctime,$blksize,$blocks) = stat($filename);
-
-    return "$ino:$mtime";
-}
-
-# ==========================================================================
-sub get_hash_of {
-    local ($item) = @_;
-    local ($rv);
-
-    if (-x $MD5) {
-        $rv = `$MD5 -q -s "$item"` || die "$pname: failed md5: $!\n";
-    }
-    else {
-        $rv = `$ECHO "$item" | $OPENSSL md5`
-              || die "$pname: failed openssl md5: $!\n";
-    }
-    chomp($rv);
-    return $rv;
-}
-
-# ==========================================================================
-sub hash_file {
-    local ($filename) = @_;
-    local ($rv);
-
-    if (-x $MD5) {
-        $rv = `$MD5 -q "$filename"` || die "$pname: failed md5: $!\n";
-    }
-    else {
-        $rv = `$CAT "$filename" | $OPENSSL md5`
-              || die "$pname: failed openssl md5: $!\n";
-    }
-    chomp($rv);
-    return $rv;
-}
-
-# ==========================================================================
-sub debug_hash {
-    print "==============================================================\n";
-    foreach $voter (@voters) {
-        print "$hash1{$voter} $hash2{$voter} $voter\n";
-    }
-    print "==============================================================\n";
 }
 

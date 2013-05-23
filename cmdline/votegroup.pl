@@ -26,15 +26,7 @@
 # Originally created by Roy Fielding
 #
 require "getopts.pl";
-
-$DIFF     = '/usr/bin/diff';
-$MV       = '/bin/mv';
-$CAT      = '/bin/cat';
-$MD5      = '/sbin/md5';
-$OPENSSL  = '/usr/bin/openssl';
-
-$homedir  = '/home/voter';
-$issuedir = "$homedir/issues";
+use steve;
 
 $ENV{'PATH'} = "$homedir/bin:/usr/bin:/usr/sbin:/bin:/sbin";
 
@@ -178,56 +170,4 @@ $pf =~ s/^$homedir\///o;
 print &hash_file($votersfile), ': ', $pf, "\n";
 
 exit(0);
-
-# ==========================================================================
-# ==========================================================================
-sub get_input_line {
-    local ($prompt, $quit_able) = @_;
-    local ($_);
-
-    do {
-        print("Enter ", $prompt, $quit_able ? " (q=quit): " : ": ");
-        $_ = <STDIN>;
-        chomp;
-        exit(0) if ($quit_able && /^q$/i);
-    } while (/^$/);
-
-    return $_;
-}
-
-# ==========================================================================
-sub get_group {
-    local ($groupfile) = @_;
-    local ($_, @rv);
-
-    open(INFILE, $groupfile) || die "$pname: cannot open $groupfile: $!\n";
-    while ($_ = <INFILE>) {
-        chomp;
-        s/#.*$//;
-        s/\s+$//;
-        s/^\s+//;
-        next if (/^$/);
-        die "$pname: voter must be an Internet e-mail address\n"
-            unless (/\@/);
-        push(@rv, $_);
-    }
-    close(INFILE);
-    return @rv;
-}
-
-# ==========================================================================
-sub hash_file {
-    local ($filename) = @_;
-    local ($rv);
-
-    if (-x $MD5) {
-        $rv = `$MD5 -q "$filename"` || die "$pname: failed md5: $!\n";
-    }
-    else {
-        $rv = `$CAT "$filename" | $OPENSSL md5`
-              || die "$pname: failed openssl md5: $!\n";
-    }
-    chomp($rv);
-    return $rv;
-}
 
