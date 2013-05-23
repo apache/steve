@@ -23,8 +23,6 @@
 #
 # candidates are to be listed consecutively, one per line.  If this is
 # found not to be the case, NO reordering is performed.
-#
-# Originally created by Sam Ruby
 
 use strict;
 
