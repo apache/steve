@@ -38,8 +38,6 @@ BEGIN {
     unshift @INC, "/home/voter/bin";
 }
 require "getopts.pl";
-use randomize;
-use ballots;
 use steve;
 
 umask(0077);

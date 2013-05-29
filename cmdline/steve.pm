@@ -19,6 +19,8 @@
 # shared functions for Apache Steve.
 #
 
+##use strict;
+
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
@@ -202,6 +204,44 @@ sub not_valid {
       return 1 unless $valid{$_} == 1;
   }
   return 0;
+}
+
+# randomize the order in which candidates are listed
+#
+# candidates are identified with a single alphanumeric character surrounded
+# by square brackets as the first non-blank on a line.
+#
+# candidates are to be listed consecutively, one per line.  If this is
+# found not to be the case, NO reordering is performed.
+sub randomize {
+  my (@prolog, @choices, @epilog);
+
+  push @prolog, shift  while @_ && not $_[0]  =~ /^\s*\[[a-z0-9]\]\s/;
+  unshift @epilog, pop while @_ && not $_[-1] =~ /^\s*\[[a-z0-9]\]\s/;
+  return @prolog, @_, @epilog if grep !/^\s*\[\S\]\s/, @_;
+  push @choices, splice(@_, rand @_, 1) while @_;
+  return @prolog, @choices, @epilog;
+}
+
+# return the ballot identifiers for each candidate in an issue.
+#
+# candidates are identified with a single alphanumeric character surrounded
+# by square brackets as the first non-blank on a line.
+#
+# candidates are to be listed consecutively, one per line.
+#
+sub ballots {
+  my (@ballots);
+
+  shift  while @_ && not $_[0]  =~ /^\s*\[[a-z0-9]\]\s/;
+  for (@_) {
+    if (/^\s*\[([a-z0-9])\]\s/) {
+      push @ballots, "$1\n";
+    } else {
+      last;
+    }
+  }
+  return @ballots;
 }
 
 1;

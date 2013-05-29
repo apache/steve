@@ -26,7 +26,6 @@
 BEGIN {
     unshift @INC, "/home/voter/bin";
 }
-use randomize;
 use steve;
 
 
