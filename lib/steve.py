@@ -23,6 +23,7 @@ import os
 import hashlib
 import re
 import time
+import random
 
 SCRIPT = os.path.basename(sys.argv[0])
 
@@ -115,19 +116,41 @@ def not_valid(votes, valid):
   return False
 
 
+_RE_CHOICE = re.compile('\\s*\\[([a-z0-9])\\]\\s')
+
 def randomize(text):
-  ### todo
+  "Break TEXT into a prolog, randomized set of choices, and an epilog."
+  ### assumes TEXT is a list of strings. correct?
+
+  found = False
 
   prolog = [ ]
   choices = [ ]
   epilog = [ ]
 
+  for line in text:
+    match = _RE_CHOICE.match(line)
+    if match:
+      found = True
+      choices.append(line)
+    elif found:
+      epilog.append(line)
+    else:
+      prolog.append(line)
+
+  random.shuffle(choices)
   return prolog, choices, epilog
 
 
 def ballots(text):
-  ### todo
+  "Return the list of possible ballot choices within TEXT."
+  ### assumes TEXT is a list of strings. correct?
 
-  ballots = [ ]
+  choices = [ ]
 
-  return ballots
+  for line in text:
+    match = _RE_CHOICE.match(line)
+    if match:
+      choices.append(match.group(1))
+
+  return choices
