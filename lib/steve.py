@@ -24,8 +24,10 @@ import hashlib
 import re
 import time
 import random
+import ConfigParser
 
-SCRIPT = os.path.basename(sys.argv[0])
+# Strip the .py extension, producing the setuid program name.
+PROG = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
 
 def get_input_line(prompt, quittable=False):
@@ -55,7 +57,7 @@ def get_group(fname):
     if not line:
       continue
     if '@' not in line:
-      print '%s: voter must be an Internet e-mail address.' % (SCRIPT,)
+      print '%s: voter must be an Internet e-mail address.' % (PROG,)
       sys.exit(1)
     group.add(line)
 
@@ -116,7 +118,7 @@ def not_valid(votes, valid):
   return False
 
 
-_RE_CHOICE = re.compile('\\s*\\[([a-z0-9])\\]\\s')
+_RE_CHOICE = re.compile(r'\s*\[([a-z0-9])\]\s')
 
 def randomize(text):
   "Break TEXT into a prolog, randomized set of choices, and an epilog."
@@ -154,3 +156,14 @@ def ballots(text):
       choices.append(match.group(1))
 
   return choices
+
+
+def load_config(fname):
+  "Load installation/configuration values."
+
+  parser = ConfigParser.SafeConfigParser()
+  parser.readfp(open(fname))  # use .readfp() since config is required
+  class _config(object):
+    def __init__(self, items):
+      vars(self).update(items)
+  return _config(parser.items('general'))
