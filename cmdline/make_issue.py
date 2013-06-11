@@ -40,10 +40,12 @@ import os
 import argparse
 import re
 import shutil
+import cStringIO
 
 ### how do we want to "properly" adjust path?
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
 import steve
+import ezt
 
 
 def main():
@@ -64,15 +66,15 @@ def main():
   # Note: config.issue_dir updated as a side-effect
   create_issue_dir(issue_name, args, config)
 
-  info_fname = create_info_file(args, config)
+  info_fname = create_info_file(issue_name, args, config)
   monitors_hash, hash = build_hash(info_fname, voters, args)
 
   monitors_fname = create_monitors_file(args, config)
   type_fname = create_type_file(info_fname, args, config)
-  verify_email(info_fname, args, config)
+  verify_email(issue_name, info_fname, args, config)
   verify_voters(voters, args, config)
 
-  email_monitors()
+  email_monitors(issue_name, info_fname, monitors_hash, hash, args, config)
   email_voters()
 
   print "Issue %s with hashcode of %s\nhas been successfully created." \
@@ -191,14 +193,12 @@ def create_issue_dir(issue_name, args, config):
   os.mkdir(config.issue_dir, 0700)
 
 
-def create_info_file(args, config):
+def create_info_file(issue_name, args, config):
   info_fname = config.issue_dir + '/issue'
 
-  ### generate the contents
-  contents = '### contents\n\n'
-  info = open(args.file).read()
-
-  open(info_fname, 'w').write(contents + info)
+  contents = _use_template('templates/info-header.ezt', None, issue_name,
+                           None, None, None, args, config)
+  open(info_fname, 'w').write(contents)
 
   return info_fname
 
@@ -214,8 +214,8 @@ def build_hash(info_fname, voters, args):
       h2 = steve.get_hash_of('%s:%s' % (issue_id, h1))
 
       hash[voter] = (h1, h2)
-      hash[h1] = voter
-      hash[h2] = voter
+      hash[h1] = (voter, None)
+      hash[h2] = (voter, None)
 
     if len(hash) == 3 * len(voters):
       return monitors_hash, hash
@@ -248,17 +248,19 @@ def create_type_file(info_fname, args, config):
   return type_fname
 
 
-def verify_email(info_fname, args, config):
+def verify_email(issue_name, info_fname, args, config):
   print 'Here is the issue information to be sent to each voter:'
 
-  contents = open(info_fname).read() + _explain_vote('unique-hash-key')
+  contents = open(info_fname).read() \
+             + _use_template('templates/explain.ezt', 'unique-hash-key', issue_name,
+                             None, None, None, args, config)
   _basic_verify(contents, args, config)
 
 
 def verify_voters(voters, args, config):
   print 'Here is the list of voter e-mail addresses:'
 
-  contents = '\n'.join(voters) + '\n'
+  contents = '\n'.join(voters)
   _basic_verify(contents, args, config)
 
 
@@ -281,16 +283,49 @@ def _basic_verify(contents, args, config):
       return
 
 
-def email_monitors():
-  pass
+def email_monitors(issue_name, info_fname, monitors_hash, hash, args, config):
+  # Collect hash signatures of voter files that should not change
+  ### need to expand this. allow some to be missing during dev/test.
+  sigs = ['%s: %s' % (steve.hash_file('make_issue.py'), 'make_issue.py'),
+          ]
+
+  msg = _use_template('templates/monitor-email.ezt', 'unique-hash-key',
+                      issue_name, monitors_hash, hash, sigs,
+                      args, config)
+
+  ### mail the result. for now, print out what would have been mailed.
+  print '### DEBUG'
+  print msg
+  print '###'
 
 
 def email_voters():
   pass
 
 
-def _explain_vote(key):
-  return '### explain vote for: %s\n' % (key,)
+def _use_template(template_fname, key, issue_name, monitors_hash, hash, sigs,
+                  args, config):
+  data = {
+    'hashid': key,
+    'type': args.votetype.strip('0123456789'),
+    'issue_name': issue_name,
+    'group': args.group,
+    'selector': args.selector,
+    'style': args.style,
+    'hostname': config.hostname,
+    'monitors': args.monitors,
+    'monitors_hash': monitors_hash,
+    'email': config.email,
+    'file': args.file,
+    'sigs': sigs,
+    }
+  if hash:
+    data['count'] = len(hash)
+    data['hash2'] = sorted(v[1] for v in hash.values() if v[1])
+
+  buf = cStringIO.StringIO()
+  ezt.Template(template_fname, compress_whitespace=False).generate(buf, data)
+  return buf.getvalue()
 
 
 ### keep this? not sure that exceptions would be helpful since there is likely

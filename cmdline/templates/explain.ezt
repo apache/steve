@@ -1,0 +1,77 @@
+[#
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+]= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+Your voting key for this issue: [hashid]
+
+In order to vote, either visit
+
+   https://vote.apache.org/cast/[issue_name]/[hashid]
+
+or use ssh to login to [hostname] and then run
+
+   /home/voter/bin/vote [issue_name] [hashid] "vote"
+[is type "yna"]
+where "vote" must be replaced by "yes", "no", or "abstain".
+[else][is type "stv"]
+where "vote" must be replaced by a single word containing the
+concatenated labels of candidates in the order that you wish them
+to be selected.  In other words, if you want to vote for the candidates
+labeled [[]x], [[]s], and [[]p], in that order, then your vote should be "xsp".
+
+This election will be decided according to the Single Transferable Vote
+rules described at
+
+   http://wiki.apache.org/general/BoardVoting
+   http://www.electoral-reform.org.uk/votingsystems/stvi.htm
+   http://www.cix.co.uk/~rosenstiel/stvrules/index.htm
+
+for an election with [selector] open slots. 
+
+You have one vote.  Use your vote by entering the label of your
+first preference candidate followed by, if desired, the label of your
+second preference candidate, and so on until you are indifferent about
+the remaining candidates.  The sequence of your preferences is crucial.
+You should continue to express preferences only as long as you are able
+to place successive candidates in order.  A later preference is considered
+only if an earlier preference has a surplus above the quota required for
+election, or is excluded because of insufficient support.  Under no
+circumstances will a later preference count against an earlier preference.
+
+You may list as many candidates as you wish, but no more than once per
+vote (e.g., "xsxp" would be rejected).
+[else]
+where "vote" must be replaced by a single word containing the
+concatenated labels of your [selector] choices.  In other words,
+if you want to vote for the candidates labeled [[]x], [[]s], and [[]p],
+then your vote should be "xsp" (order does not matter).
+[end][end]
+If for some reason you are unable to use ssh to access [hostname],
+then you can vote by proxy: simply send your voting key to some
+person with ssh access that you trust, preferably with instructions
+on how you wish them to place your vote.
+
+For verification purposes, you will be receiving an e-mail notification
+each time your voting key is used.  Repeat votes will be considered
+a complete replacement of your prior vote.  Your vote will be
+recorded in a tally file and sent to the vote monitors along with
+a different unique key, minimizing the chance that the contents of
+your vote will be accidentally seen by someone else while associated
+to you.  That is why the verification e-mail will only state that you
+have voted, rather than including how you voted.
+
+If you have any problems or questions, send a reply to the vote monitors
+for this issue: [monitors]

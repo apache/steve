@@ -1,0 +1,59 @@
+[#
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+][#
+
+Note that we are generating header fields to push into Sendmail.
+
+]From: "Apache voting tool" <[email]>
+To: [monitors]
+Subject: Monitoring vote on [issue_name]
+
+You have been selected as a vote monitor for Apache
+
+   Issue: [issue_name]
+   Voting style: [style]
+
+[insertfile file]
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+The voting system will record a tally of the votes as they are received
+and will report that to you when the voting is closed.  To close voting,
+use ssh to login to $host and then run
+
+   /home/voter/bin/close_issue [issue_name] [monitors_hash]
+
+For verification purposes, you will be receiving an e-mail notification
+of each vote submitted by the voters.  Repeat votes should be considered
+a complete replacement of the person's prior vote.  Your primary role in
+all of this is to compare the votes you received with the results that
+are tallied automatically, letting the group know if there is a
+significant difference.  Any change made to the issue files during the
+voting process will immediately invalidate the hash IDs and kill voting.
+
+The following [count] voters are valid, as identified by the double-hashed ID
+that will be sent to you when a vote is recorded.  Note that these IDs are
+different from the single-hash IDs used by the voters when voting.
+
+[for hash2]  voter: [hash2]
+[end]
+The following explains the voting process to voters:
+
+[include "explain.ezt"]
+
+Current file digests:
+
+[for sigs][sigs]
+[end]
