@@ -57,8 +57,7 @@ def get_group(fname):
     if not line:
       continue
     if '@' not in line:
-      print '%s: voter must be an Internet e-mail address.' % (PROG,)
-      sys.exit(1)
+      raise ValueError('%s: voter must be an Internet e-mail address.' % (line,))
     group.add(line)
 
   return group
