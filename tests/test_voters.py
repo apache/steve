@@ -17,20 +17,17 @@
 # under the License.
 #
 import os
-
-from brownie.datastructures import Counter
-
-from steve.voters import get_group
+import steve
 
 
 DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
 
 def test_duplicates():
-    voters = get_group(os.path.join(DATA_DIR, 'duplicates.txt'))
+  voters = steve.get_group(os.path.join(DATA_DIR, 'duplicates.txt'))
 
-    assert len(voters) == 3
-    assert 'a@b.com' in voters
-    assert 'c@d.com' in voters
-    assert 'a@b.com' in [x for x, y in Counter(voters).items() if y > 1]
+  assert len(voters) == 3
+  assert 'a@b.com' in voters
+  assert 'c@d.com' in voters
+  assert voters.count('a@b.com') == 2
 
