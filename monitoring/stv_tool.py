@@ -30,6 +30,7 @@
 import sys
 import os.path
 import random
+import argparse
 import ConfigParser
 import re
 
@@ -87,6 +88,11 @@ def load_votes(fname):
 def read_nominees(votefile):
   ini_fname = os.path.join(os.path.dirname(votefile),
                            'board_nominations.ini')
+
+  # Use the below try instead to catch this??
+  if not os.path.exists(ini_fname):
+    print >> sys.stderr, "Error: board_nominations.ini could not be found at " + ini_fname
+    sys.exit(2)
 
   config = ConfigParser.ConfigParser()
   config.read(ini_fname)
@@ -377,24 +383,26 @@ def dbg(fmt, *args):
     print fmt % args
 
 
-def usage():
-  print 'USAGE: %s [-v] RAW_VOTES_FILE' % (os.path.basename(sys.argv[0]),)
-  sys.exit(1)
-
-
 if __name__ == '__main__':
-  if len(sys.argv) < 2 or len(sys.argv) > 3:
-    usage()
+  parser = argparse.ArgumentParser(description="Calculate a winner for a vote")
+  parser.add_argument('raw_file')
+  parser.add_argument("-s", "--seats", dest="seats", type=int,
+                      help="Number of seats available, default 9",
+                      default=9)
+  parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
+                      help="Enable verbose logging", default=False)
 
-  if sys.argv[1] == '-v':
-    VERBOSE = True
+  args = parser.parse_args()
 
-  votefile = sys.argv[-1]
+  VERBOSE = args.verbose
+  votefile = args.raw_file
+  num_seats = args.seats
+
   if not os.path.exists(votefile):
-    usage()
+    parser.print_help()
+    sys.exit(1)
 
   names, votes = load_votes(votefile)
 
-  ### take the count from options? (for whatif.cgi)
-  run_vote(names, votes, 9)
+  run_vote(names, votes, num_seats)
   print 'Done!'
