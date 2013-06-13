@@ -115,18 +115,18 @@ def augment_args(args, config):
   if args.group is None:
     args.group = steve.get_input_line('group name for voters on this issue', True)
   if not re.match(r'^\w+$', args.group):
-    die('group name must be an alphanumeric token')
+    steve.die('group name must be an alphanumeric token')
 
   if args.start is None:
     args.start = steve.get_input_line('YYYYMMDD date that voting starts', True)
   if not re.match(r'^[2-9]\d\d\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$',
                   args.start):
-    die('start date must be formatted as YYYYMMDD, like 20090930')
+    steve.die('start date must be formatted as YYYYMMDD, like 20090930')
 
   if args.issue is None:
     args.issue = steve.get_input_line('short issue name to append to date', True)
   if not re.match(r'^\w+$', args.issue):
-    die('issue name must be an alphanumeric token')
+    steve.die('issue name must be an alphanumeric token')
 
   if args.file is None:
     args.file = steve.get_input_line('file pathname of issue info on %s'
@@ -134,17 +134,17 @@ def augment_args(args, config):
                                      True)
   args.file = os.path.realpath(args.file)
   if not os.path.exists(args.file):
-    die('info file does not exist: %s', args.file)
+    steve.die('info file does not exist: %s', args.file)
   if args.file.startswith('/etc/'):
-    die('forbidden to read info files from: /etc')
+    steve.die('forbidden to read info files from: /etc')
   issue_dir = os.path.realpath(config.issue_dir)
   if args.file.startswith(issue_dir + '/'):
-    die('forbidden to read info files from: %s', issue_dir)
+    steve.die('forbidden to read info files from: %s', issue_dir)
 
   if args.monitors is None:
     args.monitors = steve.get_input_line('e-mail address(es) for vote monitors', True)
   if '@' not in args.monitors:
-    die('vote monitor must be an Internet e-mail address')
+    steve.die('vote monitor must be an Internet e-mail address')
 
   if args.votetype is None:
     args.votetype = steve.get_input_line('vote type; yna, stvN, or selectN (N=1-9)',
@@ -160,25 +160,25 @@ def augment_args(args, config):
     args.selector = int(args.votetype[6:])
     args.style = 'select %d of the candidates labeled [a-z0-9]' % (args.selector,)
   else:
-    die('vote type must be yna, stvN, or selectN (N=[1-9])')
+    steve.die('vote type must be yna, stvN, or selectN (N=[1-9])')
 
 
 def get_voters(args, config):
   if not os.path.isdir(config.issue_dir):
-    die('cannot find: %s', config.issue_dir)
+    steve.die('cannot find: %s', config.issue_dir)
 
   config.issue_dir += '/' + args.group
   if not os.path.isdir(config.issue_dir):
-    die('group "%s" has not been created yet, see votegroup', args.group)
+    steve.die('group "%s" has not been created yet, see votegroup', args.group)
   if not os.access(config.issue_dir, os.R_OK | os.W_OK | os.X_OK):
-    die('you lack permissions on: %s', config.issue_dir)
+    steve.die('you lack permissions on: %s', config.issue_dir)
   uid = os.stat(config.issue_dir).st_uid
   if uid != os.geteuid():
-    die('you are not the effective owner of: %s', config.issue_dir)
+    steve.die('you are not the effective owner of: %s', config.issue_dir)
 
   voters = steve.get_group(config.issue_dir + '/voters')
   if not voters:
-    die('"%s" must be an existing voter group: see votegroup', args.group)
+    steve.die('"%s" must be an existing voter group: see votegroup', args.group)
 
   return voters
 
@@ -189,7 +189,7 @@ def create_issue_dir(issue_name, args, config):
   # Note that .issue_dir already has the group.
   config.issue_dir += '/%s-%s' % (args.start, args.issue)
   if os.path.exists(config.issue_dir):
-    die('already exists: %s', config.issue_dir)
+    steve.die('already exists: %s', config.issue_dir)
   os.mkdir(config.issue_dir, 0700)
 
 
@@ -326,15 +326,6 @@ def _use_template(template_fname, key, issue_name, monitors_hash, hash, sigs,
   buf = cStringIO.StringIO()
   ezt.Template(template_fname, compress_whitespace=False).generate(buf, data)
   return buf.getvalue()
-
-
-### keep this? not sure that exceptions would be helpful since there is likely
-### no intent to trap them.
-def die(msg, *args):
-  "Print an error message and exit with failure."
-
-  print '%s: %s' % (steve.PROG, msg % args)
-  sys.exit(1)
 
 
 if __name__ == '__main__':

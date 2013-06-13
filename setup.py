@@ -102,11 +102,11 @@ setup(
     # don't ever depend on refcounting to close files anywhere else
     long_description=open('README', encoding='utf-8').read(),
 
-    scripts=["bin/votegroup"],
+  #  scripts=["bin/votegroup"],
 
-    namespace_packages=['steve'],
-    package_dir={'': 'src'},
-    packages=find_packages('src'),
+  #  namespace_packages=['steve'],
+    package_dir={'': 'lib'},
+    packages=find_packages('lib'),
 
     zip_safe=False,
     platforms='any',

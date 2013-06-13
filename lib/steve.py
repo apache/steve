@@ -26,6 +26,9 @@ import time
 import random
 import ConfigParser
 
+HOME_DIR = os.path.join('home', 'voter')
+ISSUE_DIR = os.path.join(HOME_DIR, 'issues')
+
 # Strip the .py extension, producing the setuid program name.
 PROG = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
@@ -45,11 +48,14 @@ def get_input_line(prompt, quittable=False):
     # loop until we get an answer
 
 
-def get_group(fname):
-  "Return the group of voters, as a set of email addresses."
+def get_group(filename):
+  """ Return the group of voters, as a list of email addresses
+      :param str filename: name of file that contains the group of voter email addresses
+      :rtype list(str): list of voter email addresses
+  """
 
-  group = set()
-  for line in open(fname).readlines():
+  group = []
+  for line in open(filename).readlines():
     i = line.find('#')
     if i >= 0:
       line = line[:i]
@@ -58,7 +64,7 @@ def get_group(fname):
       continue
     if '@' not in line:
       raise ValueError('%s: voter must be an Internet e-mail address.' % (line,))
-    group.add(line)
+    group.append(line)
 
   return group
 
@@ -166,3 +172,10 @@ def load_config(fname):
     def __init__(self, items):
       vars(self).update(items)
   return _config(parser.items('general'))
+
+
+def die(msg, *args):
+  "Print an error message and exit with failure."
+
+  print '%s: %s' % (PROG, msg % args)
+  sys.exit(1)
