@@ -21,6 +21,8 @@
 
 ##use strict;
 
+use Fcntl qw(:flock SEEK_END);
+
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
 $MD5      = '/sbin/md5';
@@ -242,6 +244,21 @@ sub ballots {
     }
   }
   return @ballots;
+}
+
+# ==========================================================================
+
+sub lock {
+  my ($f) = @_;
+  flock($f, LOCK_EX) or die "Cannot lock file: $!\n";
+  seek($f, 0, SEEK_END) or die "Cannot seek: $!\n";
+}
+
+# ==========================================================================
+
+sub unlock {
+  my ($f) = @_;
+  flock($f, LOCK_UN) or die "Cannot unlock file: $!\n";
 }
 
 1;

@@ -193,12 +193,12 @@ $date  = &get_date;
 $entry = "[$date] $vhash2 $vote\n";
 
 # ==========================================================================
-# write vote entry to tally file -- this should be atomic
+# write vote entry to tally file -- this should be atomic (ensure w/ flock)
 
 if (-e $closerfile) { die "$pname: $issuename already closed voting\n"; }
 
 open(TALLY, ">>$tallyfile") || die "$pname: cannot open tally: $!\n";
-
+lock(TALLY);
 $len = length($entry);
 $off = 0;
 do {
@@ -207,11 +207,9 @@ do {
     $len -= $written;
     $off -= $written;
 } while ($len > 0);
+unlock(TALLY);
 close(TALLY);
 
-# Disregard below "^####" comments for now...
-#### Close TALLY later, to "keep the books balanced" (well, noisily unbalanced)
-##### in case someone ^C's us just before sendmail is run.
 print "Your vote has been accepted on issue $issuename\n";
 
 # ==========================================================================
@@ -255,10 +253,6 @@ foreach $vf (@vfiles) {
     print(MAIL &hash_file($vf), ': ', $pf, "\n");
 }
 close(MAIL);
-
-# Finish log entry
-####syswrite(TALLY, "\n") or die "$pname: cannot finalize tally: $!\n";
-####close(TALLY);
 
 
 # ==========================================================================
