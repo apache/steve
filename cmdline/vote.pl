@@ -189,7 +189,8 @@ if (!defined($vhash2)) { die "I can't find your hashed-hash-ID\n"; }
 # ==========================================================================
 # construct vote entry
 $date  = &get_date;
-$entry = "[$date] $vhash2 $vote";
+####$entry = "[$date] $vhash2 $vote";
+$entry = "[$date] $vhash2 $vote\n";
 
 # ==========================================================================
 # write vote entry to tally file -- this should be atomic
@@ -206,9 +207,11 @@ do {
     $len -= $written;
     $off -= $written;
 } while ($len > 0);
+close(TALLY);
 
-# Close TALLY later, to "keep the books balanced" (well, noisily unbalanced)
-# in case someone ^C's us just before sendmail is run.
+# Disregard below "^####" comments for now...
+#### Close TALLY later, to "keep the books balanced" (well, noisily unbalanced)
+##### in case someone ^C's us just before sendmail is run.
 print "Your vote has been accepted on issue $issuename\n";
 
 # ==========================================================================
@@ -254,8 +257,8 @@ foreach $vf (@vfiles) {
 close(MAIL);
 
 # Finish log entry
-syswrite(TALLY, "\n") or die "$pname: cannot finalize tally: $!\n";
-close(TALLY);
+####syswrite(TALLY, "\n") or die "$pname: cannot finalize tally: $!\n";
+####close(TALLY);
 
 
 # ==========================================================================
