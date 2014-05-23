@@ -250,15 +250,15 @@ sub ballots {
 
 sub lock {
   my ($f) = @_;
-  flock($f, LOCK_EX) or die "Cannot lock file: $!\n";
-  seek($f, 0, SEEK_END) or die "Cannot seek: $!\n";
+  flock($f, LOCK_EX) || die "Cannot lock file: $!\n";
+  seek($f, 0, SEEK_END) || die "Cannot seek: $!\n";
 }
 
 # ==========================================================================
 
 sub unlock {
   my ($f) = @_;
-  flock($f, LOCK_UN) or die "Cannot unlock file: $!\n";
+  flock($f, LOCK_UN) || die "Cannot unlock file: $!\n";
 }
 
 1;
