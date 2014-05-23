@@ -52,12 +52,10 @@ install-make_issue: make_issue
 	rm -f $(INSTALLBIN)/make_issue $(INSTALLBIN)/make_issue.pl
 	cp -p make_issue.pl $(INSTALLBIN)/make_issue.pl
 	cp -p make_issue $(INSTALLBIN)/make_issue
-	cp -p ballots.pm $(INSTALLBIN)/ballots.pm
-	cp -p randomize.pm $(INSTALLBIN)/randomize.pm
+	cp -p steve.pm $(INSTALLBIN)/steve.pm
 	chmod 700 $(INSTALLBIN)/make_issue.pl
 	chmod 6755 $(INSTALLBIN)/make_issue
-	chmod 644 $(INSTALLBIN)/ballots.pm
-	chmod 644 $(INSTALLBIN)/randomize.pm
+	chmod 644 $(INSTALLBIN)/steve.pm
 
 install-vote: vote
 	rm -f $(INSTALLBIN)/vote $(INSTALLBIN)/vote.pl
