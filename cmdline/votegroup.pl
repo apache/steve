@@ -25,6 +25,10 @@
 #
 # Originally created by Roy Fielding
 #
+BEGIN {
+    unshift @INC, "/home/voter/bin";
+}
+
 require "getopts.pl";
 use steve;
 
@@ -170,4 +174,4 @@ $pf =~ s/^$homedir\///o;
 print &hash_file($votersfile), ': ', $pf, "\n";
 
 exit(0);
-
+z

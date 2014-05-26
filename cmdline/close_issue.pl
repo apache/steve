@@ -27,6 +27,10 @@
 # Originally created by Roy Fielding
 #
 
+BEGIN {
+    unshift @INC, "/home/voter/bin";
+}
+
 use steve;
 
 umask(0077);
