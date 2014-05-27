@@ -174,4 +174,3 @@ $pf =~ s/^$homedir\///o;
 print &hash_file($votersfile), ': ', $pf, "\n";
 
 exit(0);
-z
