@@ -134,7 +134,7 @@ _html do
 
       _label_ for: 'seats' do
         _span 'seats:'
-        _input name: 'seats', id: 'seats', value: @seats, size: 1
+        _input name: 'seats', id: 'seats', value: @seats, size: 2
       end
 
       _input type: 'submit', value: 'submit', name: 'submit'
@@ -178,7 +178,7 @@ _html do
         return refresh();
       }));
       seats.after($('<button>&#x21D1;</button>').click(function() {
-        if (seats.val()<$(':checkbox').length) {seats.val(seats.val()-0+1);}
+        if (seats.val()<1) {seats.val(seats.val()-0+1);}
         return refresh();
       }));
     }
