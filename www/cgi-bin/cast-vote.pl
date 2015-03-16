@@ -466,7 +466,14 @@ sub stv_form_interactive {
                 </form>
             </div>
         </div>
-        $other_issues
+        <div style="width: 100%; float: left;">
+            <p>
+                $trailer
+            </p>
+            <p>
+                $other_issues
+            </p>
+        </div>
     </body>
 </html>
 EoSTV
