@@ -414,7 +414,7 @@ sub stv_form_interactive {
         var seats = $num; // Number of seats on the board
         
         // Nominees
-        var candidates = [ $str_names ];
+        var candidates = [ $str_candidates ];
         var chars = [ $str_chars ];
         
         // Statements

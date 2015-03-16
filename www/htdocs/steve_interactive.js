@@ -406,8 +406,8 @@ function drawList() {
     document.getElementById('LOWER').style.borderTop = "none"
     
     // Set the current STV order
-    document.getElementById('cast').style.width = (chars_copy.length * 8)+ "px"
-    document.getElementById('cast').value = ballotChars.join("")
+    document.getElementById('vote').style.width = (chars_copy.length * 8)+ "px"
+    document.getElementById('vote').value = ballotChars.join("")
 }
 
 
