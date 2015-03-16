@@ -446,7 +446,8 @@ sub stv_form_interactive {
             back to the list of remaining candidates to the left.
         </p>
         
-        <div id="candidates">
+        <div id="candidates" ondragover="event.preventDefault();"
+         ondragenter="event.preventDefault();" ondragend="event.preventDefault();">
             Not seeing the canidate list? Please enable JavaScript!
         </div>
         
