@@ -54,7 +54,7 @@ function cancel(ev) {
     ev.preventDefault()
 }
 
-function reset() {
+function resetList() {
     candidates = []
     chars = []
     for (i in candidates_copy) candidates.push(candidates_copy[i])

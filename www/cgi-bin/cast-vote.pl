@@ -464,7 +464,7 @@ sub stv_form_interactive {
                     <b>Your STV order:</b>
                     <input type="text" id="vote" name="vote" style="width: 160px; font-family:
                     monospace;"/> <input type="submit" value="Cast votes"/> &nbsp;
-                    <input type="button" value="Reset" onclick="reset()"/>
+                    <input type="button" value="Reset" onclick="resetList()"/>
                 </form>
             </div>
         </div>
