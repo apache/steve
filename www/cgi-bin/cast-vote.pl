@@ -51,7 +51,7 @@ my $issue_name = "$group-$issue";
 
 my $q = CGI->new;
 
-my $interactive = $q->param(interactive)
+my $interactive = $q->param(interactive);
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
