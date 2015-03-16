@@ -437,7 +437,7 @@ sub stv_form_interactive {
             nominated people and $num board seats available. The red line
             denotes the cutaway, should all your choices be voted in. All the
             nominees are placed in random order on the canidate list. If the
-            canidate has prepared a statement, you can view it by clicking on
+            candidate has prepared a statement, you can view it by clicking on
             the statement link to the right of the candidate's name.
         </p>
         
