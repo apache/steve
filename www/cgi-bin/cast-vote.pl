@@ -51,6 +51,8 @@ my $issue_name = "$group-$issue";
 
 my $q = CGI->new;
 
+my $interactive = $q->param(interactive)
+
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
     open my $fh, "$VOTE_ISSUEDIR/$group/$issue/issue"
@@ -98,6 +100,9 @@ EOT
 
     if ($type eq "yna") {
         $output .= yna_form($voter, $issue_name, $issue_content, $trailer);
+    }
+    elsif ($type =~ /^stv([1-9])$/ && $interactive) {
+        $output .= stv_form_interactive($1, $voter, $issue_name, $issue_content, $trailer);
     }
     elsif ($type =~ /^stv([1-9])$/) {
         $output .= stv_form($1, $voter, $issue_name, $issue_content, $trailer);
@@ -381,6 +386,88 @@ $trailer
 </div>
 $other_issues
 </body>
+</html>
+EoSTV
+}
+
+sub stv_form_interactive {
+    my ($num, $voter, $issue_name, $issue_content, $trailer) = @_;
+    my $other_issues = other_issues($issue_name, $voter);
+    my @chars;
+    my @names;
+    while ($issue_content =~ m/\[([a-z])\]\s+(.+)/g) {
+        push @chars, "'$1'";
+        push @names, "\"$2\"";
+    }
+    my $str_candidates = join(", ", @names);
+    my $str_chars = join(", ", @chars);
+    my $str_statements = ""; # TODO!
+    my $num_candidates = scalar(@names);
+    return <<EoSTV;
+ <!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="stylesheet" href="/steve_interactive.css">
+        <script type="text/javascript">
+
+        // STV Data
+        var seats = $num; // Number of seats on the board
+        
+        // Nominees
+        var candidates = [ $str_names ];
+        var chars = [ $str_chars ];
+        
+        // Statements
+        var statements = { $str_statements };
+        
+        </script>
+        <script src="/steve_interactive.js" type="text/javascript"></script>
+
+        <title>Cast your vote &lt;$voter&gt; on $issue_name:</title>
+    </head>
+    <body onload="shuffleCandidates(); drawCandidates()">
+        <h2><h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1></h2>
+        
+        <p>
+            This is an interactive ballot for $issue_name, with $num_candidates
+            nominated people and $num board seats available. The red line
+            denotes the cutaway, should all your choices be voted in. All the
+            nominees are placed in random order on the canidate list. If the
+            canidate has prepared a statement, you can view it by clicking on
+            the statement link to the right of the candidate's name.
+        </p>
+        
+        <p>
+            <b>How to vote:</b><br/> Drag a candidate from the candidate list to the
+            ballot box to place them in the vote. You can rearrange your votes as you
+            see fit, by dragging candidates up/down on the ballot box list. You may
+            place as many canidates in the ballot box as you see fit. If you want to
+            remove a single candidate from your ballot box, simply drag the canidate
+            back to the list of remaining candidates to the left.
+        </p>
+        
+        <div id="candidates">
+            Not seeing the canidate list? Please enable JavaScript!
+        </div>
+        
+        <div id="ballotbox" ondragover="event.preventDefault();"
+         ondragenter="event.preventDefault();" ondragend="event.preventDefault();"
+         ondrop="dropCandidate(event)">
+            <font color='red'><h3>Drag candidates over here to vote for them</h3></font>
+            <ol id="ballot">
+                <img src="/images/target.png" style="margin-left: 100px;"/>
+            </ol>
+            <div id="stv">
+                <form method="POST">
+                    <b>Your STV order:</b>
+                    <input type="text" id="vote" name="vote" style="width: 160px; font-family:
+                    monospace;"/> <input type="submit" value="Cast votes"/> &nbsp;
+                    <input type="button" value="Reset" onclick="reset()"/>
+                </form>
+            </div>
+        </div>
+        $other_issues
+    </body>
 </html>
 EoSTV
 }
