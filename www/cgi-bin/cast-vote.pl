@@ -436,9 +436,7 @@ sub stv_form_interactive {
             This is an interactive ballot for $issue_name, with $num_candidates
             nominated people and $num board seats available. The red line
             denotes the cutaway, should all your choices be voted in. All the
-            nominees are placed in random order on the canidate list. If the
-            candidate has prepared a statement, you can view it by clicking on
-            the statement link to the right of the candidate's name.
+            nominees are placed in random order on the canidate list.
         </p>
         
         <p>
