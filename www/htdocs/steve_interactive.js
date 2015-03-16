@@ -20,7 +20,7 @@
 
 var ballotNames = []
 var ballotChars = []
-var chars = chars? chars : ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']  // Corresponding STV letters, in same order as nominees
+var chars = chars? chars : ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']  // Corresponding STV letters, in same order as nominees
 var fading = false
 // Cut away unused chars
 while (chars.length > candidates.length) chars.splice(-1,1)
