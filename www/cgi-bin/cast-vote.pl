@@ -344,7 +344,9 @@ sub stv_form {
 <div id="issue"><pre>$issue_content</pre></div>
 </center>
 <hr />
-
+<p>
+    Looking for the interactive version? <a href="?interactive=true">Click here!</a>
+</p>
 <p>
 To cast your vote, fill in the form entry for your vote below with a
 single word containing the concatenated <b>labels</b> of the candidates in the
@@ -427,7 +429,9 @@ sub stv_form_interactive {
     </head>
     <body onload="shuffleCandidates(); drawCandidates()">
         <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
-        
+        <p>
+            Looking for the old version? <a href="?">Click here!</a>
+        </p>
         <p>
             This is an interactive ballot for $issue_name, with $num_candidates
             nominated people and $num board seats available. The red line
