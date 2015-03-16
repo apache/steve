@@ -30,7 +30,7 @@ use URI::Escape;
 BEGIN {
     unshift @INC, "/home/voter/bin";
 }
-use randomize;
+use steve;
 
 
 my $VOTE_TOOL = "/home/voter/bin/vote";
