@@ -447,7 +447,8 @@ sub stv_form_interactive {
         </p>
         
         <div id="candidates" ondragover="event.preventDefault();"
-         ondragenter="event.preventDefault();" ondragend="event.preventDefault();">
+         ondragenter="event.preventDefault();" ondragend="event.preventDefault();"
+         ondrop="dropBack(event);">
             Not seeing the canidate list? Please enable JavaScript!
         </div>
         
