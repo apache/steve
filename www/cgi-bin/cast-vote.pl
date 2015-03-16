@@ -426,7 +426,7 @@ sub stv_form_interactive {
         <title>Cast your vote &lt;$voter&gt; on $issue_name:</title>
     </head>
     <body onload="shuffleCandidates(); drawCandidates()">
-        <h2><h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1></h2>
+        <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
         
         <p>
             This is an interactive ballot for $issue_name, with $num_candidates
