@@ -110,7 +110,7 @@ function dropComplete(z) {
     // Redraw and carry on
     
     drawList()
-    fadeIn(0, z)
+    fadeIn(0, z, Math.random())
 }
 
 
@@ -230,7 +230,7 @@ function dropCandidate(ev) {
         chars.splice(candidates.indexOf(source), 1)
         candidates.splice(candidates.indexOf(source), 1)
         
-        fadeIn(0, "ballot")
+        fadeIn(0, "ballot", Math.random())
         //ev.preventDefault()
         drawCandidates();
         drawList();
@@ -256,7 +256,7 @@ function dropBack(ev) {
         ballotNames.splice(ballotNames.indexOf(source), 1)
         drawList();
         drawCandidates();
-        fadeIn(0, "candidates")
+        fadeIn(0, "candidates", Math.random())
         
     } else {
         dest = null
@@ -433,8 +433,15 @@ function fadeOut(x) {
     }   
 }
 
-function fadeIn(x, y) {
+var gz = 0;
+function fadeIn(x, y, z) {
     if (source) {
+        if (x == 0) {
+            gz = z;
+        }
+        if (z != gz) {
+            return;
+        }
         x += 0.1
         if (x >= 1) {
             x = 1
@@ -445,7 +452,7 @@ function fadeIn(x, y) {
         document.getElementById(source).setAttribute("class", "ballotSelected")
         if (x < 1) {
             fading = true
-            window.setTimeout(function() { fadeIn(x, y)}, 25)
+            window.setTimeout(function() { fadeIn(x, y, z)}, 25)
             
         } else {
              window.setTimeout(function() {fading = false }, 250)
