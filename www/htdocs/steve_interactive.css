@@ -68,6 +68,11 @@ p {
   transition: color .1s ease;
   cursor: pointer;
 }
+.btn-red:hover {
+  background: #d5421b;
+  transition: 0.3s ease;
+}
+
 .btn-green {
   background: #328a2b;
   border: #328a2b solid 1px;
@@ -80,10 +85,14 @@ p {
   text-align: center;
   min-width: 50px;
   position: relative;
-  transition: color .1s ease;
+  transition: color .2s ease;
   cursor: pointer;
 }
 
+.btn-green:hover {
+  background: #52Aa2b;
+  transition: 0.3s ease;
+}
 .btn:hover {
   background: #357ebd;
 }

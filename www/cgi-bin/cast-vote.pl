@@ -486,7 +486,7 @@ sub stv_form_interactive {
             <div id="stv">
                 <form method="POST">
                     <b>Your STV order:</b>
-                    <input type="text" id="vote" name="vote" style="width: 160px; font-family:
+                    <input type="text" id="vote" name="vote" style="width: 140px; font-family:
                     monospace;"/> <input type="submit" class="btn-green" value="Cast votes"/> &nbsp;
                     <input type="button" value="Reset" class="btn-red" onclick="resetList()"/>
                 </form>
