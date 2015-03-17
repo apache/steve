@@ -22,6 +22,7 @@
 ##use strict;
 
 use Fcntl qw(:flock SEEK_END);
+use Digest::MD5;
 
 $ECHO     = '/bin/echo';
 $CAT      = '/bin/cat';
@@ -92,35 +93,25 @@ sub filestuff {
 }
 
 # ==========================================================================
+
 sub get_hash_of {
     local ($item) = @_;
-    local ($rv);
+    local $md5 = Digest::MD5->new;
 
-    if (-x $MD5) {
-        $rv = `$MD5 -q -s "$item"` || die "$pname: failed md5: $!\n";
-    }
-    else {
-        $rv = `$ECHO "$item" | $OPENSSL md5`
-              || die "$pname: failed openssl md5: $!\n";
-    }
-    chomp($rv);
-    return $rv;
+    $md5->add($item);
+    return $md5->hexdigest;
 }
 
 # ==========================================================================
+
 sub hash_file {
     local ($filename) = @_;
-    local ($rv);
 
-    if (-x $MD5) {
-        $rv = `$MD5 -q "$filename"` || die "$pname: failed md5: $!\n";
-    }
-    else {
-        $rv = `$CAT "$filename" | $OPENSSL md5`
-              || die "$pname: failed openssl md5: $!\n";
-    }
-    chomp($rv);
-    return $rv;
+    open(INFILE, $filename) || die "$pname: cannot open $filename: $!\n";
+    local $/;   # Set input to "slurp" mode.
+    local $item = <INFILE>;
+    close(INFILE);
+    return get_hash_of($item);
 }
 
 # ==========================================================================
