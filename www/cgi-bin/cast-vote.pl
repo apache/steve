@@ -51,7 +51,7 @@ my $issue_name = "$group-$issue";
 
 my $q = CGI->new;
 
-my $interactive = $q->param(interactive);
+my $interactive = $q->param('interactive');
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
@@ -433,10 +433,13 @@ sub stv_form_interactive {
             Looking for the old version? <a href="?">Click here!</a>
         </p>
         <p>
-            This is an interactive ballot for $issue_name, with $num_candidates
+            This is an interactive ballot for <a
+            href="#issue_details">$issue_name</a>, with $num_candidates
             nominated people and $num board seats available. The red line
             denotes the cutaway, should all your choices be voted in. All the
-            nominees are placed in random order on the canidate list.
+            nominees are placed in random order on the canidate list. To view
+            more details about this election, including statements, <a
+            href="#issue_details">click here</a>.
         </p>
         
         <p>
@@ -447,6 +450,25 @@ sub stv_form_interactive {
             remove a single candidate from your ballot box, simply drag the canidate
             back to the list of remaining candidates to the left.
         </p>
+        
+        
+        <!-- Issue details goes here -->
+        <div class="modal" id="issue_details" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-header">
+                <h2>Issue details</h2>
+                <a href="#close" class="btn-close" aria-hidden="true">×</a>
+              </div>
+              <div class="modal-body">
+                <pre>$issue_content
+                </pre>
+              </div>
+              <div class="modal-footer">
+                <a href="#close" class="btn">Close</a>
+              </div>
+              </div>
+            </div>
+        </div>
         
         <div id="candidates" ondragover="event.preventDefault();"
          ondragenter="event.preventDefault();" ondragend="event.preventDefault();"
@@ -465,8 +487,8 @@ sub stv_form_interactive {
                 <form method="POST">
                     <b>Your STV order:</b>
                     <input type="text" id="vote" name="vote" style="width: 160px; font-family:
-                    monospace;"/> <input type="submit" value="Cast votes"/> &nbsp;
-                    <input type="button" value="Reset" onclick="resetList()"/>
+                    monospace;"/> <input type="submit" class="btn-green" value="Cast votes"/> &nbsp;
+                    <input type="button" value="Reset" class="btn-red" onclick="resetList()"/>
                 </form>
             </div>
         </div>
