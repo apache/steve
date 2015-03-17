@@ -371,7 +371,7 @@ function drawList() {
         outer.setAttribute("draggable", "true")
         outer.setAttribute("ondragstart", "dragVote(event)")
         outer.setAttribute("ondragenter", "showLines(event)")
-        inner.append(no)
+        inner.appendChild(no)
         outer.appendChild(inner)
         outer.setAttribute("title", "Drag to move "  + el + " up or down on the list")
         outer.setAttribute("ondrop", "dropVote(event, false)")
