@@ -275,7 +275,6 @@ Reply-To: $monitors
 Somebody (hopefully you or your proxy) has recorded a vote on
 
    issue: $issuename
-   vote:  $vote
 
 using the voting key assigned to you.
 
