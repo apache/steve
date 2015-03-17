@@ -363,6 +363,10 @@ function drawList() {
         
         // Add element and set drag'n'drop + data
         var inner = document.createElement('span')
+        inner.style.left = "35px"
+        inner.style.maxWidth = "300px"
+        inner.style.maxHeight = "60px"
+        inner.style.overflow = "hidden"
         inner.innerHTML = ballotChars[i] + ": " + el;
         inner.setAttribute("ondrop", "dropVote(event, true)")
         outer.setAttribute("id", el)
@@ -371,7 +375,7 @@ function drawList() {
         outer.setAttribute("draggable", "true")
         outer.setAttribute("ondragstart", "dragVote(event)")
         outer.setAttribute("ondragenter", "showLines(event)")
-        inner.appendChild(no)
+        outer.appendChild(no)
         outer.appendChild(inner)
         outer.setAttribute("title", "Drag to move "  + el + " up or down on the list")
         outer.setAttribute("ondrop", "dropVote(event, false)")

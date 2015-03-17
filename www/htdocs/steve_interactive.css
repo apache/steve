@@ -213,7 +213,7 @@ pre {
 .ballotbox {
     border: 1px dotted #666;
     padding: 4px;
-    max-width: 300px;
+    max-width: 340px;
     min-height: 25px;
     cursor: move;
     cursor: grab;
@@ -271,7 +271,7 @@ pre {
 .ballotSelected {
     border: 1px dotted #666;
     padding: 4px;
-    max-width: 300px;
+    max-width: 340px;
     min-height: 25px;
     cursor: move;
     cursor: grab;
@@ -315,4 +315,7 @@ body, html {
   font-size: 12px;
   margin-bottom: 4px;
   padding-top: 3px;
+  position: relative;
+  top: 0px;
+  left: 0px;
 }
