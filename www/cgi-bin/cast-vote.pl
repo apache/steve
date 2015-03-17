@@ -50,7 +50,7 @@ my $issue_name = "$group-$issue";
 
 my $q = CGI->new;
 
-my $interactive = $q->param('interactive');
+my $interactive = $q->param('interactive') eq "no" ? 0 : 1;
 
 if ($ENV{REQUEST_METHOD} eq "GET" or $ENV{REQUEST_METHOD} eq "HEAD") {
 
@@ -307,7 +307,7 @@ sub stv_form {
 </center>
 <hr />
 <p>
-    Looking for the interactive version? <a href="?interactive=true">Click here!</a>
+    Looking for the interactive version? <a href="?">Click here!</a>
 </p>
 <p>
 To cast your vote, fill in the form entry for your vote below with a
@@ -392,7 +392,7 @@ sub stv_form_interactive {
     <body onload="shuffleCandidates(); drawCandidates()">
         <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
         <p style="text-align: center;">
-            <small><i>Looking for the old text-only version? <a href="?">Click here!</a></i></small>
+            <small><i>Looking for the old text-only version? <a href="?interactive=no">Click here!</a></i></small>
         </p>
         <p>
             This is an interactive ballot for <a
