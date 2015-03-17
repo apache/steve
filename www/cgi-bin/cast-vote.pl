@@ -32,7 +32,6 @@ BEGIN {
 use steve;
 use strict;
 
-
 my $VOTE_TOOL = "/home/voter/bin/vote";
 my $VOTE_TMPDIR = "/home/voter/tmp";
 my $VOTE_ISSUEDIR = "/home/voter/issues";
@@ -232,9 +231,16 @@ sub fetch_voter {
     my $issue_id = eval { filestuff("$VOTE_ISSUEDIR/$group/$issue/issue") }
         or return;
     for my $voter (eval { get_group("$VOTE_ISSUEDIR/$group/voters") }) {
-        return $voter if get_hash_of("$issue_id:$voter") eq $hash;
+        return $voter if mget_hash_of("$issue_id:$voter") eq $hash;
     }
     return;
+}
+
+sub mget_hash_of {
+    my ($item) = @_;
+    my $md5 = Digest::MD5->new;
+    $md5->add($item);
+    return $md5->hexdigest;
 }
 
 sub yna_form {
@@ -525,7 +531,7 @@ sub other_issues {
 
     for my $issue (sort grep /^\d+-\w+$/, readdir $dir) {
         my $issue_id = filestuff("$VOTE_ISSUEDIR/$group/$issue/issue");
-        my $hash = get_hash_of("$issue_id:$voter");
+        my $hash = mget_hash_of("$issue_id:$voter");
         $html .= "$group-$issue" eq $issue_name
             ?  qq(<li>$issue</li>\n)
                 : qq(<li><a href="/cast/$group-$issue/$hash">$issue</a></li>\n);
