@@ -422,6 +422,9 @@ function fadeOut(x) {
         if (!x) {
             x = 1
         }
+        if (fading) {
+            return;
+        }
         x -= 0.1
         document.getElementById(source).setAttribute("class", "ballotSelected")
         document.getElementById(source).style.opacity = String(x)
