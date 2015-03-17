@@ -429,8 +429,8 @@ sub stv_form_interactive {
     </head>
     <body onload="shuffleCandidates(); drawCandidates()">
         <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
-        <p>
-            Looking for the old version? <a href="?">Click here!</a>
+        <p style="text-align: center;">
+            <small><i>Looking for the old text-only version? <a href="?">Click here!</a></i></small>
         </p>
         <p>
             This is an interactive ballot for <a
