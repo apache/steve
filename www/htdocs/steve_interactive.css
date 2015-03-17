@@ -214,7 +214,7 @@ pre {
     border: 1px dotted #666;
     padding: 4px;
     max-width: 300px;
-    min-height: 22px;
+    min-height: 25px;
     cursor: move;
     cursor: grab;
     font-family: monospace;
@@ -239,7 +239,7 @@ pre {
     border: 1px dotted #666;
     padding: 4px;
     max-width: 330px;
-    min-height: 22px;
+    min-height: 25px;
     cursor: move;
     cursor: grab;
     font-family: monospace;
@@ -272,7 +272,7 @@ pre {
     border: 1px dotted #666;
     padding: 4px;
     max-width: 300px;
-    min-height: 22px;
+    min-height: 25px;
     cursor: move;
     cursor: grab;
     font-family: monospace;
