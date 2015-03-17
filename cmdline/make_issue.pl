@@ -440,11 +440,6 @@ concatenated labels of candidates in the order that you wish them
 to be selected.  In other words, if you want to vote for the candidates
 labeled [x], [s], and [p], in that order, then your vote should be "xsp".
 
-You can also use our interactive page to easily select your candidates and
-order of preference at:
-   
-   https://vote.apache.org/cast/$issuename/$hashid
-
 This election will be decided according to the Single Transferable Vote
 rules described at
 
