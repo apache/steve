@@ -51,8 +51,39 @@ p {
   min-width: 60px;
   position: relative;
   transition: color .1s ease;
-  /* top: 40em;*/
+  cursor: pointer;
 }
+.btn-red {
+  background: #c5321b;
+  border: #bd351e solid 1px;
+  border-radius: 3px;
+  color: #fff;
+  display: inline-block;
+  font-size: 14px;
+  padding: 4px 8px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 50px;
+  position: relative;
+  transition: color .1s ease;
+  cursor: pointer;
+}
+.btn-green {
+  background: #328a2b;
+  border: #328a2b solid 1px;
+  border-radius: 3px;
+  color: #fff;
+  display: inline-block;
+  font-size: 14px;
+  padding: 4px 8px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 50px;
+  position: relative;
+  transition: color .1s ease;
+  cursor: pointer;
+}
+
 .btn:hover {
   background: #357ebd;
 }
@@ -149,7 +180,7 @@ pre {
     float: left;
 }
 #ballotbox {
-    width: 460px;
+    width: 480px;
     min-height: 100px;
     padding-top: 30px;
     padding-bottom: 10px;
