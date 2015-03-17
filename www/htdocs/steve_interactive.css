@@ -293,3 +293,26 @@ body, html {
 * {
     -webkit-user-select: none; 
 }
+
+#ballot {
+  list-style: none;
+  text-align: left;
+}
+#ballot .ballotNumber {
+  /*background: linear-gradient(to bottom, #fccd41 0%,#cea202 100%);*/
+  background: linear-gradient(to bottom, #4f7bff 0%,#1444bc 100%);
+  border-radius: 12px;
+  border: 3px solid #FFF;
+  border-bottom-width: 4px;
+  color: #FFF;
+  box-shadow: 0px 2px 2px 0px rgba(153,153,153,1);
+  width: 20px;
+  float: left;
+  text-align: center;
+  font-family: sans-serif;
+  margin-right: 8px;
+  height: 16px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  padding-top: 3px;
+}

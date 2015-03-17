@@ -343,6 +343,11 @@ function drawList() {
         // Set style
         outer.setAttribute("class", "ballotbox")
         
+        var no = document.createElement('div');
+        no.setAttribute("class", "ballotNumber")
+        no.innerHTML = (s)
+        
+        
         // Above/below cutaway line? If so, draw it
         if (s == seats) {
             outer.style.borderBottom = "1px solid #A00"
@@ -366,14 +371,14 @@ function drawList() {
         outer.setAttribute("draggable", "true")
         outer.setAttribute("ondragstart", "dragVote(event)")
         outer.setAttribute("ondragenter", "showLines(event)")
+        inner.append(no)
         outer.appendChild(inner)
         outer.setAttribute("title", "Drag to move "  + el + " up or down on the list")
         outer.setAttribute("ondrop", "dropVote(event, false)")
         
         
         if (el == source) {
-            outer.style.transform = "scaleY(0)"
-            outer.style.minHeight = "0px"
+            outer.style.opacity = "0"
         }
         
         // Add to box
@@ -435,9 +440,6 @@ function fadeIn(x, y) {
             x = 1
         }
         document.getElementById(source).style.opacity = String(x)
-        document.getElementById(source).style.height = (x*22) + "px"
-        document.getElementById(source).style.fontSize = (x*16) + "px"
-        document.getElementById(source).style.transform = "scaleY(" + x + ")"
         
         
         document.getElementById(source).setAttribute("class", "ballotSelected")
