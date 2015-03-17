@@ -237,43 +237,6 @@ sub fetch_voter {
     return;
 }
 
-sub get_hash_of {
-    my ($item) = @_;
-    my $md5 = Digest::MD5->new;
-    $md5->add($item);
-    return $md5->hexdigest;
-}
-
-sub get_group {
-    my ($groupfile) = @_;
-    local $_;
-    my @rv;
-
-    open(my $INFILE, $groupfile) || die "cannot open $groupfile: $!\n";
-    while (<$INFILE>) {
-        chomp;
-        s/#.*$//;
-        s/\s+$//;
-        s/^\s+//;
-        next if (/^$/);
-        push(@rv, $_);
-    }
-    close($INFILE);
-    return @rv;
-}
-
-sub filestuff {
-    my ($filename) = @_;
-    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-        $atime,$mtime,$ctime,$blksize,$blocks);
-
-    ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-     $atime,$mtime,$ctime,$blksize,$blocks) = stat($filename)
-         or die "Can't stat $filename: $!\n";
-
-    return "$ino:$mtime";
-}
-
 sub yna_form {
     my ($voter, $issue_name, $issue_content, $trailer) = @_;
     my $other_issues = other_issues($issue_name, $voter);
