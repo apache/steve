@@ -20,7 +20,6 @@
 #                on validated input.
 #                Assumes the url-path for this script is /cast.
 
-use strict;
 use warnings;
 use CGI;
 use CGI::Carp qw/fatalsToBrowser/;
@@ -31,6 +30,7 @@ BEGIN {
     unshift @INC, "/home/voter/bin";
 }
 use steve;
+use strict;
 
 
 my $VOTE_TOOL = "/home/voter/bin/vote";
