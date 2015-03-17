@@ -425,7 +425,7 @@ sub stv_form_interactive {
         </script>
         <script src="/steve_interactive.js" type="text/javascript"></script>
 
-        <title>Cast your vote &lt;$voter&gt; on $issue_name:</title>
+        <title>Vote on $issue_name</title>
     </head>
     <body onload="shuffleCandidates(); drawCandidates()">
         <h1>Cast your vote &lt;$voter&gt; on $issue_name:</h1>
