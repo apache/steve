@@ -145,6 +145,8 @@ p {
 .modal-body {
   padding: 20px;
   word-wrap: break-word;
+  max-height: 450px;
+  overflow: auto;
 }
 pre {
   word-wrap: break-word;
