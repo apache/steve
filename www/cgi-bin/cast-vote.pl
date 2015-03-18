@@ -397,9 +397,8 @@ sub stv_form_interactive {
         <p>
             This is an interactive ballot for <a
             href="#issue_details">$issue_name</a>, with $num_candidates
-            nominated people and $num board seats available. The red line
-            denotes the cutaway, should all your choices be voted in. All the
-            nominees are placed in random order on the canidate list. To view
+            nominated people and $num board seats available. All the
+            nominees are placed in random order on the candidate list. To view
             more details about this election, including statements, <a
             href="#issue_details">click here</a>.
         </p>
@@ -408,9 +407,10 @@ sub stv_form_interactive {
             <b>How to vote:</b><br/> Drag a candidate from the candidate list to the
             ballot box to place them in the vote. You can rearrange your votes as you
             see fit, by dragging candidates up/down on the ballot box list. You may
-            place as many canidates in the ballot box as you see fit. If you want to
-            remove a single candidate from your ballot box, simply drag the canidate
-            back to the list of remaining candidates to the left.
+            place as many candidates in the ballot box as you see fit. If you want to
+            remove a single candidate from your ballot box, simply drag the candidate
+            back to the list of remaining candidates to the left. The red line
+            denotes the cutaway, should all your choices be voted in.
         </p>
         
         
