@@ -32,7 +32,6 @@ if 'SCRIPT_FILENAME' in os.environ:
     
 from lib import response
 
-
 # Fetch config (hack, hack, hack)
 config = configparser.RawConfigParser()
 config.read(path + '/../../steve.cfg')
@@ -79,10 +78,11 @@ if pathinfo:
                                 'owner': form.getvalue('owner'),
                                 'monitors': form.getvalue('monitors').split(","),
                                 'starts': form.getvalue('starts'),
-                                'ends': form.getvalue('ends')
+                                'ends': form.getvalue('ends'),
+                                'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'])).hexdigest()
                             }))
                             f.close()
-                        response.respond(201, {'message': 'Created!'})
+                        response.respond(201, {'message': 'Created!', 'id': election})
                     except Exception as err:
                         response.respond(500, {'message': "Could not create election: %s" % err})
             else:
@@ -127,13 +127,37 @@ if pathinfo:
                                     'nominatedby': form.getvalue('nominatedby')
                                 }))
                                 f.close()
-                            response.respond(201, {'message': 'Created!'})
+                            response.respond(201, {'message': 'Created!', 'id': issue})
                         except Exception as err:
                             response.respond(500, {'message': "Could not create issue: %s" % err})
             else:
                 response.respond(400, {'message': "No election specified!"})
         else:
             response.respond(403, {'message': 'You do not have enough karma for this'})
+    
+    # Delete an issue in an election
+    elif action == "delete":
+        if karma >= 4: # karma of 4 required to set up an issue for the election
+            if election:
+                issue = l[2] if len(l) > 2 else None
+                if not issue:
+                    response.respond(400, {'message': 'No issue ID specified'})
+                else:
+                    issuepath = os.path.join(homedir, "issues", election, issue)
+                    if os.path.isfile(issuepath + ".json"):
+                        try:
+                            os.unlink(issuepath + ".json")
+                            response.respond(200, {'message': "Issue deleted"})
+                        except Exception as err:
+                            response.respond(500, {'message': 'Could not delete issue: %s' % err})
+                    else:
+                        response.respond(404, {'message': "No such issue!"})
+            else:
+                response.respond(400, {'message': "No election specified!"})
+        else:
+            response.respond(403, {'message': 'You do not have enough karma for this'})
+    
+    
     
     # Edit an issue or election
     elif action == "edit":
