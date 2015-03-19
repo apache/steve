@@ -68,6 +68,8 @@ if pathinfo:
                 try:
                     with open(elpath + "/basedata.json", "r") as f:
                         basedata = json.loads(f.read())
+                        if 'hash' in basedata:
+                            del basedata['hash']
                         f.close()
                     issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" ]
                     for issue in issues:
