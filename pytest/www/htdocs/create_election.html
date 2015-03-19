@@ -1,0 +1,59 @@
+ <!DOCTYPE HTML>
+<html>
+<head>
+<link rel="stylesheet" href="css/steve_interactive.css">
+<link rel="stylesheet" href="css/jquery-ui.css">
+<script src="js/steve_rest.js" type="text/javascript"></script>
+<script src="js/jquery.js" type="text/javascript"></script>
+<script src="js/jquery-ui.js" type="text/javascript"></script>
+<title>Create a new election</title>
+</head>
+<body onload="document.getElementById('eid').value = parseInt(Math.random()*987654321).toString(16);">
+    <div id="popups"></div>
+    <p style="text-align: center;">
+        <img src="/images/steve_logo.png"/>
+    </p>
+<div class="formbox">
+<h2>Create an election:</h2>
+<form>
+    <fieldset>
+        <legend>Base data</legend>
+    <div class="keyvaluepair">
+        <div class="keyfield">ID of election:</div>
+        <input type="text" id="eid"/><br>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Name of election:</div>
+        <input type="text" id="title"/><br>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Owner of election (UID):</div>
+        <input type="text" id="owner"/><br>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Election monitors (emails):</div>
+        <input type="text" id="monitors"/><br>
+    </div>
+    </fieldset>
+    <fieldset>
+        <legend>Optional information</legend>
+            <div class="keyvaluepair">
+        <div class="keyfield">Date election opens (optional):</div>
+        <input type="text" placeholder="YYYY-MM-DD" id="starts" onfocus="$('#starts').datepicker({
+            dateFormat: 'yy-mm-dd'
+               });"/><br>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Date election ends (optional):</div>
+        <input type="text" placeholder="YYYY-MM-DD" id="ends" onfocus="$('#ends').datepicker({
+            dateFormat: 'yy-mm-dd'
+               });"/><br>
+    </div>
+    </fieldset>
+    <div class="keyvaluepair">
+        <input type="button" onclick="createElection();" value="Create election" class="btn-green"/>
+    </div>
+</form>
+</div>
+</body>
+</html>
