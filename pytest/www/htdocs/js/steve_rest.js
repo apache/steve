@@ -295,19 +295,56 @@ function renderElectionBulk(response, el) {
 			
 			// Add issue
 			var inner = document.createElement('span')
-			inner.innerHTML = issue.id + ": " + issue.title;
+			inner.innerHTML = issue.title;
 			outer.appendChild(no)
 			outer.appendChild(inner)
 			outer.style.height = "32px"
 			outer.style.marginBottom = "15px"
 			
 			// details
+			
 			var statement = document.createElement('div')
             statement.setAttribute("class", "statement_marker")
 			statement.style.float = "left"
+			statement.style.marginRight = "15px"
             statement.setAttribute("title", "Click to read issue details")
             statement.innerHTML = "<a href='#details_"+issue.id+"'>Details</a>"
 			outer.appendChild(statement)
+			
+			
+			var popup = document.createElement("div")
+            popup.setAttribute("class", "modal")
+            popup.setAttribute("id", "details_" + issue.id)
+            popup.setAttribute("aria-hidden", "true")
+            
+            var popupd = document.createElement("div")
+            popupd.setAttribute("class", "modal-dialog")
+            popup.appendChild(popupd)
+            
+            var popuph = document.createElement("div")
+            popuph.setAttribute("class", "modal-header")
+            popuph.innerHTML = '<h2>Details about issue #' + issue.id + ": " + issue.title + '</h2><a href="#close" class="btn-close" aria-hidden="true">×</a>'
+            
+			details = "<b>Nominated by: </b>" + issue.nominatedby + "<br/>"
+			details += "<b>Seconded by: </b>" + (issue.seconds ? issue.seconds : "no-one") + "<br/>"
+			details += "<br/><b>Description:<blockquote>" + issue.description + "</blockquote>"
+            var popupb = document.createElement("div")
+            popupb.setAttribute("class", "modal-body")
+            popupb.innerHTML = '<pre>' + details + '</pre>'
+            
+            var popupf = document.createElement("div")
+            popupf.setAttribute("class", "modal-footer")
+            popupf.innerHTML = '<a href="#close" class="btn">Close window</a>'
+            
+            popupd.appendChild(popuph)
+            popupd.appendChild(popupb)
+            popupd.appendChild(popupf)
+            
+            document.getElementsByTagName('body')[0].appendChild(popup)
+			
+			
+			
+			
 			
 			var yes = document.createElement('input')
 			yes.setAttribute("type", "button")
