@@ -173,7 +173,7 @@ function createIssue(election) {
 }
 
 
-var step = 0;
+var step = -1;
 var election_data = null
 function loadElection(election, uid, callback) {
 	
@@ -181,9 +181,9 @@ function loadElection(election, uid, callback) {
 	if (!election || !uid) {
 		var l = document.location.search.substr(1).split("/");
 		election = l[0];
-		uid = l[1] ? l[1] : "";
+		uid = l.length > 1 ? l[l.length-1] : "";
 	}
-	if (step == 0) {
+	if (step == -1) {
 		getJSON("/steve/voter/view/" + election + "?uid=" + uid, [election,uid, callback], displayElection)
 	}
 	
@@ -207,7 +207,7 @@ function loadElection(election, uid, callback) {
 function displayElection(code, response, el) {
 	election_data = response
 	if (code == 200) {
-		window.setTimeout(el[2], 1000, response, el);
+		window.setTimeout(el[2], 100, response, el);
 	} else {
 		document.getElementById('preloaderWrapper').innerHTML = "<h1>Sorry, an error occured while fetching election data:</h1><h2>" + response.message + "</h2>"
 	}
@@ -323,7 +323,7 @@ function renderElectionBulk(response, el) {
             
             var popuph = document.createElement("div")
             popuph.setAttribute("class", "modal-header")
-            popuph.innerHTML = '<h2>Details about issue #' + issue.id + ": " + issue.title + '</h2><a href="#close" class="btn-close" aria-hidden="true">×</a>'
+            popuph.innerHTML = '<h2>Details about issue #' + issue.id + ": " + issue.title + '</h2><a href="#close" class="btn-close" aria-hidden="true">&#215;</a>'
             
 			details = "<b>Nominated by: </b>" + issue.nominatedby + "<br/>"
 			details += "<b>Seconded by: </b>" + (issue.seconds ? issue.seconds : "no-one") + "<br/>"
@@ -400,5 +400,9 @@ function castVote(election, issue, uid, vote) {
 }
 
 function castVoteCallback(code, response, issue) {
-	
+	if (code == 200) {
+		//code
+	} else {
+		//alert(response.message)
+	}
 }
