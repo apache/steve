@@ -389,6 +389,12 @@ fieldset legend {
     font-size: 16px;
     background: linear-gradient(to bottom, #f8f8f8 0%,#dddddd 100%);
     -khtml-user-drag: element;
+    animation: fadein 1s
+}
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 .issueNumber {
