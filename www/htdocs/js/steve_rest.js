@@ -175,7 +175,7 @@ function createIssue(election) {
 
 var step = 0;
 var election_data = null
-function loadElection(election, uid) {
+function loadElection(election, uid, callback) {
 	
 	var messages = ["Herding cats...", "Shaving yaks...", "Shooing some cows away...", "Fetching election data...", "Loading issues..."]
 	if (!election || !uid) {
@@ -184,7 +184,7 @@ function loadElection(election, uid) {
 		uid = l[1] ? l[1] : "";
 	}
 	if (step == 0) {
-		getJSON("/steve/voter/view/" + election + "?uid=" + uid, [election,uid], displayElection)
+		getJSON("/steve/voter/view/" + election + "?uid=" + uid, [election,uid, callback], displayElection)
 	}
 	
 	var obj = document.getElementById('preloader');
@@ -196,18 +196,18 @@ function loadElection(election, uid) {
 	}
 	if (step % 2 == 1) {
 		obj.style.transform = "translate(0,0)"
-	} else {
+	} else if (obj) {
 		obj.style.transform = "translate(0,-500%)"
 	}
 	if (!election_data|| (step % 2 == 0) ) {
-		window.setTimeout(loadElection, 750);
+		window.setTimeout(loadElection, 750, election, uid, callback);
 	}
 }
 
 function displayElection(code, response, el) {
 	election_data = response
 	if (code == 200) {
-		window.setTimeout(renderElectionFrontpage, 2000, response, el);
+		window.setTimeout(el[2], 2000, response, el);
 	} else {
 		document.getElementById('preloaderWrapper').innerHTML = "<h1>Sorry, an error occured while fetching election data:</h1><h2>" + response.message + "</h2>"
 	}
@@ -225,8 +225,12 @@ function renderElectionFrontpage(response, el) {
 	issueList.setAttribute("class", "issueList")
 	
 	var s = 0;
+	var ynas = 0;
 	for (i in response.issues) {
 		var issue = response.issues[i]
+		if (issue.type == "yna") {
+			ynas++;
+		}
 		s++;
 		var outer = document.createElement('li');
 		// Set style
@@ -246,4 +250,118 @@ function renderElectionFrontpage(response, el) {
 		issueList.appendChild(outer)
 	}
 	par.appendChild(issueList)
+	
+	if (ynas > 1) {
+		var btn = document.createElement("input")
+		btn.setAttribute("type", "button")
+		btn.setAttribute("class", "btn-green")
+		btn.setAttribute("style", "margin: 30px;")
+		btn.setAttribute("value", "Bulk vote on YNA issues")
+		btn.setAttribute("onclick", "location.href='/bulk_yna.html?" + el[0] + "/" + el[1] + "';")
+		par.appendChild(btn)
+	}
+	
+}
+
+
+
+
+function renderElectionBulk(response, el) {
+	var par = document.getElementById('preloaderWrapper')
+	par.innerHTML = "";
+	par.setAttribute("id", "contents")
+	
+	var title = document.createElement('h1');
+	title.innerHTML = "Bulk YNA voting for: " + response.base_data.title;
+	par.appendChild(title);
+	
+	var issueList = document.createElement('ol');
+	issueList.setAttribute("class", "issueList")
+	
+	var s = 0;
+	var ynas = 0;
+	for (i in response.issues) {
+		var issue = response.issues[i]
+		if (issue.type == "yna") {
+				
+			s++;
+			var outer = document.createElement('li');
+			// Set style
+			outer.setAttribute("class", "issueListItemWide")
+			
+			var no = document.createElement('div');
+			no.setAttribute("class", "issueNumber")
+			no.innerHTML = (s)
+			
+			// Add issue
+			var inner = document.createElement('span')
+			inner.innerHTML = issue.id + ": " + issue.title;
+			outer.appendChild(no)
+			outer.appendChild(inner)
+			outer.style.height = "32px"
+			outer.style.marginBottom = "15px"
+			
+			// details
+			var statement = document.createElement('div')
+            statement.setAttribute("class", "statement_marker")
+			statement.style.float = "left"
+            statement.setAttribute("title", "Click to read issue details")
+            statement.innerHTML = "<a href='#details_"+issue.id+"'>Details</a>"
+			outer.appendChild(statement)
+			
+			var yes = document.createElement('input')
+			yes.setAttribute("type", "button")
+			yes.setAttribute("value", "Yes")
+			yes.setAttribute("class", "btn-green")
+			yes.setAttribute("style", "float: right;");
+			yes.setAttribute("onclick", "castVote('" + el[0] + "', '" + issue.id + "', '" + el[1] + "', 'y');")
+			
+			var no = document.createElement('input')
+			no.setAttribute("type", "button")
+			no.setAttribute("value", "No")
+			no.setAttribute("class", "btn-red")
+			no.setAttribute("style", " float: right;");
+			no.setAttribute("onclick", "castVote('" + el[0] + "', '" + issue.id + "', '" + el[1] + "', 'n');")
+			
+			var abstain = document.createElement('input')
+			abstain.setAttribute("type", "button")
+			abstain.setAttribute("value", "Abstain")
+			abstain.setAttribute("class", "btn-yellow")
+			abstain.setAttribute("style", "float: right;");
+			abstain.setAttribute("onclick", "castVote('" + el[0] + "', '" + issue.id + "', '" + el[1] + "', 'a');")
+			
+			var mark = document.createElement('img');
+			mark.setAttribute("width", "26")
+			mark.setAttribute("height", "32")
+			mark.setAttribute("style", "float: right; margin-left: 10px;")
+			mark.setAttribute("id", "mark_" + issue.id)
+			
+			inner.appendChild(mark)
+			inner.appendChild(no)
+			inner.appendChild(abstain)
+			inner.appendChild(yes)
+			outer.style.animation = "fadein " + (0.5 +  (s/6)) + "s"
+			issueList.appendChild(outer)
+		}
+	}
+	par.appendChild(issueList)
+
+}
+
+function castVote(election, issue, uid, vote) {
+	var mark = document.getElementById('mark_' + issue);
+	if (mark) {
+		mark.setAttribute("src", "/images/vote_" + vote[0] + ".png")
+	}
+	postREST("/steve/voter/vote/" + election + "/" + issue, {
+		uid: uid,
+		vote: vote
+	},
+	undefined,
+	castVoteCallback,
+	issue)
+}
+
+function castVoteCallback(code, response, issue) {
+	
 }

@@ -65,10 +65,11 @@ p {
   padding: 4px 8px;
   text-decoration: none;
   text-align: center;
-  min-width: 50px;
+  min-width: 30px;
   position: relative;
   transition: color .1s ease;
   cursor: pointer;
+  margin-left: 10px;
 }
 .btn-red:hover {
   background: #d5421b !important;
@@ -86,16 +87,41 @@ p {
   padding: 4px 8px;
   text-decoration: none;
   text-align: center;
-  min-width: 50px;
+  min-width: 30px;
   position: relative;
   transition: color .2s ease;
   cursor: pointer;
+  margin-left: 10px;
 }
 
 .btn-green:hover {
   background: #52Aa2b !important;
   transition: 0.3s ease;
 }
+
+.btn-yellow {
+  font-weight: bold;
+  background: #daba3b !important;
+  border: #328a2b solid 1px;
+  border-radius: 3px;
+  color: #fff !important;
+  display: inline-block;
+  font-size: 14px;
+  padding: 4px 8px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 30px;
+  position: relative;
+  transition: color .2s ease;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.btn-yellow:hover {
+  background: #eaca3b !important;
+  transition: 0.3s ease;
+}
+
 .btn:hover {
   background: #357ebd;
 }
@@ -331,7 +357,7 @@ body, html {
   border-radius: 5px;
   border: 2px solid #333;
   box-shadow: 3px 4px 4px 0px rgba(153,153,153,1);
-  width: 800px;
+  min-width: 800px;
 }
 
 .formbox h2 {
@@ -377,6 +403,11 @@ fieldset legend {
 .issueList {
   text-align: left !important;
   list-style: none;
+  margin: 0 auto;
+}
+
+.issueList input {
+  min-width: 30px;
 }
 
 .issueListItem {
@@ -385,6 +416,19 @@ fieldset legend {
     max-width: 580px;
     min-height: 25px;
     cursor: pointer;
+    font-family: monospace;
+    font-size: 16px;
+    background: linear-gradient(to bottom, #f8f8f8 0%,#dddddd 100%);
+    -khtml-user-drag: element;
+    animation: fadein 1s
+}
+
+
+.issueListItemWide {
+    border: 1px dotted #666;
+    padding: 4px;
+    width: 980px;
+    min-height: 25px;
     font-family: monospace;
     font-size: 16px;
     background: linear-gradient(to bottom, #f8f8f8 0%,#dddddd 100%);
