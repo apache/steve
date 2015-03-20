@@ -1,0 +1,45 @@
+ <!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/steve_interactive.css">
+<link rel="stylesheet" href="css/jquery-ui.css">
+<script src="js/steve_rest.js" type="text/javascript"></script>
+<script src="js/steve_stv.js" type="text/javascript"></script>
+<title>Apache STeVe: STV Voting</title>
+
+</head>
+<body onload="window.setTimeout(loadIssue, 500, null, null, null, displayIssueSTV);">
+    <div id="popups"></div>
+    <p style="text-align: center;">
+        <img src="/images/steve_logo.png"/>
+    </p>
+    <a href="javascript:void(location.href='election.html' + document.location.search);">Back to election front page</a>
+<div class="formbox" id="votebox">
+    <h2 id="title"></h2>
+<p>
+    This is a ballot with <span id="cnum">N</span> nominated members and
+    <span id="snum">N</span> board seats available.
+    The red line denotes the cutaway, should all your choices be voted in.
+    All the nominees are placed in random order on the canidate list.
+    If the canidate has prepared a statement, you can view it by clicking on the
+    statement link to the right of the candidate's name.
+</p>
+<p>
+    <b>How to vote:</b><br/>
+    Drag a candidate from the candidate list to the ballot box to place them in
+    the vote. You can rearrange your votes as you see fit, by dragging
+    candidates up/down on the ballot box list. You may place as many canidates
+    in the ballot box as you see fit. If you want to
+    remove a single candidate from your ballot box, simply drag the
+    canidate back to the list of remaining candidates to the left.
+</p>
+<div id="preloaderWrapper">
+    <img src="/images/steve_spinner.gif"/>
+    <div id="preloader">
+        Loading issues, please wait...
+    </div>
+</div>
+</div>
+</body>
+</html>
