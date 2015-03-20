@@ -65,9 +65,11 @@ if pathinfo:
                 try:
                     with open(elpath + "/basedata.json", "r") as f:
                         basedata = json.loads(f.read())
-                        if 'hash' in basedata:
-                            del basedata['hash']
                         f.close()
+                        
+                    if 'hash' in basedata:
+                        del basedata['hash']
+                        
                     issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" ]
                     for issue in issues:
                         try:
@@ -105,8 +107,61 @@ if pathinfo:
                 response.respond(404, {'message': 'No such issue'})
         else:
             response.respond(404, {'message': 'No election ID supplied'})
-    elif action == "vote":
-        response.respond(500, {'message': 'Not implemented yet'})
+    elif action == "vote" and election and issue and voterid:
+        try:
+            elpath = os.path.join(homedir, "issues", election)
+            issuepath = os.path.join(homedir, "issues", election, issue) + ".json"
+            if os.path.isdir(elpath) and os.path.isfile(issuepath):
+                basedata = {}
+                issue = {}
+                with open(elpath + "/basedata.json", "r") as f:
+                    basedata = json.loads(f.read())
+                    f.close()
+                with open(issuepath, "r") as f:
+                    issue = json.loads(f.read())
+                    f.close()
+                email = voter.get(election, basedata, voterid)
+                if not email:
+                    response.respond(403, {'message': 'Could not save vote: Invalid voter ID presented'})
+                else:
+                    vote = form.getvalue('vote')
+                    if not vote:
+                        response.respond(500, {'message': 'Please specify a vote'})
+                    else:
+                        double = False
+                        invalid = False
+                        letters = ['y','n','a']
+                        if issue['type'].find("stv") == 0:
+                            letters = [chr(i) for i in range(ord('a'),ord('a') + len(issue['candidates'])-1)]
+                        for char in letters:
+                            if vote.count(char) > 1:
+                                double = True
+                                break
+                        for char in vote:
+                            if not char in letters:
+                                invalid = True
+                                break
+                        if double:
+                            response.respond(500, {'message': "Vote contains duplicate characters"})
+                        elif invalid:
+                            response.respond(500, {'message': "Vote contains invalid characters"})
+                        else:
+                            votes = {}
+                            if os.path.isfile(issuepath + ".votes"):
+                                with open(issuepath + ".votes", "r") as f:
+                                    votes = json.reads(f.read())
+                                    f.close()
+                            votes[voterid] = vote
+                            with open(issuepath + ".votes", "w") as f:
+                                f.write(json.dumps(votes))
+                                f.close()
+                            response.respond(200, {'message': 'Vote saved!'})
+                            
+            else:
+                response.respond(404, {'message': 'Could not save vote: No such election or issue'})
+                    
+        except Exception as err:
+            response.respond(500, {'message': 'Could not save vote: %s' % err})
     else:
         response.respond(400, {'message': 'Invalid action supplied'})
 else:
