@@ -22,7 +22,8 @@ if sys.hexversion < 0x03000000:
 else:
     import configparser
     version = 3
-
+from os import listdir
+from os.path import isdir, isfile
 path = os.path.abspath(os.getcwd())
 
 sys.path.append(path)
@@ -59,7 +60,7 @@ else:
             l.pop(0)
         action = l[0]
         election = l[1] if len(l) > 1 else None
-    
+ 
     
         # Set up new election?
         if action == "setup":
@@ -325,6 +326,39 @@ else:
                         response.respond(500, {'message': "Could not edit issue: %s" % err})
             else:
                 response.respond(403, {'message': 'You do not have enough karma for this'})
+        elif action == "view" and karma >= 3:
+            # View a list of issues for an election
+            if election:
+                js = []
+                elpath = os.path.join(homedir, "issues", election)
+                if os.path.isdir(elpath):
+                    basedata = {}
+                    try:
+                        with open(elpath + "/basedata.json", "r") as f:
+                            basedata = json.loads(f.read())
+                            f.close()
+                        issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
+                        for issue in issues:
+                            try:
+                                with open(elpath + "/" + issue, "r") as f:
+                                    entry = json.loads(f.read())
+                                    f.close()
+                                    entry['id'] = issue.strip(".json")
+                                    entry['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (os.environ['SERVER_NAME'], election, issue.strip(".json"))
+                                    entry['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (os.environ['SERVER_NAME'], election, issue.strip(".json"))
+                                    js.append(entry)
+                            except Exception as err:
+                                response.respond(500, {'message': 'Could not load issues: %s' % err})
+                    except Exception as err:
+                        response.respond(500, {'message': 'Could not load base data: %s' % err})
+                    if 'hash' in basedata:
+                        del basedata['hash']
+                    response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': "https://%s/steve/election?%s" % (os.environ['SERVER_NAME'], election)})
+                else:
+                    response.respond(404, {'message': 'No such election'})
+            else:
+                    response.respond(404, {'message': 'No such election'})
+                    
         else:
             response.respond(400, {'message': "No (or invalid) action supplied"})
     else:

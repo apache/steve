@@ -44,6 +44,11 @@ form = cgi.FieldStorage();
 from lib import response, voter
 
 
+whoami = os.environ['REMOTE_USER'] if 'REMOTE_USER' in os.environ else None
+karma = 0
+if whoami and config.has_option("karma", whoami):
+    karma = int(config.get("karma", whoami))
+
 # Figure out what to do and where
 if pathinfo:
     l = pathinfo.split("/")
@@ -54,8 +59,9 @@ if pathinfo:
     issue = l[2]  if len(l) > 2 else None
     voterid = form.getvalue('uid')
     
-    if not voterid:
+    if not voterid and karma < 3:
         response.respond(403, {'message': "Voter UID missing"})
+    
     elif action == "view":
         # View a list of issues for an election
         if election and not issue:
@@ -67,6 +73,8 @@ if pathinfo:
                     with open(elpath + "/basedata.json", "r") as f:
                         basedata = json.loads(f.read())
                         f.close()
+                    if karma < 3 and not voter.get(election, basedata, voterid):
+                        raise Exception("Invalid voter ID presented")
                     issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
                     for issue in issues:
                         try:
@@ -91,9 +99,16 @@ if pathinfo:
         # View a speficic issue
         elif election and issue:
             js = []
+            elpath = os.path.join(homedir, "issues", election)
             issuepath = os.path.join(homedir, "issues", election, issue)
             if os.path.isfile(issuepath + ".json"):
+                basedata = {}
                 try:
+                    with open(elpath + "/basedata.json", "r") as f:
+                        basedata = json.loads(f.read())
+                        f.close()
+                    if karma < 3 and not voter.get(election, basedata, voterid):
+                        raise Exception("Invalid voter ID presented")
                     with open(issuepath + ".json", "r") as f:
                         entry = json.loads(f.read())
                         f.close()
