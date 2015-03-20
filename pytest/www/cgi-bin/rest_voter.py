@@ -23,6 +23,7 @@ if sys.hexversion < 0x03000000:
 else:
     import configparser
     version = 3
+    
 
 path = os.path.abspath(os.getcwd())
 
@@ -70,7 +71,7 @@ if pathinfo:
                     if 'hash' in basedata:
                         del basedata['hash']
                         
-                    issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" ]
+                    issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
                     for issue in issues:
                         try:
                             with open(elpath + "/" + issue, "r") as f:
@@ -113,12 +114,12 @@ if pathinfo:
             issuepath = os.path.join(homedir, "issues", election, issue) + ".json"
             if os.path.isdir(elpath) and os.path.isfile(issuepath):
                 basedata = {}
-                issue = {}
+                issuedata = {}
                 with open(elpath + "/basedata.json", "r") as f:
                     basedata = json.loads(f.read())
                     f.close()
                 with open(issuepath, "r") as f:
-                    issue = json.loads(f.read())
+                    issuedata = json.loads(f.read())
                     f.close()
                 email = voter.get(election, basedata, voterid)
                 if not email:
@@ -131,8 +132,8 @@ if pathinfo:
                         double = False
                         invalid = False
                         letters = ['y','n','a']
-                        if issue['type'].find("stv") == 0:
-                            letters = [chr(i) for i in range(ord('a'),ord('a') + len(issue['candidates'])-1)]
+                        if issuedata['type'].find("stv") == 0:
+                            letters = [chr(i) for i in range(ord('a'),ord('a') + len(issuedata['candidates'])-1)]
                         for char in letters:
                             if vote.count(char) > 1:
                                 double = True
@@ -149,12 +150,13 @@ if pathinfo:
                             votes = {}
                             if os.path.isfile(issuepath + ".votes"):
                                 with open(issuepath + ".votes", "r") as f:
-                                    votes = json.reads(f.read())
+                                    votes = json.loads(f.read())
                                     f.close()
                             votes[voterid] = vote
                             with open(issuepath + ".votes", "w") as f:
                                 f.write(json.dumps(votes))
                                 f.close()
+                            voter.email(email, "Vote registered: %s (%s)" % (issue, issuedata['title']), "This is a receipt that your vote was registered for issue #%s:\n\nElection: %s (%s)\nIssue: %s (%s)" % (issue, basedata['title'], election, issuedata['title'], issue))
                             response.respond(200, {'message': 'Vote saved!'})
                             
             else:

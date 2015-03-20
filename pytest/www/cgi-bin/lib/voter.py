@@ -1,5 +1,13 @@
 import hashlib, json, random, os, sys
-from __main__ import homedir
+from __main__ import homedir, config
+
+# SMTP Lib
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+
+
 
 def get(election, basedata, uid):
     elpath = os.path.join(homedir, "issues", election)
@@ -38,3 +46,25 @@ def remove(election, basedata, email):
         f.close()
     return uid, xhash
 
+def email(rcpt, subject, message):
+    sender = config.get("email", "sender")
+    signature = config.get("email", "signature")
+    receivers = [rcpt]
+    msg = """From: %s
+To: %s
+Subject: %s
+
+%s
+
+With regards,
+%s
+--
+Powered by Apache STeVe - https://steve.apache.org
+""" % (sender, rcpt, subject, message, signature)
+    
+    try:
+       smtpObj = smtplib.SMTP(config.get("email", "mta"))
+       smtpObj.sendmail(sender, receivers, msg)         
+    except SMTPException:
+       raise Exception("Could not send email - SMTP server down?")
+       
