@@ -181,7 +181,7 @@ function loadElection(election, uid) {
 	if (!election || !uid) {
 		var l = document.location.search.substr(1).split("/");
 		election = l[0];
-		uid = l[1];
+		uid = l[1] ? l[1] : "";
 	}
 	if (step == 0) {
 		getJSON("/steve/voter/view/" + election + "?uid=" + uid, [election,uid], displayElection)
@@ -209,7 +209,7 @@ function displayElection(code, response, el) {
 	if (code == 200) {
 		window.setTimeout(renderElectionFrontpage, 2000, response, el);
 	} else {
-		document.getElementById('preloaderWrapper').innerHTML = "<h1>Sorry, no such election!</h1>"
+		document.getElementById('preloaderWrapper').innerHTML = "<h1>Sorry, an error occured while fetching election data:</h1><h2>" + response.message + "</h2>"
 	}
 }
 
@@ -241,7 +241,7 @@ function renderElectionFrontpage(response, el) {
 		inner.innerHTML = issue.id + ": " + issue.title;
 		outer.appendChild(no)
 		outer.appendChild(inner)
-		outer.setAttribute("onclick", "location.href='ballot.html?" + el[0] + "/" + issue.id + "/" + el[1] + "';")
+		outer.setAttribute("onclick", "location.href='ballot_" + (issue.type == "yna" ? "yna" : "stv") + ".html?" + el[0] + "/" + issue.id + "/" + (el[1] ? el[1] : "") + "';")
 		outer.style.animation = "fadein " + (0.5 +  (s/6)) + "s"
 		issueList.appendChild(outer)
 	}

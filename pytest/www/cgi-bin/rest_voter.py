@@ -56,9 +56,11 @@ if pathinfo:
     action = l[0]
     election = l[1] if len(l) > 1 else None
     issue = l[2]  if len(l) > 2 else None
-    voterid = l[3] if len(l) > 3 else None
+    voterid = form.getvalue('uid')
     
-    if action == "view":
+    if not voterid:
+        response.respond(403, {'message': "Voter UID missing"})
+    elif action == "view":
         # View a list of issues for an election
         if election and not issue:
             js = []
