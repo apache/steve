@@ -136,6 +136,12 @@ function loadElectionData(election) {
 	getJSON("/steve/voter/view/" + election, election, renderEditElection)
 }
 
+
+function loadAdminElectionData(election) {
+	election = election ? election : document.location.search.substr(1);
+	getJSON("/steve/admin/view/" + election, election, renderEditElection)
+}
+
 function changeSTVType(type) {
 	if (type == "yna") {
 		document.getElementById('yna').style.display = "block";
@@ -310,7 +316,7 @@ function renderElectionBulk(response, el) {
 			
 			// details
 			if (issue.hasVoted) {
-				outer.setAttribute("style", "background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%);")
+				outer.setAttribute("style", "margin-bottom: 15px; background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%);")
 				outer.setAttribute("title", "Notice: You have already voted once on this issue")
 			} else {
 				outer.setAttribute("title", "You have not yet voted on this issue");
