@@ -30,9 +30,6 @@ sys.path.append(path)
 sys.path.append(os.path.basename(sys.argv[0]))
 if 'SCRIPT_FILENAME' in os.environ:
     sys.path.insert(0, os.path.basename(os.environ['SCRIPT_FILENAME']))
-    
-from lib import response
-
 
 # Fetch config (hack, hack, hack)
 config = configparser.RawConfigParser()
@@ -43,10 +40,8 @@ homedir = config.get("general", "homedir")
 pathinfo = os.environ['PATH_INFO'] if 'PATH_INFO' in os.environ else None
 form = cgi.FieldStorage();
 
+from lib import response, voter
 
-
-# TODO: Authentication goes here
-karma = 5 # assume admin karma for now
 
 # Figure out what to do and where
 if pathinfo:

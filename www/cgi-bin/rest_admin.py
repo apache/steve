@@ -29,8 +29,7 @@ sys.path.append(path)
 sys.path.append(os.path.basename(sys.argv[0]))
 if 'SCRIPT_FILENAME' in os.environ:
     sys.path.insert(0, os.path.basename(os.environ['SCRIPT_FILENAME']))
-    
-from lib import response
+
 
 # Fetch config (hack, hack, hack)
 config = configparser.RawConfigParser()
@@ -42,6 +41,8 @@ pathinfo = os.environ['PATH_INFO'] if 'PATH_INFO' in os.environ else None
 form = cgi.FieldStorage();
 
 whoami = os.environ['REMOTE_USER'] if 'REMOTE_USER' in os.environ else None
+
+from lib import response, voter
 
 if not whoami:
     response.respond(403, {'message': 'Could not verify your identity: No auth scheme found'})
