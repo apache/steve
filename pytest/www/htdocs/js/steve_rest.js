@@ -207,7 +207,7 @@ function loadElection(election, uid, callback) {
 function displayElection(code, response, el) {
 	election_data = response
 	if (code == 200) {
-		window.setTimeout(el[2], 2000, response, el);
+		window.setTimeout(el[2], 1000, response, el);
 	} else {
 		document.getElementById('preloaderWrapper').innerHTML = "<h1>Sorry, an error occured while fetching election data:</h1><h2>" + response.message + "</h2>"
 	}
