@@ -19,7 +19,7 @@
 body {
   /*color: #333333;*/
   font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
-  font-size: 85.5%;
+  font-size: 90%;
 }
 .wrap {
   padding: 40px;
@@ -220,7 +220,7 @@ pre {
     float: left;
 }
 #ballotbox {
-    width: 480px;
+    width: 360px;
     min-height: 100px;
     padding-top: 30px;
     padding-bottom: 10px;
@@ -242,7 +242,7 @@ pre {
 .ballotbox {
     border: 1px dotted #666;
     padding: 4px;
-    max-width: 340px;
+    max-width: 300px;
     min-height: 25px;
     cursor: move;
     cursor: grab;
@@ -267,7 +267,7 @@ pre {
 .ballotbox_clist {
     border: 1px dotted #666;
     padding: 4px;
-    max-width: 330px;
+    max-width: 300px;
     min-height: 25px;
     cursor: move;
     cursor: grab;
@@ -300,7 +300,7 @@ pre {
 .ballotSelected {
     border: 1px dotted #666;
     padding: 4px;
-    max-width: 340px;
+    max-width: 300px;
     min-height: 25px;
     cursor: move;
     cursor: grab;

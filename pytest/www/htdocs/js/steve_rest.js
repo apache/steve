@@ -200,7 +200,7 @@ function loadElection(election, uid, callback) {
 	} else if (obj && (step % 2 == 1)) {
 		obj.innerHTML = "Ready..!"
 	}
-	if (step % 2 == 1) {
+	if (step % 2 == 1 && obj) {
 		obj.style.transform = "translate(0,0)"
 	} else if (obj) {
 		obj.style.transform = "translate(0,-500%)"

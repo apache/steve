@@ -147,7 +147,7 @@ if pathinfo:
                         invalid = False
                         letters = ['y','n','a']
                         if issuedata['type'].find("stv") == 0:
-                            letters = [chr(i) for i in range(ord('a'),ord('a') + len(issuedata['candidates'])-1)]
+                            letters = [chr(i) for i in range(ord('a'),ord('a') + len(issuedata['candidates']))]
                         for char in letters:
                             if vote.count(char) > 1:
                                 double = True
@@ -159,7 +159,7 @@ if pathinfo:
                         if double:
                             response.respond(500, {'message': "Vote contains duplicate characters"})
                         elif invalid:
-                            response.respond(500, {'message': "Vote contains invalid characters"})
+                            response.respond(500, {'message': "Vote contains invalid characters. Accepted are: %s" % ", ".join(letters)})
                         else:
                             votes = {}
                             if os.path.isfile(issuepath + ".votes"):
