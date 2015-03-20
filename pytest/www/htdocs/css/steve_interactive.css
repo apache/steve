@@ -374,10 +374,15 @@ fieldset legend {
   
 }
 
+.issueList {
+  text-align: left !important;
+  list-style: none;
+}
+
 .issueListItem {
     border: 1px dotted #666;
     padding: 4px;
-    max-width: 440px;
+    max-width: 580px;
     min-height: 25px;
     cursor: pointer;
     font-family: monospace;
@@ -404,4 +409,25 @@ fieldset legend {
   position: relative;
   top: 0px;
   left: 0px;
+}
+
+#preloader {
+  height: 300px;
+  width: 600px;
+  font-size: 24px;
+  font-style: italic;
+  font-weight: bold;
+  transform: translate(0, -500%);
+  transition: transform 0.3s ease-out;
+}
+
+#preloader:focus {
+ transform: translate(0, 0); 
+}
+
+#preloaderWrapper {
+  width: 600px;
+  height: 500px;
+  margin: 0px auto;
+  text-align: center;
 }

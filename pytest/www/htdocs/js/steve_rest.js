@@ -171,3 +171,78 @@ function createIssue(election) {
 		description: description
 	}, undefined, createIssueCallback, { election: election, issue: iid})
 }
+
+
+var step = 0;
+var election_data = null
+function loadElection(election, uid) {
+	
+	var messages = ["Herding cats...", "Shaving yaks...", "Shooing some cows away...", "Fetching election data...", "Loading issues..."]
+	if (!election || !uid) {
+		var l = document.location.search.substr(1).split("/");
+		election = l[0];
+		uid = l[1];
+	}
+	if (step == 0) {
+		getJSON("/steve/voter/view/" + election + "?uid=" + uid, [election,uid], displayElection)
+	}
+	
+	var obj = document.getElementById('preloader');
+	step++;
+	if (!election_data && obj) {
+		if (step % 2 == 1) obj.innerHTML = messages[parseInt(Math.random()*messages.length-0.01)]
+	} else if (obj && (step % 2 == 1)) {
+		obj.innerHTML = "Ready..!"
+	}
+	if (step % 2 == 1) {
+		obj.style.transform = "translate(0,0)"
+	} else {
+		obj.style.transform = "translate(0,-500%)"
+	}
+	if (!election_data|| (step % 2 == 0) ) {
+		window.setTimeout(loadElection, 750);
+	}
+}
+
+function displayElection(code, response, el) {
+	election_data = response
+	if (code == 200) {
+		window.setTimeout(renderElectionFrontpage, 2000, response, el);
+	} else {
+		document.getElementById('preloaderWrapper').innerHTML = "<h1>Sorry, no such election!</h1>"
+	}
+}
+
+function renderElectionFrontpage(response, el) {
+	var par = document.getElementById('preloaderWrapper')
+	par.innerHTML = "";
+	
+	var title = document.createElement('h1');
+	title.innerHTML = response.base_data.title;
+	par.appendChild(title);
+	
+	var issueList = document.createElement('ol');
+	issueList.setAttribute("class", "issueList")
+	
+	var s = 0;
+	for (i in response.issues) {
+		var issue = response.issues[i]
+		s++;
+		var outer = document.createElement('li');
+		// Set style
+		outer.setAttribute("class", "issueListItem")
+		
+		var no = document.createElement('div');
+		no.setAttribute("class", "issueNumber")
+		no.innerHTML = (s)
+		
+		// Add issue
+		var inner = document.createElement('span')
+		inner.innerHTML = issue.id + ": " + issue.title;
+		outer.appendChild(no)
+		outer.appendChild(inner)
+		outer.setAttribute("onclick", "location.href='ballot.html?" + el[0] + "/" + issue.id + "/" + el[1] + "';")
+		issueList.appendChild(outer)
+	}
+	par.appendChild(issueList)
+}
