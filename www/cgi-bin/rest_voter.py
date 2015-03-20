@@ -67,10 +67,6 @@ if pathinfo:
                     with open(elpath + "/basedata.json", "r") as f:
                         basedata = json.loads(f.read())
                         f.close()
-                        
-                    if 'hash' in basedata:
-                        del basedata['hash']
-                        
                     issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
                     for issue in issues:
                         try:
@@ -80,11 +76,14 @@ if pathinfo:
                                 entry['id'] = issue.strip(".json")
                                 entry['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (os.environ['SERVER_NAME'], election, issue.strip(".json"))
                                 entry['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (os.environ['SERVER_NAME'], election, issue.strip(".json"))
+                                entry['hasVoted'] = voter.hasVoted(election, issue, voterid)
                                 js.append(entry)
                         except Exception as err:
                             response.respond(500, {'message': 'Could not load issues: %s' % err})
                 except Exception as err:
                     response.respond(500, {'message': 'Could not load base data: %s' % err})
+                if 'hash' in basedata:
+                    del basedata['hash']
                 response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': "https://%s/steve/election?%s" % (os.environ['SERVER_NAME'], election)})
             else:
                 response.respond(404, {'message': 'No such election'})

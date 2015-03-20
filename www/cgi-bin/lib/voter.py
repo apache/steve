@@ -46,6 +46,16 @@ def remove(election, basedata, email):
         f.close()
     return uid, xhash
 
+def hasVoted(election, issue, uid):
+    issue = issue.strip(".json")
+    path = os.path.join(homedir, "issues", election, issue)
+    votes = {}
+    if os.path.isfile(path + ".json.votes"):
+        with open(path + ".json.votes", "r") as f:
+            votes = json.loads(f.read())
+            f.close()
+    return True if uid in votes else False
+
 def email(rcpt, subject, message):
     sender = config.get("email", "sender")
     signature = config.get("email", "signature")
