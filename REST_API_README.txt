@@ -178,9 +178,10 @@ Viewing election and issues:
 /steve/voter/view/$electionid
   GET
     input:
-      none
+      uid: Voter hash
     output:
       HTTP 200 Okay if election exists
+      HTTP 403 Forbidden if voter hash missing or invalid
       HTTP 404 Not Found if no such election
     response payload:
       JSON formatted
@@ -238,10 +239,11 @@ Viewing a single issue:
 /steve/voter/view/$electionid/$issueid
   GET
     input:
-      none
+      uid: Voter hash
     output:
       HTTP 200 Okay if issue exists
       HTTP 404 Not Found if no such election/issue
+      HTTP 403 Forbidden if voter hash missing or invalid
     response payload:
       JSON formatted
         {
