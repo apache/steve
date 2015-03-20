@@ -240,6 +240,13 @@ function renderElectionFrontpage(response, el) {
 		no.setAttribute("class", "issueNumber")
 		no.innerHTML = (s)
 		
+		if (issue.hasVoted) {
+			outer.setAttribute("style", "background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%);")
+			outer.setAttribute("title", "Notice: You have already voted once on this issue")
+		} else {
+			outer.setAttribute("title", "You have not yet voted on this issue");
+		}
+		
 		// Add issue
 		var inner = document.createElement('span')
 		inner.innerHTML = issue.id + ": " + issue.title;
@@ -302,6 +309,12 @@ function renderElectionBulk(response, el) {
 			outer.style.marginBottom = "15px"
 			
 			// details
+			if (issue.hasVoted) {
+				outer.setAttribute("style", "background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%);")
+				outer.setAttribute("title", "Notice: You have already voted once on this issue")
+			} else {
+				outer.setAttribute("title", "You have not yet voted on this issue");
+			}
 			
 			var statement = document.createElement('div')
             statement.setAttribute("class", "statement_marker")
@@ -403,6 +416,6 @@ function castVoteCallback(code, response, issue) {
 	if (code == 200) {
 		//code
 	} else {
-		//alert(response.message)
+		alert(response.message)
 	}
 }
