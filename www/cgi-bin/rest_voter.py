@@ -170,7 +170,8 @@ if pathinfo:
                             with open(issuepath + ".votes", "w") as f:
                                 f.write(json.dumps(votes))
                                 f.close()
-                            voter.email(email, "Vote registered: %s (%s)" % (issue, issuedata['title']), "This is a receipt that your vote was registered for issue #%s:\n\nElection: %s (%s)\nIssue: %s (%s)" % (issue, basedata['title'], election, issuedata['title'], issue))
+                            votehash = hashlib.sha224(basedata['hash'] + voterid + vote).hexdigest()
+                            voter.email(email, "Vote registered: %s (%s)" % (issue, issuedata['title']), "This is a receipt that your vote was registered for issue #%s:\n\nElection: %s (%s)\nIssue: %s (%s)\nVote cryptohash: %s" % (issue, basedata['title'], election, issuedata['title'], issue, votehash))
                             response.respond(200, {'message': 'Vote saved!'})
                             
             else:
