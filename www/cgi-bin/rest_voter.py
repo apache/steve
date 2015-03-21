@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #####
-import os, sys, json, re, time, base64, cgi, subprocess, hashlib
+import os, sys, json, re, time, base64, cgi, subprocess, hashlib, re
 from os import listdir
 version = 2
 if sys.hexversion < 0x03000000:
@@ -59,7 +59,7 @@ if pathinfo:
     issue = l[2]  if len(l) > 2 else None
     voterid = form.getvalue('uid')
     
-    if not voterid and karma < 3:
+    if not voterid and karma < 3 and action != "request":
         response.respond(403, {'message': "Voter UID missing"})
     
     elif action == "view":
@@ -179,6 +179,29 @@ if pathinfo:
                     
         except Exception as err:
             response.respond(500, {'message': 'Could not save vote: %s' % err})
+    elif action == "request" and election:
+        email = form.getvalue('email')
+        if not email or len(email) > 300 or not re.match(r"([^@]+@[^@]+)", email):
+            response.respond(400, {'message': 'Could not request voter ID: Invalid email address specified'})
+        else:
+            try:
+                elpath = os.path.join(homedir, "issues", election)
+                if os.path.isdir(elpath):
+                    basedata = {}
+                    with open(elpath + "/basedata.json", "r") as f:
+                        basedata = json.loads(f.read())
+                        f.close()
+                    if 'open' in basedata and basedata['open'] == "true":
+                        uid, xhash = voter.add(election, basedata, email)
+                        voter.email(email, "Your voter link for %s" % basedata['title'], "Your personal vote link is: %s/election.html?%s/%s\nDo not share this link with anyone." % (config.get("general", "rooturl"), election, uid))
+                        response.respond(200, {'message': "Voter ID sent via email"})
+                    else:
+                        response.respond(403, {'message': "Could not request voter ID: This eleciton is closed for the public"})
+                else:
+                    response.respond(404, {'message': 'Could not request voter ID: No such election'})
+                        
+            except Exception as err:
+                response.respond(500, {'message': 'Could not create voter ID: %s' % err})
     else:
         response.respond(400, {'message': 'Invalid action supplied'})
 else:
