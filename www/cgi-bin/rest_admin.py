@@ -359,6 +359,47 @@ else:
                     response.respond(404, {'message': 'No such election'})
             else:
                     response.respond(404, {'message': 'No such election'})
+        elif action == "invite" and karma >= 3:
+            # invite one or more people to an election
+            if election:
+                email = form.getvalue('email')
+                msgtype = form.getvalue('msgtype')
+                msgtemplate = form.getvalue('msgtemplate')
+                if not email or len(email) > 300 or not re.match(r"([^@]+@[^@]+)", email):
+                    response.respond(400, {'message': 'Could not request voter ID: Invalid email address specified'})
+                elif not msgtemplate or len(msgtemplate) < 10:
+                    response.respond(400, {'message': 'No message template specified'})
+                else:
+                    js = []
+                    elpath = os.path.join(homedir, "issues", election)
+                    if os.path.isdir(elpath):
+                        basedata = {}
+                        try:
+                            with open(elpath + "/basedata.json", "r") as f:
+                                basedata = json.loads(f.read())
+                                f.close()
+                            if (not 'open' in basedata or basedata['open'] != "true") and msgtype == "open":
+                                raise Exception("An open vote invite was requested, but this election is not public")
+                            if msgtype != "open":
+                                voterid, xhash = voter.add(election, basedata, email)
+                                message = msgtemplate.replace("$votelink", "%s/election.html?%s/%s" % (config.get("general", "rooturl"), election, voterid))
+                                message = message.replace("$title", basedata['title'])
+                                subject = "Election open for votes: %s (%s)" % (election, basedata['title'])
+                                voter.email(email, subject, message)
+                            else:
+                                message = msgtemplate.replace("$votelink", "%s/request_link.html?%s" % (config.get("general", "rooturl"), election))
+                                message = message.replace("$title", basedata['title'])
+                                subject = "Public election open for votes: %s (%s)" % (election, basedata['title'])
+                                voter.email(email, subject, message)
+                            response.respond(200, {'message': "Vote link sent"})
+                        except Exception as err:
+                            response.respond(500, {'message': 'Could not load base data: %s' % err})
+                        
+                        response.respond(200, {'message': "Vote link sent to %s" % email})
+                    else:
+                        response.respond(404, {'message': 'No such election'})
+            else:
+                    response.respond(404, {'message': 'No such election'})
                     
         else:
             response.respond(400, {'message': "No (or invalid) action supplied"})
