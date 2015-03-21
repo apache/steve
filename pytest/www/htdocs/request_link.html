@@ -12,16 +12,24 @@
         }, undefined,
         function(code, response, state) { alert(response.message); }, null);
     }
+    function electionCallback(code, response) {
+        if (code == 200) {
+            document.getElementById('title').innerHTML += " " + response.base_data.title
+        } else {
+            alert(response.message)
+        }
+        
+    }
 </script>
 <title>Apache STeVe: Request link</title>
 
 </head>
-<body>
+<body onload="getJSON('/steve/voter/peek/' + document.location.search.substr(1), null, electionCallback)" > 
     <p style="text-align: center;">
         <img src="/images/steve_logo.png"/>
     </p>
     <div class="formbox">
-        <h2>Request vote link:</h2>
+        <h2 id="title">Request vote link:</h2>
         <p>
             In open elections, anyone can request a voter ID and participate.
             To receive a voter ID, please enter your email address in the field below and click 'Request link'.

@@ -59,7 +59,7 @@ if pathinfo:
     issue = l[2]  if len(l) > 2 else None
     voterid = form.getvalue('uid')
     
-    if not voterid and karma < 3 and action != "request":
+    if not voterid and karma < 3 and (action != "request" and action != "peek"):
         response.respond(403, {'message': "Voter UID missing"})
     
     elif action == "view":
@@ -202,6 +202,25 @@ if pathinfo:
                         
             except Exception as err:
                 response.respond(500, {'message': 'Could not create voter ID: %s' % err})
+    elif action == "peek" and election:
+        try:
+            elpath = os.path.join(homedir, "issues", election)
+            if os.path.isdir(elpath):
+                basedata = {}
+                with open(elpath + "/basedata.json", "r") as f:
+                    basedata = json.loads(f.read())
+                    f.close()
+                if 'open' in basedata and basedata['open'] == "true":
+                    if 'hash' in basedata:
+                        del basedata['hash']
+                    response.respond(200, { 'base_data': basedata } )
+                else:
+                    response.respond(403, {'message': 'This election is not open to the public'})
+            else:
+                response.respond(404, {'message': 'Could not request data: No such election'})
+                    
+        except Exception as err:
+            response.respond(500, {'message': 'Could not load election data: %s' % err})
     else:
         response.respond(400, {'message': 'Invalid action supplied'})
 else:
