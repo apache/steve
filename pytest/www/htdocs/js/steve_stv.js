@@ -507,12 +507,13 @@ function loadIssue(election, issue, uid, callback) {
 }
 
 function displayIssueSTV(code, response, state) {
+    chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']  // Corresponding STV letters, in same order as nominees
     election_data = response
     if (code != 200) {
         document.getElementById('preloaderWrapper').innerHTML = "<h1>Could not load issue:</h1><h2>" + response.message + "</h2>";
     } else {
         candidates = []
-        statements = []
+        statements = {}
         var m = response.issue.type.match(/(\d+)/);
         if (m) {
             seats = parseInt(m[1])
@@ -520,11 +521,10 @@ function displayIssueSTV(code, response, state) {
         for (c in response.issue.candidates) {
             var candidate = response.issue.candidates[c];
             candidates.push(candidate.name);
-            statements.push(candidate.statement);
+            statements[chars[c]] = candidate.statement;
         }
         document.getElementById('cnum').innerHTML = candidates.length
-        document.getElementById('snum').innerHTML = seats
-        chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']  // Corresponding STV letters, in same order as nominees
+        document.getElementById('snum').innerHTML = seats        
         while (chars.length > candidates.length) chars.splice(-1,1)
         
         for (i in candidates) candidates_copy.push(candidates[i])
