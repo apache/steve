@@ -86,7 +86,8 @@ else:
                                     'monitors': form.getvalue('monitors').split(","),
                                     'starts': form.getvalue('starts'),
                                     'ends': form.getvalue('ends'),
-                                    'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'])).hexdigest()
+                                    'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'])).hexdigest(),
+                                    'open': form.getvalue('open')
                                 }))
                                 f.close()
                             response.respond(201, {'message': 'Created!', 'id': election})
