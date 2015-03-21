@@ -14,6 +14,7 @@ Setting up a new election:
           monitors: email addresses of monitors
           starts: UNIX timestamp of start (optional)
           ends: UNIX timestamp when it closes (optional)
+          open: If set to 'true', allows for an open (public) election
     output:
       HTTP 201 Created on success
       HTTP 400 Bad request if params missing or invalid or already exists
@@ -270,6 +271,24 @@ Viewing a single issue:
           }
       }
       
+      
+=======================
+Requesting a vote link:
+=======================
+/steve/voter/request/$electionid
+  GET
+    input:
+      email: the email to send voter link to
+    output:
+      HTTP 200 Okay if voter link issued
+      HTTP 400 if invalid or no email address specified
+      HTTP 404 Not Found if no such election/issue
+      HTTP 403 Forbidden if issue is not public
+    response payload:
+      JSON formatted
+        {
+          "message": "voter link sent to foo@bar"
+      }
       
       
       
