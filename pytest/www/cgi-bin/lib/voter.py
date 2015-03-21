@@ -1,4 +1,4 @@
-import hashlib, json, random, os, sys
+import hashlib, json, random, os, sys, time
 from __main__ import homedir, config
 
 # SMTP Lib
@@ -21,20 +21,19 @@ def get(election, basedata, uid):
     return None
         
 def add(election, basedata, email):
-    uid = hashlib.sha512(email + basedata['hash'] + time.time() + random.randint(1,99999999)).hexdigest()
+    uid = hashlib.sha224("%s%s%s%s" % (email, basedata['hash'], time.time(), random.randint(1,99999999))).hexdigest()
     xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
     elpath = os.path.join(homedir, "issues", election)
     with open(elpath + "/voters.json", "r") as f:
         voters = json.loads(f.read())
         f.close()
+    voters[email] = xhash
     with open(elpath + "/voters.json", "w") as f:
         f.write(json.dumps(voters))
         f.close()
     return uid, xhash
 
 def remove(election, basedata, email):
-    uid = hashlib.sha512(email + basedata['hash'] + time.time() + random.randint(1,99999999)).hexdigest()
-    xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
     elpath = os.path.join(homedir, "issues", election)
     with open(elpath + "/voters.json", "r") as f:
         voters = json.loads(f.read())
@@ -44,7 +43,6 @@ def remove(election, basedata, email):
     with open(elpath + "/voters.json", "w") as f:
         f.write(json.dumps(voters))
         f.close()
-    return uid, xhash
 
 def hasVoted(election, issue, uid):
     issue = issue.strip(".json")
