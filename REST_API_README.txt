@@ -59,7 +59,8 @@ Creating an issue in an election:
           title: Title of the issue
           description: (optional) Description of the issue
           type: type of issue (yna, stv[1-9])
-          candidates: (if stv[1-9]) \n separated list of candidate names
+          candidates: (if stv[1-9]) \n separated list of candidate names or JSON array
+          statements: (if stv[1-9]) \n separated list of statements or JSON array
           nominatedby: (if YNA) Person to nominate this issue
           seconds: (if YNA) \n separated list of seconds for the issue
           
@@ -84,7 +85,8 @@ Editing an issue in an election:
           title: Title of the issue (optional)
           description: (optional) Description of the issue (optional)
           type: type of issue (yna, stv[1-9]) (optional)
-          candidates: (if stv[1-9]) \n separated list of candidate names (optional)
+          candidates: (if stv[1-9]) \n separated list of candidate names or JSON array
+          statements: (if stv[1-9]) \n separated list of statements or JSON array
           nominatedby: (if YNA) Person to nominate this issue (optional)
           seconds: (if YNA) \n separated list of seconds for the issue (optional)
           
