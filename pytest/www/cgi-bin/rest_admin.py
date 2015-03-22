@@ -64,6 +64,7 @@ else:
         # List all existing/previous elections?
         if action == "list":
             output = []
+            errors = []
             path = os.path.join(homedir, "issues")
             elections = [ f for f in listdir(path) if os.path.isdir(os.path.join(path,f))]
             for election in elections:
@@ -77,9 +78,12 @@ else:
                         basedata['id'] = election
                         if karma >= 5 or ('owner' in basedata and basedata['owner'] == whoami):
                             output.append(basedata)
-                except:
-                    pass
-            response.respond(200, { 'elections': output})
+                except Exception as err:
+                    errors.append("Could not parse election '%s': %s" % (election, err))
+            if len(errors) > 0:
+                response.respond(206, { 'elections': output, 'errors': errors})
+            else:
+                response.respond(200, { 'elections': output})
         # Set up new election?
         elif action == "setup":
             if karma >= 5: # karma of 5 required to set up an election base
