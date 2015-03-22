@@ -462,6 +462,7 @@ function createIssue(election) {
 	var description = document.getElementById('description').value;
 	var seconds = document.getElementById('seconds').value
 	var nominatedby = document.getElementById('nominatedby').value
+	var candidates = document.getElementById('candidates').value
 	
 	if (!iid || iid.length == 0) {
 		iid = parseInt(Math.random()*987654321).toString(16).toLowerCase()
@@ -472,7 +473,8 @@ function createIssue(election) {
 		title: title,
 		description: description,
 		nominatedby: nominatedby,
-		seconds: seconds
+		seconds: seconds,
+		candidates: candidates
 	}, undefined, createIssueCallback, { election: election, issue: iid})
 }
 
