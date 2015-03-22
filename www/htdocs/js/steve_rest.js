@@ -730,7 +730,7 @@ function castVoteCallback(code, response, issue) {
 function showElections(code, response, state) {
 	var obj = document.getElementById('preloaderWrapper')
 	//obj.setAttribute("id", "electionWrapper")
-	obj.innerHTML = "<h2>Your elections:</h2>"
+	obj.innerHTML = "<h2>Your elections:</h2><p>Click on an election to edit it</p>"
 	var ol = document.createElement('ol')
 	obj.appendChild(ol)
 	obj.setAttribute("class", "issueList")
