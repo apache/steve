@@ -1,0 +1,71 @@
+ <!DOCTYPE HTML>
+<html>
+<head>
+<link rel="stylesheet" href="/css/steve_interactive.css">
+<link rel="stylesheet" href="/css/jquery-ui.css">
+<script src="/js/steve_rest.js" type="text/javascript"></script>
+<script src="/js/jquery.js" type="text/javascript"></script>
+<script src="/js/jquery-ui.js" type="text/javascript"></script>
+<title>Add issue</title>
+</head>
+<body onload="document.getElementById('iid').value = parseInt(Math.random()*987654321).toString(16).toLowerCase();">
+       <p style="text-align: center;">
+        <img src="/images/steve_logo.png"/>
+    </p>
+<div class="formbox">
+       <h2>Add a new issue:</h2>
+ <fieldset>
+        <legend>Base data</legend>
+    <div class="keyvaluepair">
+        <div class="keyfield">Issue ID:</div>
+        <input type="text" id="iid"/><br>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Issue title:</div>
+        <input type="text" id="ititle" style="width: 300px;"/><br>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Issue type:</div>
+        <select id="type" onchange="changeSTVType(this.value)">
+            <option value="">------</option>
+            <option value="yna">YNA (Yes/No/Abstain)</option>
+            <option value="stv1">STV with 1 seat</option>
+            <option value="stv2">STV with 2 seats</option>
+            <option value="stv3">STV with 3 seats</option>
+            <option value="stv4">STV with 4 seats</option>
+            <option value="stv5">STV with 5 seats</option>
+            <option value="stv6">STV with 6 seats</option>
+            <option value="stv7">STV with 7 seats</option>
+            <option value="stv8">STV with 8 seats</option>
+            <option value="stv9">STV with 9 seats</option>
+        </select>
+        <br>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Description of issue:</div>
+        <textarea id="description" style="width: 400px; height: 200px;"></textarea>
+    </div>
+    <div id="yna" style="display: none;">
+        <div class="keyvaluepair">
+            <div class="keyfield">Put forward (nominated) by:</div>
+            <input type="text" id="nominatedby" style="width: 300px;"/><br>
+        </div>
+        <div class="keyvaluepair">
+            <div class="keyfield">Seconds (one per line):</div>
+            <textarea name="seconds" style="width: 300px; height: 200px;"></textarea>
+        </div>
+    </div>
+    <div id="stv" style="display: none;">
+        
+        <div class="keyvaluepair">
+            <div class="keyfield">Candidates (one per line):</div>
+            <textarea name="candidates" style="width: 300px; height: 200px;"></textarea>
+        </div>
+    </div>
+    <div class="keyvaluepair">
+        <input type="button" onclick="createIssue();" value="Create issue" class="btn-green"/>
+    </div>
+    </fieldset>
+</div></body>
+</html>
+    

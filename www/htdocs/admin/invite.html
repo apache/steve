@@ -1,0 +1,80 @@
+ <!DOCTYPE HTML>
+<html>
+<head>
+<link rel="stylesheet" href="/css/steve_interactive.css">
+<link rel="stylesheet" href="/css/jquery-ui.css">
+<script src="/js/steve_rest.js" type="text/javascript"></script>
+<script src="/js/jquery.js" type="text/javascript"></script>
+<script src="/js/jquery-ui.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var ecount = 0;
+    function seedInvite(type) {
+        if (type == "closed") {
+            document.getElementById('msgtemplate').value = "A private election for \"$title\" has been called\n\nTo vote, please visit: $votelink\nThis is a private vote URL for your eyes only."
+        } else {
+            document.getElementById('msgtemplate').value = "A public election for \"$title\" has been called\n\nTo vote, please register for a vote at: $votelink\nAnyone can register to vote."
+        }
+    }
+    function removeEmail(code, response, state) {
+        if (code == 200) {
+            ecount--;
+            document.getElementById('invitestatus').innerHTML = ecount + " emails left to send..."
+            if (ecount == 0) {
+                document.getElementById('invitestatus').innerHTML = "All invites have been sent!"
+            }
+        } else {
+            alert(response.message)
+        }
+    }
+    function sendInvites() {
+        var emails = document.getElementById('emails').value.split(/\r?\n/)
+        var msgtype = document.getElementById('msgtype').value;
+        var msgtemplate = document.getElementById('msgtemplate').value;
+        var election = document.location.search.substr(1);
+        ecount = emails.length;
+        for (i in emails) {
+            var email = emails[i]
+            postREST("/steve/admin/invite/" + election, {
+                email: email,
+                msgtype: msgtype,
+                msgtemplate: msgtemplate
+            },
+            undefined,
+            removeEmail,
+            null)
+        }
+    }
+</script>
+<title>Invite people</title>
+</head>
+<body onload="seedInvite('closed');">
+       <p style="text-align: center;">
+        <img src="/images/steve_logo.png"/>
+    </p>
+<div class="formbox">
+       
+<fieldset>
+        <legend>Invite one or more users to this election</legend>
+    <div class="keyvaluepair">
+        <div class="keyfield">Invitation type:</div>
+        <select id="msgtype" onchange="seedInvite(this.value)">
+            <option value="closed">Closed (private) invite</option>
+            <option value="open">Open (public) invite</option>
+        </select>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Invitation type:</div>
+        <textarea id="msgtemplate" style="width: 600px; height: 200px;">
+            
+        </textarea>
+    </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Email address(es) to invite<br/>(one per line):</div>
+        <textarea id="emails" style="width: 300px; height: 300px;"></textarea>
+    </div>
+    <input type="button" value="Send invitation(s)" onclick="sendInvites()"/><br/>
+    <span id="invitestatus"></span>
+    </fieldset>
+</div>
+</body>
+</html>
