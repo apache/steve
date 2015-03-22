@@ -227,15 +227,29 @@ else:
                                 with open(issuepath + ".json", "r") as f:
                                     js = json.loads(f.read())
                                     f.close()
-                                fields = ['title','description','type','candidates','seconds','nominatedby']
+                                fields = ['title','description','type','statements','candidates','seconds','nominatedby']
+                                statements = []
                                 for field in fields:
                                     val = form.getvalue(field)
                                     if val:
                                         if field == "candidates":
-                                            xval = val.split("\n")
+                                            try:
+                                                xval = json.loads(val)
+                                            except:
+                                                xval = val.split("\n")
+                                            val = []
+                                            z = 0
+                                            for entry in xval:
+                                                val.append({'name': entry.strip(), 'statement': statements[z] if len(candidates) > z else ""})
+                                                z += 1
+                                        if field == "statements":
+                                            try:
+                                                xval = json.loads(val)
+                                            except:
+                                                xval = val.split("\n")
                                             val = []
                                             for entry in xval:
-                                                val.append({'name': entry.strip()})
+                                                statements.append(entry)
                                         if field == "seconds":
                                             val = [x.strip() for x in val.split("\n")]
                                         js[field] = val
