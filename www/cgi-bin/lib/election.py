@@ -118,7 +118,7 @@ def getproportion(votes, winners, step, surplus):
         if xstep >= step:
             tvotes += 1
         # We found it? Good, let's add that to the tally
-        if not vote[xstep] in winners:
+        if xstep < len(vote) and not vote[xstep] in winners:
             char = vote[xstep]
             prop[char] = (prop[char] if char in prop else 0) + 1
             
