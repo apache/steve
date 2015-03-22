@@ -280,7 +280,8 @@ function changeSTVType(type) {
 
 function createIssueCallback(code, response, state) {
 	if (code == 201) {
-		location.href = "/admin/edit_issue.html?" + state.election + "/" + state.issue;
+		alert(response.message)
+		location.href = "/admin/edit_election.html?" + state.election
 	} else {
 		alert(response.message)
 	}
