@@ -41,7 +41,7 @@ homedir = config.get("general", "homedir")
 pathinfo = os.environ['PATH_INFO'] if 'PATH_INFO' in os.environ else None
 form = cgi.FieldStorage();
 
-from lib import response, voter
+from lib import response, voter, election
 
 
 whoami = os.environ['REMOTE_USER'] if 'REMOTE_USER' in os.environ else None
@@ -55,37 +55,29 @@ if pathinfo:
     if l[0] == "":
         l.pop(0)
     action = l[0]
-    election = l[1] if len(l) > 1 else None
-    issue = l[2]  if len(l) > 2 else None
-    voterid = form.getvalue('uid')
+    electionID = l[1] if len(l) > 1 else None
+    issueID = l[2]  if len(l) > 2 else None
+    voterID = form.getvalue('uid')
     
-    if not voterid and karma < 3 and (action != "request" and action != "peek"):
+    if not voterID and karma < 3 and (action != "request" and action != "peek"):
         response.respond(403, {'message': "Voter UID missing"})
     
     elif action == "view":
         # View a list of issues for an election
-        if election and not issue:
+        if electionID and not issueID:
             js = []
-            elpath = os.path.join(homedir, "issues", election)
-            if os.path.isdir(elpath):
-                basedata = {}
+            if election.exists(electionID):
                 try:
-                    with open(elpath + "/basedata.json", "r") as f:
-                        basedata = json.loads(f.read())
-                        f.close()
-                    if karma < 3 and not voter.get(election, basedata, voterid):
+                    basedata = election.getBasedata(electionID)
+                    if not basedata:
+                        raise Exception("Could not load base data")
+                    if karma < 3 and not voter.get(electionID, basedata, voterID):
                         raise Exception("Invalid voter ID presented")
-                    issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
-                    for issue in issues:
+                    for issueID in election.listIssues(electionID):
                         try:
-                            with open(elpath + "/" + issue, "r") as f:
-                                entry = json.loads(f.read())
-                                f.close()
-                                entry['id'] = issue.strip(".json")
-                                entry['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (os.environ['SERVER_NAME'], election, issue.strip(".json"))
-                                entry['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (os.environ['SERVER_NAME'], election, issue.strip(".json"))
-                                entry['hasVoted'] = voter.hasVoted(election, issue, voterid)
-                                js.append(entry)
+                            entry = election.getIssue(electionID, issueID)
+                            entry['hasVoted'] = voter.hasVoted(electionID, issueID, voterID)
+                            js.append(entry)
                         except Exception as err:
                             response.respond(500, {'message': 'Could not load issues: %s' % err})
                 except Exception as err:
@@ -97,45 +89,31 @@ if pathinfo:
                 response.respond(404, {'message': 'No such election'})
                 
         # View a speficic issue
-        elif election and issue:
+        elif electionID and issueID:
             js = []
-            elpath = os.path.join(homedir, "issues", election)
-            issuepath = os.path.join(homedir, "issues", election, issue)
-            if os.path.isfile(issuepath + ".json"):
-                basedata = {}
+            issuedata = election.getIssue(electionID, issueID)
+            if issuedata:
                 try:
-                    with open(elpath + "/basedata.json", "r") as f:
-                        basedata = json.loads(f.read())
-                        f.close()
-                    if karma < 3 and not voter.get(election, basedata, voterid):
+                    basedata = election.getBasedata(electionID)
+                    if karma < 3 and not voter.get(electionID, basedata, voterID):
                         raise Exception("Invalid voter ID presented")
-                    with open(issuepath + ".json", "r") as f:
-                        entry = json.loads(f.read())
-                        f.close()
-                        entry['id'] = issue.strip(".json")
-                        entry['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (os.environ['SERVER_NAME'], election, issue)
-                        entry['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (os.environ['SERVER_NAME'], election, issue)
-                        response.respond(200, {'issue': entry})
+                    entry = election.getIssue(electionID, issueID)
+                    response.respond(200, {'issue': entry})
                 except Exception as err:
                     response.respond(500, {'message': "Could not load issue: %s" % err})
             else:
                 response.respond(404, {'message': 'No such issue'})
         else:
             response.respond(404, {'message': 'No election ID supplied'})
-    elif action == "vote" and election and issue and voterid:
+            
+            
+            
+    elif action == "vote" and electionID and issueID and voterID:
         try:
-            elpath = os.path.join(homedir, "issues", election)
-            issuepath = os.path.join(homedir, "issues", election, issue) + ".json"
-            if os.path.isdir(elpath) and os.path.isfile(issuepath):
-                basedata = {}
-                issuedata = {}
-                with open(elpath + "/basedata.json", "r") as f:
-                    basedata = json.loads(f.read())
-                    f.close()
-                with open(issuepath, "r") as f:
-                    issuedata = json.loads(f.read())
-                    f.close()
-                email = voter.get(election, basedata, voterid)
+            basedata = election.getBasedata(electionID)
+            issuedata = election.getIssue(electionID, issueID)
+            if basedata and issuedata:
+                email = voter.get(electionID, basedata, voterID)
                 if not email:
                     response.respond(403, {'message': 'Could not save vote: Invalid voter ID presented'})
                 else:
@@ -143,54 +121,28 @@ if pathinfo:
                     if not vote:
                         response.respond(500, {'message': 'Please specify a vote'})
                     else:
-                        double = False
-                        invalid = False
-                        letters = ['y','n','a']
-                        if issuedata['type'].find("stv") == 0:
-                            letters = [chr(i) for i in range(ord('a'),ord('a') + len(issuedata['candidates']))]
-                        for char in letters:
-                            if vote.count(char) > 1:
-                                double = True
-                                break
-                        for char in vote:
-                            if not char in letters:
-                                invalid = True
-                                break
-                        if double:
-                            response.respond(500, {'message': "Vote contains duplicate characters"})
-                        elif invalid:
-                            response.respond(500, {'message': "Vote contains invalid characters. Accepted are: %s" % ", ".join(letters)})
+                        invalid = election.invalidate(issuedata, vote)
+                        if invalid:
+                            response.respond(500, {'message': invalid})
                         else:
-                            votes = {}
-                            if os.path.isfile(issuepath + ".votes"):
-                                with open(issuepath + ".votes", "r") as f:
-                                    votes = json.loads(f.read())
-                                    f.close()
-                            votes[voterid] = vote
-                            with open(issuepath + ".votes", "w") as f:
-                                f.write(json.dumps(votes))
-                                f.close()
-                            votehash = hashlib.sha224(basedata['hash'] + voterid + vote + email).hexdigest()
-                            voter.email(email, "Vote registered: %s (%s)" % (issue, issuedata['title']), "This is a receipt that your vote was registered for issue #%s:\n\nElection: %s (%s)\nIssue: %s (%s)\nVote cryptohash: %s" % (issue, basedata['title'], election, issuedata['title'], issue, votehash))
+                            votehash = election.vote(electionID, issueID, voterID, vote)
+                            voter.email(email, "Vote registered: %s (%s)" % (issueID, issuedata['title']), "This is a receipt that your vote was registered for issue #%s:\n\nElection: %s (%s)\nIssue: %s (%s)\nVote cryptohash: %s" % (issueID, basedata['title'], electionID, issuedata['title'], issueID, votehash))
                             response.respond(200, {'message': 'Vote saved!'})
-                            
             else:
                 response.respond(404, {'message': 'Could not save vote: No such election or issue'})
                     
         except Exception as err:
             response.respond(500, {'message': 'Could not save vote: %s' % err})
+            
+            
     elif action == "request" and election:
         email = form.getvalue('email')
         if not email or len(email) > 300 or not re.match(r"([^@]+@[^@]+)", email):
             response.respond(400, {'message': 'Could not request voter ID: Invalid email address specified'})
         else:
             try:
-                elpath = os.path.join(homedir, "issues", election)
-                if os.path.isdir(elpath):
-                    basedata = {}
-                    with open(elpath + "/basedata.json", "r") as f:
-                        basedata = json.loads(f.read())
-                        f.close()
+                basedata = election.getBasedata(electionID)
+                if basedata:
                     if 'open' in basedata and basedata['open'] == "true":
                         uid, xhash = voter.add(election, basedata, email)
                         voter.email(email, "Your voter link for %s" % basedata['title'], "Your personal vote link is: %s/election.html?%s/%s\nDo not share this link with anyone." % (config.get("general", "rooturl"), election, uid))
@@ -206,13 +158,8 @@ if pathinfo:
         try:
             elpath = os.path.join(homedir, "issues", election)
             if os.path.isdir(elpath):
-                basedata = {}
-                with open(elpath + "/basedata.json", "r") as f:
-                    basedata = json.loads(f.read())
-                    f.close()
+                basedata = election.getBasedata(electionID, hideHash=True)
                 if 'open' in basedata and basedata['open'] == "true":
-                    if 'hash' in basedata:
-                        del basedata['hash']
                     response.respond(200, { 'base_data': basedata } )
                 else:
                     response.respond(403, {'message': 'This election is not open to the public'})

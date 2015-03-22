@@ -43,7 +43,7 @@ form = cgi.FieldStorage();
 
 whoami = os.environ['REMOTE_USER'] if 'REMOTE_USER' in os.environ else None
 
-from lib import response, voter
+from lib import response, voter, election
 
 if not whoami:
     response.respond(403, {'message': 'Could not verify your identity: No auth scheme found'})
