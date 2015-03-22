@@ -291,7 +291,7 @@ pre {
 .ballotbox_clist {
     border: 1px dotted #666;
     padding: 4px;
-    max-width: 300px;
+    max-width: 410px;
     min-height: 25px;
     cursor: move;
     cursor: grab;
