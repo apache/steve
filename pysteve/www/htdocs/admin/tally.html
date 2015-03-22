@@ -1,0 +1,27 @@
+ <!DOCTYPE HTML>
+<html>
+<head>
+<link rel="stylesheet" href="/css/steve_interactive.css">
+<link rel="stylesheet" href="/css/jquery-ui.css">
+<script src="/js/steve_rest.js" type="text/javascript"></script>
+<script src="/js/jquery.js" type="text/javascript"></script>
+<script src="/js/jquery-ui.js" type="text/javascript"></script>
+<title>Tally votes</title>
+</head>
+<body onload="window.setTimeout(loadTally, 500);">
+    <div id="popups"></div>
+    <p style="text-align: center;">
+        <img src="/images/steve_logo.png"/>
+    </p>
+<div class="formbox">
+    <a href="javascript:void(location.href='edit_election.html'+(document.location.search.split('/'))[0]);" class="btn">Back to election editing front page</a>
+<h2 id="title">Tally votes:</h2>
+
+<div id="preloaderWrapper">
+    <img src="/images/steve_spinner.gif"/><br/>
+        Loading issues, please wait...
+</div>
+
+</div>
+</body>
+</html>
