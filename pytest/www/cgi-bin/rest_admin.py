@@ -61,9 +61,27 @@ else:
         action = l[0]
         election = l[1] if len(l) > 1 else None
  
-    
+        # List all existing/previous elections?
+        if action == "list":
+            output = []
+            path = os.path.join(homedir, "issues")
+            elections = [ f for f in listdir(path) if os.path.isdir(os.path.join(path,f))]
+            for election in elections:
+                try:
+                    elpath = os.path.join(homedir, "issues", election)
+                    with open(elpath + "/basedata.json", "r") as f:
+                        basedata = json.loads(f.read())
+                        f.close()
+                        if 'hash' in basedata:
+                            del basedata['hash']
+                        basedata['id'] = election
+                        if karma >= 5 or ('owner' in basedata and basedata['owner'] == whoami):
+                            output.append(basedata)
+                except:
+                    pass
+            response.respond(200, { 'elections': output})
         # Set up new election?
-        if action == "setup":
+        elif action == "setup":
             if karma >= 5: # karma of 5 required to set up an election base
                 if election:
                     if os.path.isdir(os.path.join(homedir, "issues", election)):
