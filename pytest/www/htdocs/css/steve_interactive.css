@@ -46,13 +46,15 @@ p {
   color: #fff;
   display: inline-block;
   font-size: 14px;
-  padding: 8px 15px;
+  padding: 4px 8px;
   text-decoration: none;
   text-align: center;
-  min-width: 60px;
+  font-weight: bold;
+  min-width: 50px;
   position: relative;
   transition: color .1s ease;
   cursor: pointer;
+  margin-left: 10px;
 }
 .btn-red {
   background: #c5321b !important;
@@ -73,6 +75,28 @@ p {
 }
 .btn-red:hover {
   background: #d5421b !important;
+  transition: 0.3s ease;
+}
+
+.btn-purple {
+  background: #b532bb !important;
+  border: #bd351e solid 1px;
+  border-radius: 3px;
+  color: #fff !important;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 4px 8px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 30px;
+  position: relative;
+  transition: color .1s ease;
+  cursor: pointer;
+  margin-left: 10px;
+}
+.btn-purple:hover {
+  background: #d542db !important;
   transition: 0.3s ease;
 }
 

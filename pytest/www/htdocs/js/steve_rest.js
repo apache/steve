@@ -99,7 +99,6 @@ function createElection() {
 function renderEditElection(code, response, election) {
 	if (code == 200) {
 		document.getElementById('title').innerHTML = "Edit election: " + response.base_data.title + " (#" + election  + ")"
-		document.getElementById('iid').value = parseInt(Math.random()*987654321).toString(16).toLowerCase();
 		
 		var obj = document.getElementById('ballot')
 		obj.innerHTML = "There are no issues in this election yet"
@@ -142,6 +141,57 @@ function loadAdminElectionData(election) {
 	getJSON("/steve/admin/view/" + election, election, renderEditElection)
 }
 
+
+function loadIssueAdmin() {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	var issue = l[1]
+	getJSON("/steve/admin/view/" + document.location.search.substr(1), issue, renderEditIssue)
+}
+
+
+var edit_c = []
+var edit_s = []
+var edit_i = null
+function renderEditIssue(code, response, issue) {
+	if (code == 200) {
+		var obj = document.getElementById('preloaderWrapper')
+		obj.setAttribute("id", "contents")
+		for (i in response.issues) {
+			if (response.issues[i].id == issue) {
+				edit_i = response.issues[i]
+				break
+			}
+		}
+		if (!edit_i) {
+			obj.innerHTML = "<h3>No such issue found :( </h3>"
+		}
+		else if (edit_i.type == "yna") {
+			obj.innerHTML = "<h3>Editing a YNA issue</h3>"
+			
+		} else if (edit_i.type.match(/^stv/)) {
+			obj.innerHTML = "<h3>Editing an STV issue</h3>"
+		}
+	} else {
+		alert(response.message)
+	}
+}
+
+function deleteIssueCallback(code, response, election) {
+	if (code == 200) {
+		alert("Issue deleted")
+		location.href = "/admin/edit_election.html?" + election
+	} else {
+		alert(code + ":" + response.message)
+	}
+}
+function deleteIssue() {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	getJSON("/steve/admin/delete/" + document.location.search.substr(1), election, deleteIssueCallback)
+}
+
+
 function changeSTVType(type) {
 	if (type == "yna") {
 		document.getElementById('yna').style.display = "block";
@@ -154,7 +204,7 @@ function changeSTVType(type) {
 
 function createIssueCallback(code, response, state) {
 	if (code == 201) {
-		location.href = "/edit_issue.html?" + state.election + "/" + state.issue;
+		location.href = "/admin/edit_issue.html?" + state.election + "/" + state.issue;
 	} else {
 		alert(response.message)
 	}
