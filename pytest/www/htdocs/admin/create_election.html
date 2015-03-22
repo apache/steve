@@ -1,11 +1,11 @@
  <!DOCTYPE HTML>
 <html>
 <head>
-<link rel="stylesheet" href="css/steve_interactive.css">
-<link rel="stylesheet" href="css/jquery-ui.css">
-<script src="js/steve_rest.js" type="text/javascript"></script>
-<script src="js/jquery.js" type="text/javascript"></script>
-<script src="js/jquery-ui.js" type="text/javascript"></script>
+<link rel="stylesheet" href="/css/steve_interactive.css">
+<link rel="stylesheet" href="/css/jquery-ui.css">
+<script src="/js/steve_rest.js" type="text/javascript"></script>
+<script src="/js/jquery.js" type="text/javascript"></script>
+<script src="/js/jquery-ui.js" type="text/javascript"></script>
 <title>Create a new election</title>
 </head>
 <body onload="document.getElementById('eid').value = parseInt(Math.random()*987654321).toString(16);">
@@ -14,21 +14,22 @@
         <img src="/images/steve_logo.png"/>
     </p>
 <div class="formbox">
-<h2>Create an election:</h2>
+    <a href="index.html">Back to adminstration front page</a>
+<h2>Create a new election:</h2>
 <form>
     <fieldset>
         <legend>Base data</legend>
     <div class="keyvaluepair">
         <div class="keyfield">ID of election:</div>
-        <input type="text" id="eid"/><br>
+        <input type="text" id="eid"/> You can enter your own EID if you like, for instance foo-election-2015.<br>
     </div>
     <div class="keyvaluepair">
         <div class="keyfield">Name of election:</div>
-        <input type="text" id="title"/><br>
+        <input type="text" id="title"/>This is the official title of the election<br>
     </div>
     <div class="keyvaluepair">
         <div class="keyfield">Owner of election (UID):</div>
-        <input type="text" id="owner"/><br>
+        <input type="text" id="owner"/>Owner of the election, as found in the karma section of steve.cfg<br>
     </div>
     <div class="keyvaluepair">
         <div class="keyfield">Election monitors (emails):</div>

@@ -1,0 +1,25 @@
+ <!DOCTYPE HTML>
+<html>
+<head>
+<link rel="stylesheet" href="/css/steve_interactive.css">
+<link rel="stylesheet" href="/css/jquery-ui.css">
+<script src="/js/steve_rest.js" type="text/javascript"></script>
+<script src="/js/jquery.js" type="text/javascript"></script>
+<script src="/js/jquery-ui.js" type="text/javascript"></script>
+
+<title>STeVe administration</title>
+</head>
+<body onload="getJSON('/steve/admin/list', null, showElections);">
+    <div id="popups"></div>
+    <p style="text-align: center;">
+        <img src="/images/steve_logo.png"/>
+    </p>
+<div class="formbox">
+<h1 id="title">STeVe administration</h1>
+<a href="create_election.html" class="btn-green">Create a new election</a><br/>
+<div id="preloaderWrapper">
+    
+</div>
+</div>
+</body>
+</html>

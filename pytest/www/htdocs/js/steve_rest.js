@@ -428,3 +428,33 @@ function castVoteCallback(code, response, issue) {
 		alert(response.message)
 	}
 }
+
+function showElections(code, response, state) {
+	var obj = document.getElementById('preloaderWrapper')
+	//obj.setAttribute("id", "electionWrapper")
+	obj.innerHTML = "<h2>Your elections:</h2>"
+	var ol = document.createElement('ol')
+	obj.appendChild(ol)
+	obj.setAttribute("class", "issueList")
+	var s = 0
+	for (i in response.elections) {
+		s++;
+		var election = response.elections[i]
+
+		var outer = document.createElement('li');
+		outer.setAttribute("class", "issueListItem")
+		
+		var no = document.createElement('div');
+		no.setAttribute("class", "issueNumber")
+		no.innerHTML = (s)
+		
+		
+		// Add election
+		var inner = document.createElement('span')
+		inner.innerHTML = election.id + ": " + election.title;
+		outer.appendChild(no)
+		outer.appendChild(inner)
+		outer.setAttribute("onclick", "location.href='edit_election.html?" + election.id + "';")
+		ol.appendChild(outer)
+	}
+}
