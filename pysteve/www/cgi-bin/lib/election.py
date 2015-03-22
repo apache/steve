@@ -95,6 +95,15 @@ def deleteIssue(electionID, issueID):
     
 debug = []
 
+def yna(votes):
+    y,n,a = 0,0,0
+    for key in votes:
+        vote = votes[key]
+        if vote == 'y': y+=1
+        if vote == 'n': n+=1
+        if vote == 'a': a+=1
+    return y,n,a
+
 def getproportion(votes, winners, step, surplus):
     "Proportionally move votes"
     prop = {}
