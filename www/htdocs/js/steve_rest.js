@@ -161,7 +161,7 @@ var edit_c = []
 var edit_s = []
 var edit_i = null
 
-function keyvaluepair(name, text, type, value, locked) {
+function keyvaluepair(name, text, type, value, locked, onedit) {
 	var obj = document.createElement('div')
 	obj.setAttribute("class", "keyvaluepair");
 	var txt = document.createElement('div');
@@ -179,12 +179,18 @@ function keyvaluepair(name, text, type, value, locked) {
 			input.setAttribute("disabled", "true")
 			input.style.background = "#999"
 		}
+		if (onedit) {
+			input.setAttribute("onchange", onedit)
+		}
 	} else if (type == "textarea") {
 		var input = document.createElement('textarea')
 		input.setAttribute("id", name)
 		input.value = value
 		input.style.minWidth = "600px"
 		input.style.minHeight = "250px"
+		if (onedit) {
+			input.setAttribute("onchange", onedit)
+		}
 		obj.appendChild(input)
 	}
 	
@@ -220,6 +226,73 @@ function saveYNA() {
 	election)
 }
 
+
+function saveSTV() {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	var issue = l[1]
+	
+	var title = document.getElementById('ititle').value
+	var description = document.getElementById('description').value
+	
+	candidates = []
+	statements = []
+	for (var i = 0; i < 256; i++) {
+		if (document.getElementById('name_' + i)) {
+			var name = document.getElementById('name_' + i).value;
+			var statement = document.getElementById('statement_' + i).value;
+			candidates.push(name)
+			statements.push(statement ? statement : "")
+		}
+	}
+	
+	postREST("/steve/admin/edit/" + election + "/" + issue, {
+		title: title,
+		description: description,
+		candidates: JSON.stringify(candidates),
+		statements: JSON.stringify(statements)
+	},
+	undefined,
+	saveCallback,
+	election)
+}
+
+function removeEditCandidate(indice) {
+	edit_i.candidates.splice(indice, 1);
+	renderEditCandidates()
+}
+
+function addEditCandidate() {
+	var name = window.prompt("Enter name of candidate:")
+	if (name) {
+		edit_i.candidates.push( {
+			name: name,
+			statement: "No statement made"
+		})
+	}
+	
+	renderEditCandidates()
+}
+
+function renderEditCandidates() {
+	var obj = document.getElementById('candidateList')
+	obj.innerHTML = "<h3>Candidates (" + edit_i.candidates.length + "):</h3><a href=\"javascript:void(addEditCandidate());\" class='btn-purple'>Add a candidate</a>"
+	
+	var s = 0
+	for (c in edit_i.candidates) {
+		s++;
+		var candidate = edit_i.candidates[c]
+		var name = candidate.name
+		var statement = candidate.statement
+		var h = document.createElement('h4')
+		h.innerHTML = name + " &nbsp; - &nbsp <a href='javascript:void(removeEditCandidate(\"" + name + "\"));'>Delete</a>"
+		obj.appendChild(h)
+		obj.appendChild(keyvaluepair("name_" + c, "Name:", "text", name, false, "edit_i.candidates[" + c + "].name = this.value"))
+		obj.appendChild(keyvaluepair("statement_" + c, "Statement/seconds:", "textarea", statement ? statement : "", false, "edit_i.candidates[" + c + "].statement = this.value"))
+		obj.appendChild(document.createElement('hr'))
+	}
+}
+
 function renderEditIssue(code, response, issue) {
 	if (code == 200) {
 		var obj = document.getElementById('preloaderWrapper')
@@ -253,7 +326,30 @@ function renderEditIssue(code, response, issue) {
 			div.appendChild(btn)
 			obj.appendChild(div)
 		} else if (edit_i.type.match(/^stv/)) {
-			obj.innerHTML = "<h3>Editing an STV issue</h3>"
+			
+			// base data
+			obj.innerHTML = "<h3>Editing an " + edit_i.type.toUpperCase() + " issue</h3>"
+			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
+			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
+			obj.appendChild(keyvaluepair("description", "Description (optinal):", "textarea", edit_i.description))
+			obj.appendChild(document.createElement('hr'))
+			
+			// candidates
+			var cobj = document.createElement('div')
+			cobj.setAttribute("id", "candidateList")
+			cobj.setAttribute("class", "candidateEditList")
+			obj.appendChild(cobj)
+			
+			var div = document.createElement('div')
+			div.setAttribute("class", "keyvaluepair")
+			var btn = document.createElement('input')
+			btn.setAttribute("type", "button")
+			btn.setAttribute("class", "btn-green")
+			btn.setAttribute("value", "Save changes")
+			btn.setAttribute("onclick", "saveSTV();")
+			div.appendChild(btn)
+			obj.appendChild(div)
+			renderEditCandidates()
 		}
 	} else {
 		alert(response.message)

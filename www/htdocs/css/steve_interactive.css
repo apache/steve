@@ -402,6 +402,11 @@ body, html {
 }
 
 
+.formbox .candidateEditList {
+  min-height: 32px;
+  width: 1000px;
+}
+
 .formbox .keyvaluepair {
   min-height: 32px;
   min-width: 700px;
