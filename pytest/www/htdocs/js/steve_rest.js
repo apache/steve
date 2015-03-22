@@ -153,6 +153,66 @@ function loadIssueAdmin() {
 var edit_c = []
 var edit_s = []
 var edit_i = null
+
+function keyvaluepair(name, text, type, value, locked) {
+	var obj = document.createElement('div')
+	obj.setAttribute("class", "keyvaluepair");
+	var txt = document.createElement('div');
+	txt.setAttribute("class", "keyfield")
+	txt.innerHTML = text
+	obj.appendChild(txt)
+	if (type == "text") {
+		var input = document.createElement('input')
+		input.setAttribute("id", name)
+		input.value = value
+		input.style.minWidth = "300px"
+		obj.appendChild(input)
+		if (locked) {
+			input.setAttribute("readonly", "true")
+			input.setAttribute("disabled", "true")
+			input.style.background = "#999"
+		}
+	} else if (type == "textarea") {
+		var input = document.createElement('textarea')
+		input.setAttribute("id", name)
+		input.value = value
+		input.style.minWidth = "600px"
+		input.style.minHeight = "250px"
+		obj.appendChild(input)
+	}
+	
+	return obj
+}
+
+function saveCallback(code, response, election) {
+	if (code == 200) {
+		alert("Changes saved")
+		location.href = "/admin/edit_election.html?" + election
+	} else {
+		alert(response.message)
+	}
+}
+function saveYNA() {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	var issue = l[1]
+	
+	var title = document.getElementById('ititle').value
+	var nominatedby = document.getElementById('nominatedby').value.split(/,\s*/).join("\n")
+	var seconds = document.getElementById('seconds').value
+	var description = document.getElementById('description').value
+	
+	postREST("/steve/admin/edit/" + election + "/" + issue, {
+		title: title,
+		nominatedby: nominatedby,
+		seconds: seconds,
+		description: description
+	},
+	undefined,
+	saveCallback,
+	election)
+}
+
 function renderEditIssue(code, response, issue) {
 	if (code == 200) {
 		var obj = document.getElementById('preloaderWrapper')
@@ -169,6 +229,22 @@ function renderEditIssue(code, response, issue) {
 		else if (edit_i.type == "yna") {
 			obj.innerHTML = "<h3>Editing a YNA issue</h3>"
 			
+			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
+			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
+			obj.appendChild(keyvaluepair("nominatedby", "Nominated by:", "text", edit_i.nominatedby))
+			obj.appendChild(keyvaluepair("seconds", "Seconded by:", "text", edit_i.seconds.join(", ")))
+			obj.appendChild(document.createElement('hr'))
+			obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
+			
+			var div = document.createElement('div')
+			div.setAttribute("class", "keyvaluepair")
+			var btn = document.createElement('input')
+			btn.setAttribute("type", "button")
+			btn.setAttribute("class", "btn-green")
+			btn.setAttribute("value", "Save changes")
+			btn.setAttribute("onclick", "saveYNA();")
+			div.appendChild(btn)
+			obj.appendChild(div)
 		} else if (edit_i.type.match(/^stv/)) {
 			obj.innerHTML = "<h3>Editing an STV issue</h3>"
 		}
