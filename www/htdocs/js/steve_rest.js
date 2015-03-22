@@ -134,6 +134,48 @@ function loadElectionData(election) {
 	election = election ? election : document.location.search.substr(1);
 	getJSON("/steve/voter/view/" + election, election, renderEditElection)
 }
+function displayTally(code, response, issue) {
+	var obj = document.getElementById('tally_' + issue)
+	if (obj) {
+		if (response.winners) {
+			obj.innerHTML = "<ol>"
+			for (i in response.winners) {
+				var winner = response.winners[i]
+				var winnerName = response.winnernames[i]
+				obj.innerHTML += "<li>" + winner + ": " + winnerName + "</li>"
+			}
+			obj.innerHTML += "</ol>"
+		} else if (response.yes && response.yes != undefined) {
+			obj.innerHTML = "<b>Yes:     </b>" + response.yes + "\n"
+			obj.innerHTML += "<b>No:      </b>" + response.no + "\n"
+			obj.innerHTML += "<b>Abstain: </b>" + response.abstain + "\n"
+		} else {
+			obj.innerHTML = "Unknonwn vote type or no votes cast yet"
+		}
+	}
+}
+function readTally(code, response, election) {
+	var obj = document.getElementById('preloaderWrapper')
+	obj.setAttribute("id", "contents")
+	obj.innerHTML = ""
+	if (code == 200) {
+			for (i in response.issues) {
+			var issue = response.issues[i]
+			obj.innerHTML += "<h3>" + issue.title + ":</h3>"
+			obj.innerHTML += "<pre id='tally_" + issue.id + "'>Loading results...</pre>"
+			obj.innerHTML += "<hr/>"
+			getJSON("/steve/admin/tally/" + election + "/" + issue.id, issue.id, displayTally)
+		}
+	} else {
+		alert(response.message)
+	}
+
+}
+
+function loadTally(election) {
+	election = election ? election : document.location.search.substr(1);
+	getJSON("/steve/admin/view/" + election, election, readTally)
+}
 
 
 function loadAdminElectionData(election) {
