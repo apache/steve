@@ -21,32 +21,32 @@
         <legend>Base data</legend>
     <div class="keyvaluepair">
         <div class="keyfield">ID of election:</div>
-        <input type="text" id="eid"/> You can enter your own EID if you like, for instance foo-election-2015.<br>
+        <input type="text" name="eid" id="eid"/> You can enter your own EID if you like, for instance foo-election-2015.<br>
     </div>
     <div class="keyvaluepair">
         <div class="keyfield">Name of election:</div>
-        <input type="text" id="title"/>This is the official title of the election<br>
+        <input type="text" name="foo122"  id="title"/>This is the official title of the election<br>
     </div>
     <div class="keyvaluepair">
         <div class="keyfield">Owner of election (UID):</div>
-        <input type="text" id="owner"/>Owner of the election, as found in the karma section of steve.cfg<br>
+        <input type="text" name="foo123" id="owner"/>Owner of the election, as found in the karma section of steve.cfg<br>
     </div>
     <div class="keyvaluepair">
         <div class="keyfield">Election monitors (emails):</div>
-        <input type="text" id="monitors"/><br>
+        <input type="text" name="foo125"  id="monitors"/><br>
     </div>
     </fieldset>
     <fieldset>
         <legend>Optional information</legend>
             <div class="keyvaluepair">
         <div class="keyfield">Date election opens (optional):</div>
-        <input type="text" placeholder="YYYY-MM-DD" id="starts" onfocus="$('#starts').datepicker({
+        <input type="text" name="starts" placeholder="YYYY-MM-DD" id="starts" onfocus="$('#starts').datepicker({
             dateFormat: 'yy-mm-dd'
                });"/><br>
     </div>
     <div class="keyvaluepair">
         <div class="keyfield">Date election ends (optional):</div>
-        <input type="text" placeholder="YYYY-MM-DD" id="ends" onfocus="$('#ends').datepicker({
+        <input type="text" name="ends" placeholder="YYYY-MM-DD" id="ends" onfocus="$('#ends').datepicker({
             dateFormat: 'yy-mm-dd'
                });"/><br>
     </div>
