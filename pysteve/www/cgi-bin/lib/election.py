@@ -172,8 +172,8 @@ def stv(candidates, votes, numseats):
                 if len(winners) >= numseats:
                     break
                 if points[c] >= quota and not c in winners:
-                    debug.append("WINNER: %s got elected in with %u votes! %u seats remain" % (c, points[c], numseats - len(winners)))
                     winners.append(c)
+                    debug.append("WINNER: %s got elected in with %u votes! %u seats remain" % (c, points[c], numseats - len(winners)))
                     cc.replace(c, "")
                     mq += 1
                     #break
