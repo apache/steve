@@ -84,7 +84,7 @@ else:
                 response.respond(206, { 'elections': output, 'errors': errors})
             else:
                 response.respond(200, { 'elections': output})
-        # Set up new electionID?
+        # Set up new election?
         elif action == "setup":
             if karma >= 5: # karma of 5 required to set up an election base
                 if electionID:
@@ -105,7 +105,7 @@ else:
                                 f.write(json.dumps({
                                     'title': form.getvalue('title'),
                                     'owner': form.getvalue('owner'),
-                                    'monitors': form.getvalue('monitors').split(","),
+                                    'monitors': [f.strip() for f in form.getvalue('monitors').split(",")],
                                     'starts': form.getvalue('starts'),
                                     'ends': form.getvalue('ends'),
                                     'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'])).hexdigest(),
@@ -147,13 +147,13 @@ else:
                                     candidates = []
                                     if form.getvalue('candidates'):
                                         for name in form.getvalue('candidates').split("\n"):
-                                            candidates.append({'name': name})
+                                            candidates.append({'name': name.strip()})
                                     f.write(json.dumps({
                                         'title': form.getvalue('title'),
                                         'description': form.getvalue('description'),
                                         'type': form.getvalue('type'),
                                         'candidates': candidates,
-                                        'seconds': form.getvalue('seconds').split("\n") if form.getvalue('seconds') else [],
+                                        'seconds': [f.strip() for f in form.getvalue('seconds').split("\n")] if form.getvalue('seconds') else [],
                                         'nominatedby': form.getvalue('nominatedby')
                                     }))
                                     f.close()
@@ -209,7 +209,7 @@ else:
                                     val = form.getvalue(field)
                                     if val:
                                         if field == "monitors":
-                                            val = val.split(",")
+                                            val = [f.strip() for f in val.split(",")]
                                         js[field] = val
                                 with open(elpath + "/basedata.json", "w") as f:
                                     f.write(json.dumps(js))
@@ -235,9 +235,9 @@ else:
                                             xval = val.split("\n")
                                             val = []
                                             for entry in xval:
-                                                val.append({'name': entry})
+                                                val.append({'name': entry.strip()})
                                         if field == "seconds":
-                                            val = val.split("\n")
+                                            val = [f.strip() for f in val.split("\n")]
                                         js[field] = val
                                 with open(issuepath + ".json", "w") as f:
                                     f.write(json.dumps(js))
