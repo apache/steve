@@ -145,9 +145,22 @@ else:
                                     raise Exception('Invalid vote type: %s' % form.getvalue('type'))
                                 with open(issuepath + ".json", "w") as f:
                                     candidates = []
+                                    c = []
+                                    s = []
                                     if form.getvalue('candidates'):
-                                        for name in form.getvalue('candidates').split("\n"):
-                                            candidates.append({'name': name.strip()})
+                                        try:
+                                            c = json.loads(form.getvalue('candidates'))
+                                            if form.getvalue('statements'):
+                                                try:
+                                                    s = json.loads(form.getvalue('statements'))
+                                                except:
+                                                    s = form.getvalue('statements').split("\n")
+                                        except:
+                                            c = form.getvalue('candidates').split("\n")
+                                        z = 0
+                                        for entry in c:
+                                            candidates.append({'name': entry.strip(), 'statement': s[z] if len(s) > z else ""})
+                                            z += 1
                                     f.write(json.dumps({
                                         'title': form.getvalue('title'),
                                         'description': form.getvalue('description'),
