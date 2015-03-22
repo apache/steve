@@ -9,6 +9,7 @@ responseCodes = {
     400: 'Bad Request',
     403: 'Access denied',
     404: 'Not Found',
+    410: 'Gone',
     500: 'Server Error'
 }
 

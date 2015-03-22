@@ -70,3 +70,14 @@ def invalidate(issueData, vote):
         if not char in letters:
             return "Invalid characters in vote. Accepted are: %s" % ", ".join(letters)
     return None
+
+def deleteIssue(electionID, issueID):
+    if exists(electionID):
+        issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
+        if os.path.isfile(issuepath):
+            os.unlink(issuepath)
+        if os.path.isfile(issuepath + ".votes"):
+            os.unlink(issuepath + ".votes")
+        return True
+    else:
+        raise Exception("No such election")
