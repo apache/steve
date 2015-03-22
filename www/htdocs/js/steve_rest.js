@@ -149,6 +149,13 @@ function loadIssueAdmin() {
 	getJSON("/steve/admin/view/" + document.location.search.substr(1), issue, renderEditIssue)
 }
 
+function loadBasedataAdmin() {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	getJSON("/steve/admin/view/" + document.location.search.substr(1), election, renderEditBasedata)
+}
+
+
 
 var edit_c = []
 var edit_s = []
@@ -252,6 +259,58 @@ function renderEditIssue(code, response, issue) {
 		alert(response.message)
 	}
 }
+
+function renderEditBasedata(code, response, election) {
+	if (code == 200) {
+		
+		var obj = document.getElementById('preloaderWrapper')
+		obj.setAttribute("id", "contents")
+		obj.innerHTML = ""
+		
+		document.getElementById('title').innerHTML += response.base_data.title;
+		
+		obj.appendChild(keyvaluepair("id", "Election ID:", "text", election, true))
+		obj.appendChild(keyvaluepair("etitle", "Election title:", "text", response.base_data.title))
+		obj.appendChild(document.createElement('hr'))
+		//obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
+		
+		var div = document.createElement('div')
+		div.setAttribute("class", "keyvaluepair")
+		var btn = document.createElement('input')
+		btn.setAttribute("type", "button")
+		btn.setAttribute("class", "btn-green")
+		btn.setAttribute("value", "Save changes")
+		btn.setAttribute("onclick", "saveElection();")
+		div.appendChild(btn)
+		obj.appendChild(div)
+	} else {
+		alert(response.message)
+	}
+}
+
+function saveElectionCallback(code, response, election) {
+	if (code == 200) {
+		alert("Changes saved")
+		location.href = "/admin/edit_election.html?" + election
+	} else {
+		alert(response.message)
+	}
+}
+function saveElection() {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	
+	var title = document.getElementById('etitle').value
+	
+	postREST("/steve/admin/edit/" + election, {
+		title: title
+	},
+	undefined,
+	saveElectionCallback,
+	election)
+}
+
+
 
 function deleteIssueCallback(code, response, election) {
 	if (code == 200) {
