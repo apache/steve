@@ -52,7 +52,7 @@ function createElectionCallback(code, response) {
 	if (code != 201) {
 		alert(response.message)
 	} else {
-		location.href = "/edit_election.html?" + response.id
+		location.href = "/admin/edit_election.html?" + response.id
 	}
 }
 
