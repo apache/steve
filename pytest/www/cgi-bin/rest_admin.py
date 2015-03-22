@@ -153,7 +153,7 @@ else:
                                         'description': form.getvalue('description'),
                                         'type': form.getvalue('type'),
                                         'candidates': candidates,
-                                        'seconds': form.getvalue('seconds'),
+                                        'seconds': form.getvalue('seconds').split("\n") if form.getvalue('seconds') else [],
                                         'nominatedby': form.getvalue('nominatedby')
                                     }))
                                     f.close()
@@ -231,11 +231,13 @@ else:
                                 for field in fields:
                                     val = form.getvalue(field)
                                     if val:
-                                        if field == "candidates" or field == "seconds":
+                                        if field == "candidates":
                                             xval = val.split("\n")
                                             val = []
                                             for entry in xval:
                                                 val.append({'name': entry})
+                                        if field == "seconds":
+                                            val = val.split("\n")
                                         js[field] = val
                                 with open(issuepath + ".json", "w") as f:
                                     f.write(json.dumps(js))
