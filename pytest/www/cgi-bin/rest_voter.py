@@ -61,7 +61,10 @@ if pathinfo:
     
     if not voterID and karma < 3 and (action != "request" and action != "peek"):
         response.respond(403, {'message': "Voter UID missing"})
-    
+    elif electionID and re.search(r"([^A-Za-z0-9-.])", electionID):
+        response.respond(400, {'message': "Invalid election ID specified"})
+    elif issueID and re.search(r"([^A-Za-z0-9-.])", issueID):
+        response.respond(400, {'message': "Invalid issue ID specified"})
     elif action == "view":
         # View a list of issues for an election
         if electionID and not issueID:
