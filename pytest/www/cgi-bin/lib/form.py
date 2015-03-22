@@ -9,4 +9,5 @@ def getvalue(key):
     val = xform.getvalue(key)
     if val:
         return val.replace("<", "&lt;")
-    
+    else:
+        return None
