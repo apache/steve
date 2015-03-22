@@ -198,8 +198,8 @@ function saveYNA() {
 	var issue = l[1]
 	
 	var title = document.getElementById('ititle').value
-	var nominatedby = document.getElementById('nominatedby').value.split(/,\s*/).join("\n")
-	var seconds = document.getElementById('seconds').value
+	var nominatedby = document.getElementById('nominatedby').value
+	var seconds = document.getElementById('seconds').value.split(/,\s*/).join("\n")
 	var description = document.getElementById('description').value
 	
 	postREST("/steve/admin/edit/" + election + "/" + issue, {
@@ -232,7 +232,7 @@ function renderEditIssue(code, response, issue) {
 			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
 			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
 			obj.appendChild(keyvaluepair("nominatedby", "Nominated by:", "text", edit_i.nominatedby))
-			obj.appendChild(keyvaluepair("seconds", "Seconded by:", "text", edit_i.seconds.join(", ")))
+			obj.appendChild(keyvaluepair("seconds", "Seconded by:", "text", (edit_i.seconds ? edit_i.seconds : []).join(", ")))
 			obj.appendChild(document.createElement('hr'))
 			obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
 			
@@ -292,6 +292,8 @@ function createIssue(election) {
 	var type = document.getElementById('type').value;
 	var title = document.getElementById('ititle').value;
 	var description = document.getElementById('description').value;
+	var seconds = document.getElementById('seconds').value
+	var nominatedby = document.getElementById('nominatedby').value
 	
 	if (!iid || iid.length == 0) {
 		iid = parseInt(Math.random()*987654321).toString(16).toLowerCase()
@@ -300,7 +302,9 @@ function createIssue(election) {
 	postREST("/steve/admin/create/" + election + "/" + iid, {
 		type: type,
 		title: title,
-		description: description
+		description: description,
+		nominatedby: nominatedby,
+		seconds: seconds
 	}, undefined, createIssueCallback, { election: election, issue: iid})
 }
 
