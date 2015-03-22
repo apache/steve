@@ -489,7 +489,31 @@ else:
                         response.respond(404, {'message': 'No such election'})
             else:
                     response.respond(404, {'message': 'No such election'})
-                    
+        # Tally an issue
+        elif action == "tally" and electionID:
+            issue = l[2] if len(l) > 2 else None
+            if electionID and issue:
+                basedata = election.getBasedata(electionID)
+                if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
+                    issuedata = election.getIssue(electionID, issue)
+                    votes = election.getVotes(electionID, issue)
+                    if issuedata and votes:
+                        if issuedata['type'].startswith("stv"):
+                            winners, winnernames, debug = election.stv(issuedata['candidates'], votes, 3)
+                            response.respond(200, {'winners': winners, 'winnernames': winnernames, 'debug': debug})
+                        elif issuedata['type'] == "yna":
+                            yes, no, abstain = election.yna(votes)
+                            response.respond(200, {'yes': yes, 'no': no, 'abstain': abstain})
+                        else:
+                            response.respond(500, {'message': "Unknown vote type"})
+                    elif not votes:
+                        response.respond(404, {'message': "No votes found"})
+                    else:
+                        response.respond(404, {'message': "Issue not found"})
+                else:
+                    response.respond(403, {'message': "You do not have karma to delete this issue"})
+            else:
+                    response.respond(404, {'message': 'No such election or issue'})                    
         else:
             response.respond(400, {'message': "No (or invalid) action supplied"})
     else:
