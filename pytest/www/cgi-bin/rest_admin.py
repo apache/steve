@@ -59,36 +59,36 @@ else:
         if l[0] == "":
             l.pop(0)
         action = l[0]
-        election = l[1] if len(l) > 1 else None
+        electionID = l[1] if len(l) > 1 else None
  
         # List all existing/previous elections?
         if action == "list":
             output = []
             errors = []
             path = os.path.join(homedir, "issues")
-            elections = [ f for f in listdir(path) if os.path.isdir(os.path.join(path,f))]
-            for election in elections:
+            electionIDs = [ f for f in listdir(path) if os.path.isdir(os.path.join(path,f))]
+            for electionID in electionIDs:
                 try:
-                    elpath = os.path.join(homedir, "issues", election)
+                    elpath = os.path.join(homedir, "issues", electionID)
                     with open(elpath + "/basedata.json", "r") as f:
                         basedata = json.loads(f.read())
                         f.close()
                         if 'hash' in basedata:
                             del basedata['hash']
-                        basedata['id'] = election
+                        basedata['id'] = electionID
                         if karma >= 5 or ('owner' in basedata and basedata['owner'] == whoami):
                             output.append(basedata)
                 except Exception as err:
-                    errors.append("Could not parse election '%s': %s" % (election, err))
+                    errors.append("Could not parse electionID '%s': %s" % (electionID, err))
             if len(errors) > 0:
                 response.respond(206, { 'elections': output, 'errors': errors})
             else:
                 response.respond(200, { 'elections': output})
-        # Set up new election?
+        # Set up new electionID?
         elif action == "setup":
             if karma >= 5: # karma of 5 required to set up an election base
-                if election:
-                    if os.path.isdir(os.path.join(homedir, "issues", election)):
+                if electionID:
+                    if os.path.isdir(os.path.join(homedir, "issues", electionID)):
                         response.respond(403, {'message': "Election already exists!"})
                     else:
                         try:
@@ -99,7 +99,7 @@ else:
                                     raise Exception("Required fields missing: %s" % ", ".join(xr))
                                 else:
                                     xr.pop(0)
-                            elpath = os.path.join(homedir, "issues", election)
+                            elpath = os.path.join(homedir, "issues", electionID)
                             os.mkdir(elpath)
                             with open(elpath  + "/basedata.json", "w") as f:
                                 f.write(json.dumps({
@@ -112,9 +112,9 @@ else:
                                     'open': form.getvalue('open')
                                 }))
                                 f.close()
-                            response.respond(201, {'message': 'Created!', 'id': election})
+                            response.respond(201, {'message': 'Created!', 'id': electionID})
                         except Exception as err:
-                            response.respond(500, {'message': "Could not create election: %s" % err})
+                            response.respond(500, {'message': "Could not create electionID: %s" % err})
                 else:
                     response.respond(400, {'message': "No election name specified!"})
             else:
@@ -123,12 +123,12 @@ else:
         # Create an issue in an election
         elif action == "create":
             if karma >= 4: # karma of 4 required to set up an issue for the election
-                if election:
+                if electionID:
                     issue = l[2] if len(l) > 2 else None
                     if not issue:
                         response.respond(400, {'message': 'No issue ID specified'})
                     else:
-                        issuepath = os.path.join(homedir, "issues", election, issue)
+                        issuepath = os.path.join(homedir, "issues", electionID, issue)
                         if os.path.isfile(issuepath + ".json"):
                             response.respond(400, {'message': 'An issue with this ID already exists'})
                         else:
@@ -168,12 +168,12 @@ else:
         # Delete an issue in an election
         elif action == "delete":
             if karma >= 4: # karma of 4 required to set up an issue for the election
-                if election:
+                if electionID:
                     issue = l[2] if len(l) > 2 else None
                     if not issue:
                         response.respond(400, {'message': 'No issue ID specified'})
                     else:
-                        issuepath = os.path.join(homedir, "issues", election, issue)
+                        issuepath = os.path.join(homedir, "issues", electionID, issue)
                         if os.path.isfile(issuepath + ".json"):
                             try:
                                 os.unlink(issuepath + ".json")
@@ -183,7 +183,7 @@ else:
                         else:
                             response.respond(404, {'message': "No such issue!"})
                 else:
-                    response.respond(400, {'message': "No election specified!"})
+                    response.respond(400, {'message': "No electionID specified!"})
             else:
                 response.respond(403, {'message': 'You do not have enough karma for this'})
         
@@ -192,10 +192,10 @@ else:
         # Edit an issue or election
         elif action == "edit":
             issue = l[2] if len(l) > 2 else None
-            if (issue and karma >= 4) or (karma >= 5 and election):
-                if election:
+            if (issue and karma >= 4) or (karma >= 5 and electionID):
+                if electionID:
                     if not issue:
-                        elpath = os.path.join(homedir, "issues", election)
+                        elpath = os.path.join(homedir, "issues", electionID)
                         if not os.path.isdir(elpath) or not os.path.isfile(elpath+"/basedata.json"):
                             response.respond(404, {'message': 'No such issue'})
                         else:
@@ -218,7 +218,7 @@ else:
                             except Exception as err:
                                 response.respond(500, {'message': "Could not edit election: %s" % err})
                     else:
-                        issuepath = os.path.join(homedir, "issues", election, issue)
+                        issuepath = os.path.join(homedir, "issues", electionID, issue)
                         if not os.path.isfile(issuepath + ".json"):
                             response.respond(404, {'message': 'No such issue'})
                         else:
@@ -252,7 +252,7 @@ else:
         elif action == "statement":
             issue = l[2] if len(l) > 2 else None
             if (issue and karma >= 4):
-                issuepath = os.path.join(homedir, "issues", election, issue)
+                issuepath = os.path.join(homedir, "issues", electionID, issue)
                 if not os.path.isfile(issuepath + ".json"):
                     response.respond(404, {'message': 'No such issue'})
                 else:
@@ -285,7 +285,7 @@ else:
         elif action == "addcandidate":
             issue = l[2] if len(l) > 2 else None
             if (issue and karma >= 4):
-                issuepath = os.path.join(homedir, "issues", election, issue)
+                issuepath = os.path.join(homedir, "issues", electionID, issue)
                 if not os.path.isfile(issuepath + ".json"):
                     response.respond(404, {'message': 'No such issue'})
                 else:
@@ -320,7 +320,7 @@ else:
         elif action == "delcandidate":
             issue = l[2] if len(l) > 2 else None
             if (issue and karma >= 4):
-                issuepath = os.path.join(homedir, "issues", election, issue)
+                issuepath = os.path.join(homedir, "issues", electionID, issue)
                 if not os.path.isfile(issuepath + ".json"):
                     response.respond(404, {'message': 'No such issue'})
                 else:
@@ -351,9 +351,9 @@ else:
                 response.respond(403, {'message': 'You do not have enough karma for this'})
         elif action == "view" and karma >= 3:
             # View a list of issues for an election
-            if election:
+            if electionID:
                 js = []
-                elpath = os.path.join(homedir, "issues", election)
+                elpath = os.path.join(homedir, "issues", electionID)
                 if os.path.isdir(elpath):
                     basedata = {}
                     try:
@@ -367,8 +367,8 @@ else:
                                     entry = json.loads(f.read())
                                     f.close()
                                     entry['id'] = issue.strip(".json")
-                                    entry['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (os.environ['SERVER_NAME'], election, issue.strip(".json"))
-                                    entry['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (os.environ['SERVER_NAME'], election, issue.strip(".json"))
+                                    entry['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (os.environ['SERVER_NAME'], electionID, issue.strip(".json"))
+                                    entry['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (os.environ['SERVER_NAME'], electionID, issue.strip(".json"))
                                     js.append(entry)
                             except Exception as err:
                                 response.respond(500, {'message': 'Could not load issues: %s' % err})
@@ -376,14 +376,30 @@ else:
                         response.respond(500, {'message': 'Could not load base data: %s' % err})
                     if 'hash' in basedata:
                         del basedata['hash']
-                    response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': "https://%s/steve/election?%s" % (os.environ['SERVER_NAME'], election)})
+                    response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': "https://%s/steve/election.html?%s" % (config.get("general", "rooturl"), electionID)})
                 else:
                     response.respond(404, {'message': 'No such election'})
             else:
                     response.respond(404, {'message': 'No such election'})
+        # Delete an issue
+        elif action == "delete" and electionID and issue:
+            if electionID and issue:
+                basedata = election.getBasedata(electionID)
+                if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
+                    issuedata = election.getIssue(electionID, issue)
+                    if issuedata:
+                        election.deleteIssue(electionID, issue)
+                        response.respond(200, {'message': 'Issue deleted'})
+                    else:
+                        response.respond(404, {'message': "Issue not found"})
+                else:
+                    response.respond(403, {'message': "You do not have karma to delete this issue"})
+            else:
+                    response.respond(404, {'message': 'No such election or issue'})
+                    
         elif action == "invite" and karma >= 3:
             # invite one or more people to an election
-            if election:
+            if electionID:
                 email = form.getvalue('email')
                 msgtype = form.getvalue('msgtype')
                 msgtemplate = form.getvalue('msgtemplate')
@@ -393,7 +409,7 @@ else:
                     response.respond(400, {'message': 'No message template specified'})
                 else:
                     js = []
-                    elpath = os.path.join(homedir, "issues", election)
+                    elpath = os.path.join(homedir, "issues", electionID)
                     if os.path.isdir(elpath):
                         basedata = {}
                         try:
@@ -403,15 +419,15 @@ else:
                             if (not 'open' in basedata or basedata['open'] != "true") and msgtype == "open":
                                 raise Exception("An open vote invite was requested, but this election is not public")
                             if msgtype != "open":
-                                voterid, xhash = voter.add(election, basedata, email)
-                                message = msgtemplate.replace("$votelink", "%s/election.html?%s/%s" % (config.get("general", "rooturl"), election, voterid))
+                                voterid, xhash = voter.add(electionID, basedata, email)
+                                message = msgtemplate.replace("$votelink", "%s/election.html?%s/%s" % (config.get("general", "rooturl"), electionID, voterid))
                                 message = message.replace("$title", basedata['title'])
-                                subject = "Election open for votes: %s (%s)" % (election, basedata['title'])
+                                subject = "Election open for votes: %s (%s)" % (electionID, basedata['title'])
                                 voter.email(email, subject, message)
                             else:
-                                message = msgtemplate.replace("$votelink", "%s/request_link.html?%s" % (config.get("general", "rooturl"), election))
+                                message = msgtemplate.replace("$votelink", "%s/request_link.html?%s" % (config.get("general", "rooturl"), electionID))
                                 message = message.replace("$title", basedata['title'])
-                                subject = "Public election open for votes: %s (%s)" % (election, basedata['title'])
+                                subject = "Public electionIopen for votes: %s (%s)" % (electionID, basedata['title'])
                                 voter.email(email, subject, message)
                             response.respond(200, {'message': "Vote link sent"})
                         except Exception as err:
