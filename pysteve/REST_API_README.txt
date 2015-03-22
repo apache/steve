@@ -185,6 +185,27 @@ Obtaining a voter ID for peeking:
         "id": "oigwhhsgoih8ewr8gye58or"
         }
 
+===============
+Tallying votes:
+===============
+
+/steve/admin/tally/$electionid/$issueid
+  POST
+    input: 
+          none
+          
+    output:
+      HTTP 200 Results ready
+      HTTP 404 Not Found if no such election
+      HTTP 500 on error
+    response payload:
+       JSON formatted
+        {
+        "yes": 10,
+        "no": 5,
+        "abstain": 2
+        }
+        
 
 
 
