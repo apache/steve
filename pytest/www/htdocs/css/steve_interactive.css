@@ -78,6 +78,28 @@ p {
   transition: 0.3s ease;
 }
 
+.btn-black {
+  background: #888888 !important;
+  border: #bd351e solid 1px;
+  border-radius: 3px;
+  color: #fff !important;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 4px 8px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 30px;
+  position: relative;
+  transition: color .1s ease;
+  cursor: pointer;
+  margin-left: 10px;
+}
+.btn-black:hover {
+  background: #aaaaaa !important;
+  transition: 0.3s ease;
+}
+
 .btn-purple {
   background: #b532bb !important;
   border: #bd351e solid 1px;
