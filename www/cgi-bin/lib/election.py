@@ -32,6 +32,16 @@ def getIssue(electionID, issueID):
         issuedata['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
         issuedata['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
     return issuedata
+
+def getVotes(electionID, issueID):
+    issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
+    issuedata = {}
+    if os.path.isfile(issuepath):
+        with open(issuepath, "r") as f:
+            data = f.read()
+            f.close()
+            issuedata = json.loads(data)
+    return issuedata
     
 def listIssues(election):
     issues = []
@@ -81,3 +91,109 @@ def deleteIssue(electionID, issueID):
         return True
     else:
         raise Exception("No such election")
+    
+    
+debug = []
+
+def getproportion(votes, winners, step, surplus):
+    "Proportionally move votes"
+    prop = {}
+    tvotes = 0
+    for key in votes:
+        vote = votes[key]
+        xstep = step
+        char = vote[xstep]
+        # Step through votes till we find a non-winner vote
+        while (xstep < len(vote) and vote[xstep] in winners):
+            xstep += 1
+        if xstep >= step:
+            tvotes += 1
+        # We found it? Good, let's add that to the tally
+        if not vote[xstep] in winners:
+            char = vote[xstep]
+            prop[char] = (prop[char] if char in prop else 0) + 1
+            
+    # If this isn't the initial 1st place tally, do the proportional math:
+    # surplus votes / votes with an Nth preference * number of votes in that preference for the candidate
+    if step > 0:
+        for c in prop:
+            prop[c] = surplus / tvotes * prop[c]
+        
+    debug.append("Proportional move: %s" % json.dumps(prop))
+    return prop
+    
+
+def stv(candidates, votes, numseats):
+    "Calculate N winners using STV"
+    
+    # Set up letters for mangling
+    letters = [chr(i) for i in range(ord('a'),ord('a') + len(candidates))]
+    cc = "".join(letters)
+    
+    # Keep score of votes
+    points = {}
+    
+    # Set all scores to 0 at first
+    for c in cc:
+        points[c] = 0
+    
+    # keep score of winners
+    winners = []
+    turn = 0
+    
+    # Find quota to win a seat
+    quota = ( len(votes) / (numseats +1) ) + 1
+    debug.append("Votes required to win a seat: %u" % quota)
+    
+    # While we still have seats to fill
+    if not len(candidates) < numseats:
+        while len(winners) < numseats and len(cc) > 0 and turn < 1000: #Don't run for > 1000 iterations, that's a bug
+            turn += 1
+            
+            s = 0
+            y = 0
+            # Get votes
+            xpoints = getproportion(votes, winners, y, 0)
+            for x in xpoints:
+                points[x] += xpoints[x]
+            mq = 0
+            
+            # For each candidate letter, find if someone won a seat
+            for c in cc:
+                if len(winners) >= numseats:
+                    break
+                if points[c] >= quota and not c in winners:
+                    debug.append("WINNER: %s got elected in with %u votes! %u seats remain" % (c, points[c], numseats - len(winners)))
+                    winners.append(c)
+                    cc.replace(c, "")
+                    mq += 1
+                    #break
+                    
+            # If we found no winners in this round, eliminate the lowest scorer and retally
+            if mq < 1:
+                lowest = 99999999
+                lowestC = None
+                for c in cc:
+                    if points[c] < lowest:
+                        lowest = points[c]
+                        lowestC = c
+                        
+                debug.append("DRAW: %s is eliminated" % lowestC)
+                if lowestC:
+                    cc.replace(lowestC, "")
+                else:
+                    debug.append("No more canididates?? buggo?")
+                    break
+    
+    # Everyone's a winner!!
+    else:
+        winners = letters
+        
+    # Compile list of winner names
+    winnernames = []
+    for c in winners:
+        i = ord(c) - ord('a')
+        winnernames.append(candidates[i]['name'])
+        
+    # Return the data
+    return winners, winnernames, debug
