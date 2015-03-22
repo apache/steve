@@ -499,7 +499,8 @@ else:
                     votes = election.getVotes(electionID, issue)
                     if issuedata and votes:
                         if issuedata['type'].startswith("stv"):
-                            winners, winnernames, debug = election.stv(issuedata['candidates'], votes, 3)
+                            numseats = int(issuedata['type'][3])
+                            winners, winnernames, debug = election.stv(issuedata['candidates'], votes, numseats)
                             response.respond(200, {'winners': winners, 'winnernames': winnernames, 'debug': debug})
                         elif issuedata['type'] == "yna":
                             yes, no, abstain = election.yna(votes)
