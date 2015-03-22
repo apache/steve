@@ -398,7 +398,20 @@ else:
                     response.respond(403, {'message': "You do not have karma to delete this issue"})
             else:
                     response.respond(404, {'message': 'No such election or issue'})
-                    
+        
+        # Get a temp voter ID for peeking
+        elif action == "temp" and electionID:
+            if electionID and election.exists(electionID):
+                basedata = election.getBasedata(electionID)
+                if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
+                        voterid, xhash = voter.add(electionID, basedata, whoami + "@stv")
+                        response.respond(200, {'id': voterid})
+                else:
+                    response.respond(403, {'message': "You do not have karma to peek at this election"})
+            else:
+                    response.respond(404, {'message': 'No such election'})
+            
+        # Invite folks to the election
         elif action == "invite" and karma >= 3:
             # invite one or more people to an election
             if electionID:

@@ -267,6 +267,19 @@ function deleteIssue() {
 	getJSON("/steve/admin/delete/" + document.location.search.substr(1), election, deleteIssueCallback)
 }
 
+function peekAtElection() {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	getJSON("/steve/admin/temp/" + document.location.search.substr(1), election, peekCallback)
+}
+
+function peekCallback(code, response, election) {
+	if (code == 200) {
+		location.href = "/election.html?" + election + "/" + response.id
+	} else {
+		alert(response.message)
+	}
+}
 
 function changeSTVType(type) {
 	if (type == "yna") {
