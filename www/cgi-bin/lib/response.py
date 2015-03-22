@@ -4,6 +4,7 @@ import json
 responseCodes = {
     200: 'Okay',
     201: 'Created',
+    206: 'Partial content',
     304: 'Not Modified',
     400: 'Bad Request',
     403: 'Access denied',
