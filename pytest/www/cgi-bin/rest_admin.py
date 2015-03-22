@@ -105,7 +105,7 @@ else:
                                 f.write(json.dumps({
                                     'title': form.getvalue('title'),
                                     'owner': form.getvalue('owner'),
-                                    'monitors': [f.strip() for f in form.getvalue('monitors').split(",")],
+                                    'monitors': [x.strip() for x in form.getvalue('monitors').split(",")],
                                     'starts': form.getvalue('starts'),
                                     'ends': form.getvalue('ends'),
                                     'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'])).hexdigest(),
@@ -153,7 +153,7 @@ else:
                                         'description': form.getvalue('description'),
                                         'type': form.getvalue('type'),
                                         'candidates': candidates,
-                                        'seconds': [f.strip() for f in form.getvalue('seconds').split("\n")] if form.getvalue('seconds') else [],
+                                        'seconds': [x.strip() for x in form.getvalue('seconds').split("\n")] if form.getvalue('seconds') else [],
                                         'nominatedby': form.getvalue('nominatedby')
                                     }))
                                     f.close()
@@ -209,7 +209,7 @@ else:
                                     val = form.getvalue(field)
                                     if val:
                                         if field == "monitors":
-                                            val = [f.strip() for f in val.split(",")]
+                                            val = [x.strip() for x in val.split(",")]
                                         js[field] = val
                                 with open(elpath + "/basedata.json", "w") as f:
                                     f.write(json.dumps(js))
@@ -237,7 +237,7 @@ else:
                                             for entry in xval:
                                                 val.append({'name': entry.strip()})
                                         if field == "seconds":
-                                            val = [f.strip() for f in val.split("\n")]
+                                            val = [x.strip() for x in val.split("\n")]
                                         js[field] = val
                                 with open(issuepath + ".json", "w") as f:
                                     f.write(json.dumps(js))
