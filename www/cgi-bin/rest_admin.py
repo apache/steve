@@ -262,7 +262,7 @@ else:
                                             val = []
                                             z = 0
                                             for entry in xval:
-                                                val.append({'name': entry.strip(), 'statement': statements[z] if len(candidates) > z else ""})
+                                                val.append({'name': entry.strip(), 'statement': statements[z] if len(statements) > z else ""})
                                                 z += 1
                                         if field == "statements":
                                             try:
