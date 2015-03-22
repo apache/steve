@@ -501,10 +501,10 @@ else:
                         if issuedata['type'].startswith("stv"):
                             numseats = int(issuedata['type'][3])
                             winners, winnernames, debug = election.stv(issuedata['candidates'], votes, numseats)
-                            response.respond(200, {'winners': winners, 'winnernames': winnernames, 'debug': debug})
+                            response.respond(200, {'votes': len(votes), 'winners': winners, 'winnernames': winnernames, 'debug': debug})
                         elif issuedata['type'] == "yna":
                             yes, no, abstain = election.yna(votes)
-                            response.respond(200, {'yes': yes, 'no': no, 'abstain': abstain})
+                            response.respond(200, {'votes': len(votes), 'yes': yes, 'no': no, 'abstain': abstain})
                         else:
                             response.respond(500, {'message': "Unknown vote type"})
                     elif not votes:

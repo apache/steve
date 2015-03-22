@@ -138,7 +138,7 @@ function displayTally(code, response, issue) {
 	var obj = document.getElementById('tally_' + issue)
 	if (obj) {
 		if (response.winners) {
-			obj.innerHTML = "<ol>"
+			obj.innerHTML = "<i>(" + response.votes + " votes cast)</i>\n<ol>"
 			for (i in response.winners) {
 				var winner = response.winners[i]
 				var winnerName = response.winnernames[i]
@@ -146,7 +146,8 @@ function displayTally(code, response, issue) {
 			}
 			obj.innerHTML += "</ol>"
 		} else if (response.yes && response.yes != undefined) {
-			obj.innerHTML = "<b>Yes:     </b>" + response.yes + "\n"
+			obj.innerHTML = "<i>(" + response.votes + " votes cast)</i>\n\n"
+			obj.innerHTML += "<b>Yes:     </b>" + response.yes + "\n"
 			obj.innerHTML += "<b>No:      </b>" + response.no + "\n"
 			obj.innerHTML += "<b>Abstain: </b>" + response.abstain + "\n"
 		} else {
