@@ -163,7 +163,25 @@ Deleting a candidate to the issue:
         "message": "Changes saved"
         }
 
+=================================
+Obtaining a voter ID for peeking:
+=================================
 
+/steve/admin/temp/$electionid
+  POST
+    input: 
+          none
+          
+    output:
+      HTTP 200 Voter ID issued
+      HTTP 403 Not enough karma
+      HTTP 404 Not Found if no such election
+      HTTP 500 on error
+    response payload:
+       JSON formatted
+        {
+        "id": "oigwhhsgoih8ewr8gye58or"
+        }
 
 
 
