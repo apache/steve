@@ -60,6 +60,10 @@ else:
             l.pop(0)
         action = l[0]
         electionID = l[1] if len(l) > 1 else None
+        if electionID:
+            if re.search(r"([^A-Za-z0-9-.])", electionID):
+                response.respond(400, {'message': "Invalid election ID supplied, must be [A-Za-z0-9-.]+"})
+                sys.exit(0) # BAIL!
  
         # List all existing/previous elections?
         if action == "list":
@@ -127,6 +131,8 @@ else:
                     issue = l[2] if len(l) > 2 else None
                     if not issue:
                         response.respond(400, {'message': 'No issue ID specified'})
+                    elif re.search(r"([^A-Za-z0-9-.])", issue):
+                        response.respond(400, {'message': "Invalid issue ID supplied, must be [A-Za-z0-9-.]+"})
                     else:
                         issuepath = os.path.join(homedir, "issues", electionID, issue)
                         if os.path.isfile(issuepath + ".json"):
