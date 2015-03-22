@@ -39,9 +39,8 @@ config.read(path + '/../../steve.cfg')
 # Some quick paths
 homedir = config.get("general", "homedir")
 pathinfo = os.environ['PATH_INFO'] if 'PATH_INFO' in os.environ else None
-form = cgi.FieldStorage();
 
-from lib import response, voter, election
+from lib import response, voter, election, form
 
 
 whoami = os.environ['REMOTE_USER'] if 'REMOTE_USER' in os.environ else None
