@@ -116,6 +116,9 @@ else:
                                     'open': form.getvalue('open')
                                 }))
                                 f.close()
+                            with open(elpath  + "/voters.json", "w") as f:
+                                f.write("{}")
+                                f.close()
                             response.respond(201, {'message': 'Created!', 'id': electionID})
                         except Exception as err:
                             response.respond(500, {'message': "Could not create electionID: %s" % err})
