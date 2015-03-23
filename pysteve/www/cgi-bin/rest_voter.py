@@ -88,7 +88,7 @@ if pathinfo:
                     response.respond(500, {'message': 'Could not load base data: %s' % err})
                 if 'hash' in basedata:
                     del basedata['hash']
-                response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': "https://%s/steve/election?%s" % (os.environ['SERVER_NAME'], election)})
+                response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': config.get("general", "rooturl")})
             else:
                 response.respond(404, {'message': 'No such election'})
                 
