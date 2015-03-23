@@ -460,7 +460,7 @@ function saveElection() {
 function closeElectionCallback(code, response, election) {
 	if (code == 200) {
 		alert(response.message)
-		location.href = "/admin/index.html"
+		location.href = "/admin/edit_election.html?" + election
 	} else {
 		alert(response.message)
 	}
