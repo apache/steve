@@ -86,7 +86,7 @@ else:
         elif action == "setup":
             if karma >= 5: # karma of 5 required to set up an election base
                 if electionID:
-                    if os.path.isdir(os.path.join(homedir, "issues", electionID)):
+                    if election.exists(electionID):
                         response.respond(403, {'message': "Election already exists!"})
                     else:
                         try:
@@ -97,22 +97,15 @@ else:
                                     raise Exception("Required fields missing: %s" % ", ".join(xr))
                                 else:
                                     xr.pop(0)
-                            elpath = os.path.join(homedir, "issues", electionID)
-                            os.mkdir(elpath)
-                            with open(elpath  + "/basedata.json", "w") as f:
-                                f.write(json.dumps({
-                                    'title': form.getvalue('title'),
-                                    'owner': form.getvalue('owner'),
-                                    'monitors': [x.strip() for x in form.getvalue('monitors').split(",")],
-                                    'starts': form.getvalue('starts'),
-                                    'ends': form.getvalue('ends'),
-                                    'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'])).hexdigest(),
-                                    'open': form.getvalue('open')
-                                }))
-                                f.close()
-                            with open(elpath  + "/voters.json", "w") as f:
-                                f.write("{}")
-                                f.close()
+                            election.createElection(
+                                electionID,
+                                form.getvalue('title'),
+                                form.getvalue('owner'),
+                                [x.strip() for x in form.getvalue('monitors').split(",")],
+                                form.getvalue('starts'),
+                                form.getvalue('ends'),
+                                form.getvalue('open')
+                            )
                             response.respond(201, {'message': 'Created!', 'id': electionID})
                         except Exception as err:
                             response.respond(500, {'message': "Could not create electionID: %s" % err})
