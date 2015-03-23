@@ -31,15 +31,19 @@ parser.add_argument('--public', dest='public', action='store_true',
                    help='If set, create the election as a public (open) election where anyone can vote (OPTIONAL)')
 
 args = parser.parse_args()
-eid = args.id
+eid = args.id[0] if args.id and len(args.id) > 0 else None
 if not eid:
     eid = ("%08x" % int(time.time() * random.randint(1,999999999999)))[0:8]
 print("Creating new election with ID %s" % eid)
 monitors = []
 if args.monitors:
-    monitors = args.monitors.split(",")
-election.createElection(eid, args.title, args.owner, monitors, 0, 0, args.public)
-
-print("Election created!")
-print("Election ID: %s" % eid)
-print("Election Admin URL: %s/edit_election.html?%s" % (config.get("general", "rooturl"), eid))
+    monitors = args.monitors[0].split(",")
+if not config.has_option("karma", args.owner[0]):
+    print("Sorry, I could not find '%s' in the karma list in steve.cfg!" % args.owner[0])
+    sys.exit(-1)
+else:
+    election.createElection(eid, args.title[0], args.owner[0], monitors, 0, 0, args.public)
+    
+    print("Election created!")
+    print("Election ID: %s" % eid)
+    print("Election Admin URL: %s/edit_election.html?%s" % (config.get("general", "rooturl"), eid))
