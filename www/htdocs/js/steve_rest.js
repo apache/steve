@@ -66,7 +66,7 @@ function createElection() {
 	var ends = document.getElementById('ends').value
 	var owner = document.getElementById('owner').value
 	var monitors = document.getElementById('monitors').value
-	
+	var open = document.getElementById('open').value
 	
 	
 	// Validate data
@@ -88,7 +88,8 @@ function createElection() {
 		title: title,
 		monitors: monitors,
 		starts: starts,
-		ends: ends
+		ends: ends,
+		open: open
 		},
 		undefined,
 		createElectionCallback)	
@@ -409,6 +410,7 @@ function renderEditBasedata(code, response, election) {
 		document.getElementById('title').innerHTML += response.base_data.title;
 		
 		obj.appendChild(keyvaluepair("id", "Election ID:", "text", election, true))
+		obj.appendChild(keyvaluepair("type", "Open election?:", "text", response.base_data.open, true))
 		obj.appendChild(keyvaluepair("etitle", "Election title:", "text", response.base_data.title))
 		obj.appendChild(document.createElement('hr'))
 		//obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
