@@ -511,7 +511,7 @@ else:
                     else:
                         response.respond(404, {'message': "Issue not found"})
                 else:
-                    response.respond(403, {'message': "You do not have karma to delete this issue"})
+                    response.respond(403, {'message': "You do not have karma to tally the votes here"})
             else:
                     response.respond(404, {'message': 'No such election or issue'})                    
         else:
