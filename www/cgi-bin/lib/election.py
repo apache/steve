@@ -144,7 +144,7 @@ def getproportion(votes, winners, step, surplus):
     for key in votes:
         vote = votes[key]
         xstep = step
-        char = vote[xstep]
+        char = vote[xstep] if len(vote) > xstep else None
         # Step through votes till we find a non-winner vote
         while xstep < len(vote) and vote[xstep] in winners:
             xstep += 1
@@ -159,7 +159,7 @@ def getproportion(votes, winners, step, surplus):
     # surplus votes / votes with an Nth preference * number of votes in that preference for the candidate
     if step > 0:
         for c in prop:
-            prop[c] *= surplus / tvotes
+            prop[c] *= (surplus / tvotes) if surplus > 0 else 0
     return prop
 
 
@@ -193,15 +193,19 @@ def stv(candidates, votes, numseats):
     debug.append("Seats available: %u. Votes cast: %u" % (numseats, len(votes)))
     debug.append("Votes required to win a seat: %u ( (%u/(%u+1))+1 )" % (quota, len(votes), numseats))
 
+    
+    surplus = 0
     # While we still have seats to fill
     if not len(candidates) < numseats:
+        y = 0
         while len(winners) < numseats and len(cc) > 0 and turn < 1000:  #Don't run for > 1000 iterations, that's a bug
             turn += 1
 
             s = 0
-            y = 0
+            
             # Get votes
-            xpoints = getproportion(votes, winners, y, 0)
+            xpoints = getproportion(votes, winners, 0, surplus)
+            surplus = 0
             if turn == 1:
                 debug.append("Initial tally: %s" % json.dumps(xpoints))
             else:
@@ -220,6 +224,7 @@ def stv(candidates, votes, numseats):
                     debug.append("WINNER: %s got elected in with %u votes! %u seats remain" % (c, points[c], numseats - len(winners)))
                     cc.replace(c, "")
                     mq += 1
+                    surplus += points[c] - quota
 
             # If we found no winners in this round, eliminate the lowest scorer and retally
             if mq < 1:
@@ -236,6 +241,7 @@ def stv(candidates, votes, numseats):
                 else:
                     debug.append("No more canididates?? buggo?")
                     break
+            y += 1
 
     # Everyone's a winner!!
     else:
