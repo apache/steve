@@ -43,7 +43,7 @@ pathinfo = os.environ['PATH_INFO'] if 'PATH_INFO' in os.environ else None
 
 whoami = os.environ['REMOTE_USER'] if 'REMOTE_USER' in os.environ else None
 
-from lib import response, voter, election, form
+from lib import response, voter, election, form, constants
 
 if not whoami:
     response.respond(403, {'message': 'Could not verify your identity: No auth scheme found'})
@@ -149,8 +149,7 @@ else:
                                         raise Exception("Required fields missing: %s" % ", ".join(xr))
                                     else:
                                         xr.pop(0)
-                                valid_types = ['yna','stv1','stv2','stv3','stv4','stv5','stv6','stv7','stv8','stv9']
-                                if not form.getvalue('type') in valid_types:
+                                if not form.getvalue('type') in constants.VALID_VOTE_TYPES:
                                     raise Exception('Invalid vote type: %s' % form.getvalue('type'))
                                 with open(issuepath + ".json", "w") as f:
                                     candidates = []
