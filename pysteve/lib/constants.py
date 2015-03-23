@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-VALID_VOTE_TYPES = ['yna','stv1','stv2','stv3','stv4','stv5','stv6','stv7','stv8','stv9']
+VALID_VOTE_TYPES = ('yna','stv1','stv2','stv3','stv4','stv5','stv6','stv7','stv8','stv9')
