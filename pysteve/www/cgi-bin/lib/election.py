@@ -192,7 +192,8 @@ def stv(candidates, votes, numseats):
 
     # Find quota to win a seat
     quota = ( len(votes) / (numseats + 1) ) + 1
-    debug.append("Votes required to win a seat: %u" % quota)
+    debug.append("Seats available: %u. Votes cast: %u" % (numseats, len(votes)))
+    debug.append("Votes required to win a seat: %u ( (%u/(%u+1))+1 )" % (quota, len(votes), numseats))
 
     # While we still have seats to fill
     if not len(candidates) < numseats:
