@@ -22,11 +22,13 @@ from __main__ import homedir, config
 
 
 def exists(election):
+    "Returns True if an election exists, False otherwise"
     elpath = os.path.join(homedir, "issues", election)
     return os.path.isdir(elpath)
 
 
 def getBasedata(election, hideHash=False):
+    "Get base data from an election"
     elpath = os.path.join(homedir, "issues", election)
     if os.path.isdir(elpath):
         with open(elpath + "/basedata.json", "r") as f:
@@ -41,6 +43,7 @@ def getBasedata(election, hideHash=False):
 
 
 def getIssue(electionID, issueID):
+    "Get JSON data from an issue"
     issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
     issuedata = None
     if os.path.isfile(issuepath):
@@ -55,6 +58,7 @@ def getIssue(electionID, issueID):
 
 
 def getVotes(electionID, issueID):
+    "Read votes from the vote file"
     issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
     issuedata = {}
     if os.path.isfile(issuepath):
@@ -66,6 +70,7 @@ def getVotes(electionID, issueID):
 
 
 def listIssues(election):
+    "List all issues in an election"
     issues = []
     elpath = os.path.join(homedir, "issues", election)
     if os.path.isdir(elpath):
@@ -74,6 +79,7 @@ def listIssues(election):
 
 
 def vote(electionID, issueID, voterID, vote):
+    "Casts a vote on an issue"
     votes = {}
     basedata = getBasedata(electionID)
     if basedata:
@@ -93,6 +99,7 @@ def vote(electionID, issueID, voterID, vote):
 
 
 def invalidate(issueData, vote):
+    "Tries to invalidate a vote, returns why if succeeded, None otherwise"
     letters = ['y', 'n', 'a']
     if issueData['type'].find("stv") == 0:
         letters = [chr(i) for i in range(ord('a'), ord('a') + len(issueData['candidates']))]
@@ -106,6 +113,7 @@ def invalidate(issueData, vote):
 
 
 def deleteIssue(electionID, issueID):
+    "Deletes an issue if it exists"
     if exists(electionID):
         issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
         if os.path.isfile(issuepath):
@@ -119,6 +127,10 @@ def deleteIssue(electionID, issueID):
 
 
 def yna(votes):
+    """ Simple YNA tallying
+    :param votes: The JSON object from $issueid.json.votes
+    :return: y,n,a as numbers
+    """
     y = n = a = 0
     for vote in votes.values():
         if vote == 'y':
