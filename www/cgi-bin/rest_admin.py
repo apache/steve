@@ -70,20 +70,14 @@ else:
             output = []
             errors = []
             path = os.path.join(homedir, "issues")
-            electionIDs = [ f for f in listdir(path) if os.path.isdir(os.path.join(path,f))]
-            for electionID in electionIDs:
+            elections = election.listElections()
+            for electionID in elections:
                 try:
-                    elpath = os.path.join(homedir, "issues", electionID)
-                    with open(elpath + "/basedata.json", "r") as f:
-                        basedata = json.loads(f.read())
-                        f.close()
-                        if 'hash' in basedata:
-                            del basedata['hash']
-                        basedata['id'] = electionID
-                        if karma >= 5 or ('owner' in basedata and basedata['owner'] == whoami):
-                            output.append(basedata)
+                    basedata = election.getBasedata(electionID, hideHash = True)
+                    if karma >= 5 or ('owner' in basedata and basedata['owner'] == whoami):
+                        output.append(basedata)
                 except Exception as err:
-                    errors.append("Could not parse electionID '%s': %s" % (electionID, err))
+                    errors.append("Could not parse election '%s': %s" % (electionID, err))
             if len(errors) > 0:
                 response.respond(206, { 'elections': output, 'errors': errors})
             else:
@@ -194,10 +188,9 @@ else:
                     if not issue:
                         response.respond(400, {'message': 'No issue ID specified'})
                     else:
-                        issuepath = os.path.join(homedir, "issues", electionID, issue)
-                        if os.path.isfile(issuepath + ".json"):
+                        if election.exists(electionID, issue):
                             try:
-                                os.unlink(issuepath + ".json")
+                                election.deleteIssue(electionID, issue)
                                 response.respond(200, {'message': "Issue deleted"})
                             except Exception as err:
                                 response.respond(500, {'message': 'Could not delete issue: %s' % err})
@@ -390,23 +383,14 @@ else:
             # View a list of issues for an election
             if electionID:
                 js = []
-                elpath = os.path.join(homedir, "issues", electionID)
-                if os.path.isdir(elpath):
+                if election.exists(electionID):
                     basedata = {}
                     try:
-                        with open(elpath + "/basedata.json", "r") as f:
-                            basedata = json.loads(f.read())
-                            f.close()
-                        issues = [ f for f in listdir(elpath) if os.path.isfile(os.path.join(elpath,f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
-                        for issue in issues:
+                        basedata = election.getBasedata(electionID, hideHash = True)
+                        for issue in election.listIssues(electionID):
                             try:
-                                with open(elpath + "/" + issue, "r") as f:
-                                    entry = json.loads(f.read())
-                                    f.close()
-                                    entry['id'] = issue.strip(".json")
-                                    entry['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (os.environ['SERVER_NAME'], electionID, issue.strip(".json"))
-                                    entry['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (os.environ['SERVER_NAME'], electionID, issue.strip(".json"))
-                                    js.append(entry)
+                                entry = election.getIssue(electionID, issue)
+                                js.append(entry)
                             except Exception as err:
                                 response.respond(500, {'message': 'Could not load issues: %s' % err})
                     except Exception as err:
@@ -459,13 +443,10 @@ else:
                     response.respond(400, {'message': 'No message template specified'})
                 else:
                     js = []
-                    elpath = os.path.join(homedir, "issues", electionID)
-                    if os.path.isdir(elpath):
+                    if election.exists(electionID):
                         basedata = {}
                         try:
-                            with open(elpath + "/basedata.json", "r") as f:
-                                basedata = json.loads(f.read())
-                                f.close()
+                            basedata = election.getBasedata(electionID)
                             if (not 'open' in basedata or basedata['open'] != "true") and msgtype == "open":
                                 raise Exception("An open vote invite was requested, but this election is not public")
                             if msgtype != "open":

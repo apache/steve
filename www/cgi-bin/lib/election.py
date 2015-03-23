@@ -22,10 +22,14 @@ import random
 from __main__ import homedir, config
 
 
-def exists(election):
-    "Returns True if an election exists, False otherwise"
+def exists(election, *issue):
+    "Returns True if an election/issue exists, False otherwise"
     elpath = os.path.join(homedir, "issues", election)
-    return os.path.isdir(elpath)
+    if issue:
+        elpath += "/" + issue[0] + ".json"
+        return os.path.isfile(elpath)
+    else:
+        return os.path.isdir(elpath)
 
 
 def getBasedata(election, hideHash=False):
@@ -78,6 +82,13 @@ def listIssues(election):
         issues = [f.strip(".json") for f in os.listdir(elpath) if os.path.isfile(os.path.join(elpath, f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
     return issues
 
+def listElections():
+    "List all elections"
+    elections = []
+    path = os.path.join(homedir, "issues")
+    if os.path.isdir(path):
+        elections = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
+    return elections
 
 def vote(electionID, issueID, voterID, vote):
     "Casts a vote on an issue"
