@@ -100,7 +100,7 @@ def createElection(eid, title, owner, monitors, starts, ends, isopen):
             'monitors': monitors,
             'starts': starts,
             'ends': ends,
-            'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'])).hexdigest(),
+            'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'] if 'REMOTE_ADDR' in os.environ else random.randint(1,99999999999))).hexdigest(),
             'open': isopen
         }))
         f.close()
