@@ -47,6 +47,22 @@ def getBasedata(election, hideHash=False):
             return basedata
     return None
 
+def close(election, reopen = False):
+    "Mark an election as closed"
+    elpath = os.path.join(homedir, "issues", election)
+    if os.path.isdir(elpath):
+        basedata = {}
+        with open(elpath + "/basedata.json", "r") as f:
+            data = f.read()
+            f.close()
+            basedata = json.loads(data)
+        if reopen:
+            basedata['closed'] = False
+        else:
+            basedata['closed'] = True
+        with open(elpath + "/basedata.json", "w") as f:
+            f.write(json.dumps(basedata))
+            f.close()
 
 def getIssue(electionID, issueID):
     "Get JSON data from an issue"
