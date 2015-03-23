@@ -17,6 +17,7 @@
 import hashlib
 import json
 import os
+import random
 
 from __main__ import homedir, config
 
@@ -175,7 +176,7 @@ def getproportion(votes, winners, step, surplus):
     return prop
 
 
-def stv(candidates, votes, numseats):
+def stv(candidates, votes, numseats, shuffle = False):
     """ Calculate N winners using STV
     :param candidates:
     :param votes:
@@ -261,6 +262,8 @@ def stv(candidates, votes, numseats):
 
     # Compile list of winner names
     winnernames = []
+    if shuffle:
+        random.shuffle(winners)
     for c in winners:
         i = ord(c) - ord('a')
         winnernames.append(candidates[i]['name'])
