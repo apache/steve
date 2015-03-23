@@ -18,6 +18,7 @@ import hashlib
 import json
 import os
 import random
+import time
 
 from __main__ import homedir, config
 
@@ -72,6 +73,24 @@ def getVotes(electionID, issueID):
             f.close()
             issuedata = json.loads(data)
     return issuedata
+
+def createElection(eid, title, owner, monitors, starts, ends, isopen):
+    elpath = os.path.join(homedir, "issues", eid)
+    os.mkdir(elpath)
+    with open(elpath  + "/basedata.json", "w") as f:
+        f.write(json.dumps({
+            'title': title,
+            'owner': owner,
+            'monitors': monitors,
+            'starts': starts,
+            'ends': ends,
+            'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'])).hexdigest(),
+            'open': isopen
+        }))
+        f.close()
+    with open(elpath  + "/voters.json", "w") as f:
+        f.write("{}")
+        f.close()
 
 
 def listIssues(election):
