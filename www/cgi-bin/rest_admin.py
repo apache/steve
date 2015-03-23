@@ -487,7 +487,25 @@ else:
                 else:
                     response.respond(403, {'message': "You do not have karma to tally the votes here"})
             else:
-                    response.respond(404, {'message': 'No such election or issue'})                    
+                    response.respond(404, {'message': 'No such election or issue'})
+        # Close an election
+        elif action == "close" and electionID:
+            reopen = form.getvalue('reopen')
+            if election.exists(electionID):
+                basedata = election.getBasedata(electionID)
+                if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
+                    try:
+                        election.close(electionID, reopen=reopen)
+                        if reopen:
+                            response.respond(200, {'message': "Election reopened"})
+                        else:
+                            response.respond(200, {'message': "Election closed"})
+                    except Exception as err:
+                        response.respond(500, {'message': "Could not close election: %s" % err})
+                else:
+                    response.respond(403, {'message': "You do not have karma to tally the votes here"})
+            else:
+                    response.respond(404, {'message': 'No such election or issue'})      
         else:
             response.respond(400, {'message': "No (or invalid) action supplied"})
     else:

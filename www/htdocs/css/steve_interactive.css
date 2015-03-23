@@ -476,6 +476,7 @@ fieldset legend {
 }
 
 
+
 .issueListItemWide {
     border: 1px dotted #666;
     padding: 4px;
@@ -485,7 +486,21 @@ fieldset legend {
     font-size: 16px;
     background: linear-gradient(to bottom, #f8f8f8 0%,#dddddd 100%);
     -khtml-user-drag: element;
-    animation: fadein 1s
+    animation: fadein 1s;
+    cursor: pointer;
+}
+
+.issueListItemWideClosed {
+    border: 1px dotted #666;
+    padding: 4px;
+    width: 980px;
+    min-height: 25px;
+    font-family: monospace;
+    font-size: 16px;
+    background: linear-gradient(to bottom, #d8a8a8 0%,#cc6666 100%);
+    -khtml-user-drag: element;
+    animation: fadein 1s;
+    cursor: pointer;
 }
 
 @keyframes fadein {

@@ -99,8 +99,14 @@ function createElection() {
 // Election editing
 function renderEditElection(code, response, election) {
 	if (code == 200) {
-		document.getElementById('title').innerHTML = "Edit election: " + response.base_data.title + " (#" + election  + ")"
+		var c = response.base_data.closed ? " (<font color='red'>CLOSED!</font>)" : ""
+		document.getElementById('title').innerHTML = "Edit election: " + response.base_data.title + " (#" + election  + ")" + c
 		
+		if (response.base_data.closed) {
+			document.getElementById('closea').setAttribute("href", "javascript:void(location.href='reopen.html'+document.location.search);");
+			document.getElementById('closex').innerHTML = "Reopen election"
+			document.getElementById('closea').setAttribute("title", "Click to reopen this election")
+		}
 		var obj = document.getElementById('ballot')
 		obj.innerHTML = "There are no issues in this election yet"
 		var s = 0;
@@ -451,6 +457,25 @@ function saveElection() {
 	election)
 }
 
+function closeElectionCallback(code, response, election) {
+	if (code == 200) {
+		alert(response.message)
+		location.href = "/admin/index.html"
+	} else {
+		alert(response.message)
+	}
+}
+function closeElection(reopen) {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	
+	postREST("/steve/admin/close/" + election, {
+		reopen: reopen ? "true" : null
+		},
+	undefined,
+	closeElectionCallback,
+	election)
+}
 
 
 function deleteIssueCallback(code, response, election) {
@@ -776,6 +801,7 @@ function castVoteCallback(code, response, issue) {
 
 function showElections(code, response, state) {
 	var obj = document.getElementById('preloaderWrapper')
+	obj.setAttribute("id", "contents")
 	//obj.setAttribute("id", "electionWrapper")
 	obj.innerHTML = "<h2>Your elections:</h2><p>Click on an election to edit it</p>"
 	var ol = document.createElement('ol')
@@ -787,7 +813,11 @@ function showElections(code, response, state) {
 		var election = response.elections[i]
 
 		var outer = document.createElement('li');
-		outer.setAttribute("class", "issueListItem")
+		outer.setAttribute("class", "issueListItemWide")
+		if (election.closed) {
+			outer.setAttribute("class", "issueListItemWideClosed")
+			outer.setAttribute("title", "This election has beeen closed")
+		}
 		
 		var no = document.createElement('div');
 		no.setAttribute("class", "issueNumber")
