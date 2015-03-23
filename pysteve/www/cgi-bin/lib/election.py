@@ -181,6 +181,7 @@ def stv(candidates, votes, numseats, shuffle = False):
     :param candidates:
     :param votes:
     :param int numseats: the number of seats available
+    :param shuffle: Whether or not to shuffle winners
     :return:
     """
 
