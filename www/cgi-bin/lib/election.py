@@ -117,8 +117,6 @@ def deleteIssue(electionID, issueID):
         raise Exception("No such election")
 
 
-debug = []
-
 
 def yna(votes):
     y = n = a = 0
@@ -162,8 +160,6 @@ def getproportion(votes, winners, step, surplus):
     if step > 0:
         for c in prop:
             prop[c] *= surplus / tvotes
-
-    debug.append("Proportional move: %s" % json.dumps(prop))
     return prop
 
 
@@ -175,6 +171,8 @@ def stv(candidates, votes, numseats):
     :return:
     """
 
+    debug = []
+    
     # Set up letters for mangling
     letters = [chr(i) for i in range(ord('a'), ord('a') + len(candidates))]
     cc = "".join(letters)
@@ -204,6 +202,11 @@ def stv(candidates, votes, numseats):
             y = 0
             # Get votes
             xpoints = getproportion(votes, winners, y, 0)
+            if turn == 1:
+                debug.append("Initial tally: %s" % json.dumps(xpoints))
+            else:
+                debug.append("Proportional move: %s" % json.dumps(xpoints))
+                
             for x in xpoints:
                 points[x] += xpoints[x]
             mq = 0
