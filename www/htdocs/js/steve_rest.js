@@ -647,6 +647,15 @@ function renderElectionFrontpage(response, el) {
 		par.appendChild(btn)
 	}
 	
+	if (response.base_data.monitors && response.base_data.monitors.length > 0) {
+		var p = document.createElement('div')
+		p.setAttribute("style", "width: 100%; float: left; text-align: center;")
+		p.innerHTML = "Should you experience issues with your voting, or if you have any questions, please don't hesitate to contact the vote monitors: "
+		var m = response.base_data.monitors.join(", ")
+		p.innerHTML += "<a href='mailto:" + m + "?subject=Issues%20with%20election%20" + response.base_data.id + "%20at%20" + response.baseurl + "'>" + m + "</a>."
+		par.appendChild(p)
+	}
+	
 }
 
 
