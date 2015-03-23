@@ -50,6 +50,13 @@
             dateFormat: 'yy-mm-dd'
                });"/><br>
     </div>
+    <div class="keyvaluepair">
+        <div class="keyfield">Election type:</div>
+        <select name="open" id="open">
+            <option value="false">Private election (invites only)</option>
+            <option value="true">Public election (anyone can view/vote)</option>
+        </select>
+    </div>
     </fieldset>
     <div class="keyvaluepair">
         <input type="button" onclick="createElection();" value="Create election" class="btn-green"/>
