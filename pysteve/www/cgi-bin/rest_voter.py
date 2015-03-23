@@ -75,6 +75,8 @@ if pathinfo:
                         raise Exception("Could not load base data")
                     if karma < 3 and not voter.get(electionID, basedata, voterID):
                         raise Exception("Invalid voter ID presented")
+                    if 'closed' in basedata and basedata['closed'] == True:
+                        raise Exception("This election has closed")
                     for issueID in election.listIssues(electionID):
                         try:
                             entry = election.getIssue(electionID, issueID)
@@ -99,6 +101,8 @@ if pathinfo:
                     basedata = election.getBasedata(electionID)
                     if karma < 3 and not voter.get(electionID, basedata, voterID):
                         raise Exception("Invalid voter ID presented")
+                    if 'closed' in basedata and basedata['closed'] == True:
+                        raise Exception("This election has closed")
                     entry = election.getIssue(electionID, issueID)
                     response.respond(200, {'issue': entry})
                 except Exception as err:
@@ -115,6 +119,8 @@ if pathinfo:
             basedata = election.getBasedata(electionID)
             issuedata = election.getIssue(electionID, issueID)
             if basedata and issuedata:
+                if 'closed' in basedata and basedata['closed'] == True:
+                        raise Exception("This election has closed")
                 email = voter.get(electionID, basedata, voterID)
                 if not email:
                     response.respond(403, {'message': 'Could not save vote: Invalid voter ID presented'})
@@ -145,6 +151,8 @@ if pathinfo:
             try:
                 basedata = election.getBasedata(electionID)
                 if basedata:
+                    if 'closed' in basedata and basedata['closed'] == True:
+                        raise Exception("This election has closed")
                     if 'open' in basedata and basedata['open'] == "true":
                         uid, xhash = voter.add(election, basedata, email)
                         voter.email(email, "Your voter link for %s" % basedata['title'], "Your personal vote link is: %s/election.html?%s/%s\nDo not share this link with anyone." % (config.get("general", "rooturl"), election, uid))
@@ -161,6 +169,8 @@ if pathinfo:
             elpath = os.path.join(homedir, "issues", election)
             if os.path.isdir(elpath):
                 basedata = election.getBasedata(electionID, hideHash=True)
+                if 'closed' in basedata and basedata['closed'] == True:
+                        raise Exception("This election has closed")
                 if 'open' in basedata and basedata['open'] == "true":
                     response.respond(200, { 'base_data': basedata } )
                 else:
