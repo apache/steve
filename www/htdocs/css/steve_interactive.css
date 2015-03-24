@@ -345,6 +345,30 @@ pre {
     -khtml-user-drag: element;
 }
 
+.ballotbox_clist_DH {
+    border: 1px dotted #666;
+    padding: 4px;
+    max-width: 410px;
+    min-height: 25px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 16px;
+    background: linear-gradient(to bottom, #f8f8f8 0%,#dddddd 100%);
+    -khtml-user-drag: element;
+}
+
+.ballotbox_clist_selectedDH {
+    border: 1px dotted #666;
+    padding: 4px;
+    max-width: 410px;
+    min-height: 25px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 16px;
+    background: linear-gradient(to bottom, #a8f8a8 0%,#adddad 100%);
+    -khtml-user-drag: element;
+}
+
 .statement_marker {
     border: 1px dotted #666;
     padding: 4px;
