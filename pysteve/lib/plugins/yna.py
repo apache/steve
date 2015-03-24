@@ -41,12 +41,8 @@ def tallyYNA(votes, issue):
 def validateYNA(vote, issue):
     "Tries to invalidate a vote, returns why if succeeded, None otherwise"
     letters = ['y','n','a']
-    for char in letters:
-        if vote.count(char) > 1:
-            return "Duplicate letters found"
-    for char in vote:
-        if char not in letters:
-            return "Invalid characters in vote. Accepted are: %s" % ", ".join(letters)
+    if len(vote) != 1 or not vote in letters:
+        return "Invalid vote. Accepted votes are: %s" % ", ".join(letters)
     return None
 
 constants.VOTE_TYPES += (
