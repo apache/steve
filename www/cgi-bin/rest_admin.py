@@ -521,9 +521,9 @@ else:
                     response.respond(404, {'message': 'No such election or issue'})
         # Get registered vote stpye
         elif action == "types":
-            types = []
+            types = {}
             for vtype in constants.VOTE_TYPES:
-                types.append(vtype['key'])
+                types[vtype['key']] = vtype['description']
             response.respond(200, {'types': types})
             
         else:
