@@ -339,6 +339,22 @@ pre {
     position: static;
 }
 
+kbd {
+  font-weight: bold;
+  color: #369;
+  font-size: 16px;
+}
+
+
+.statement {
+  border: 1px dotted #333;
+  background: linear-gradient(to bottom, #eeeecc 0%,#f2f6fc 100%);
+  overflow: auto;
+  max-width: 800px;
+  min-height: 100px;
+  max-height: 400px;
+}
+
 .statement_marker a {
     color: #fff;
 }

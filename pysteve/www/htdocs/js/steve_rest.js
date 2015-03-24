@@ -247,6 +247,20 @@ function keyvaluepair(name, text, type, value, locked, onedit) {
 	return obj
 }
 
+function keyvaluepairText(name, key, value) {
+	var obj = document.createElement('div')
+	obj.setAttribute("class", "keyvaluepair");
+	var txt = document.createElement('div');
+	txt.setAttribute("class", "keyfield")
+	txt.innerHTML = key
+	obj.appendChild(txt)
+	var val = document.createElement('div')
+	val.innerHTML = value
+	obj.appendChild(val)
+	
+	return obj
+}
+
 function saveCallback(code, response, election) {
 	if (code == 200) {
 		alert("Changes saved")
@@ -840,5 +854,89 @@ function showElections(code, response, state) {
 		outer.appendChild(inner)
 		outer.setAttribute("onclick", "location.href='edit_election.html?" + election.id + "';")
 		ol.appendChild(outer)
+	}
+}
+
+
+
+function castSingleVote(vote) {
+    var l = document.location.search.substr(1).split("/");
+    election = l[0];
+    issue = l.length > 1 ? l[l.length-2] : "";
+    uid = l.length > 2 ? l[l.length-1] : "";
+	postREST("/steve/voter/vote/" + election + "/" + issue, {
+        uid: uid,
+        vote: vote
+        },
+        undefined,
+        castSingleVoteCallback,
+        null)
+}
+
+function castSingleVoteCallback(code, response, state) {
+    if (code != 200) {
+        alert(response.message)
+    } else {
+        document.getElementById('ynavote').innerHTML = "<h2>Your vote has been registered!</h2><p style='text-align:center;'><big>Should you reconsider, you can always reload this page and vote again.<br/><br/><a href=\"javascript:void(location.href='election.html'+document.location.search);\">Back to election front page</a></big></p>"
+    }
+}
+
+
+
+
+function displayIssueYNA(code, response, state) {
+    election_data = response
+	var obj = document.getElementById('preloaderWrapper')
+	obj.setAttribute("id", "ynavote")
+    if (code != 200) {
+        obj.innerHTML = "<h1>Could not load issue:</h1><h2>" + response.message + "</h2>";
+    } else {
+		obj.innerHTML = ""
+		
+		var title = document.createElement('h2')
+		title.innerHTML = response.issue.title;
+		obj.appendChild(title)
+		
+		obj.appendChild(keyvaluepairText("nominatedby", "Put forward (nominated) by:", response.issue.nominatedby))
+		obj.appendChild(keyvaluepairText("seconds", "Seconded by:", response.issue.seconds.length > 0 ?  response.issue.seconds.join(", ") : "no-one" ))
+		
+		var desc = document.createElement('pre')
+		desc.setAttribute("class", "statement")
+		desc.innerHTML = response.issue.description
+		obj.appendChild(desc)
+		
+		var outer = document.createElement('div')
+		outer.setAttribute("class", "issueListItem")
+		
+		var yes = document.createElement('input')
+		yes.setAttribute("type", "button")
+		yes.setAttribute("value", "Yes")
+		yes.setAttribute("class", "btn-green")
+		yes.setAttribute("style", "float: right;");
+		yes.setAttribute("onclick", "castSingleVote('y');")
+		
+		var no = document.createElement('input')
+		no.setAttribute("type", "button")
+		no.setAttribute("value", "No")
+		no.setAttribute("class", "btn-red")
+		no.setAttribute("style", " float: right;");
+		no.setAttribute("onclick", "castSingleVote('n');")
+		
+		var abstain = document.createElement('input')
+		abstain.setAttribute("type", "button")
+		abstain.setAttribute("value", "Abstain")
+		abstain.setAttribute("class", "btn-yellow")
+		abstain.setAttribute("style", "float: right;");
+		abstain.setAttribute("onclick", "castSingleVote('a');")
+		
+		var p = document.createElement('p')
+		p.innerHTML = "Cast your vote by clicking on the respective button below. You may recast your vote as many time as you like, should you reconsider."
+		
+		obj.appendChild(p)
+		outer.appendChild(no)
+		outer.appendChild(abstain)
+		outer.appendChild(yes)
+		
+		obj.appendChild(outer)
 	}
 }
