@@ -69,10 +69,13 @@ def getIssue(electionID, issueID):
     issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
     issuedata = None
     if os.path.isfile(issuepath):
+        ihash = ""
         with open(issuepath, "r") as f:
             data = f.read()
+            ihash = hashlib.sha224(data).hexdigest()
             f.close()
             issuedata = json.loads(data)
+        issuedata['hash'] = ihash
         issuedata['id'] = issueID
         issuedata['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
         issuedata['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
@@ -144,6 +147,15 @@ def vote(electionID, issueID, voterID, vote):
     else:
         raise Exception("No such election")
 
+def getVotes(electionID, issueID):
+    issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
+    if os.path.isfile(issuepath):
+        with open(issuepath, "r") as f:
+            votes = json.loads(f.read())
+            f.close()
+            return votes
+    else:
+        return {}
 
 def invalidate(issueData, vote):
     "Tries to invalidate a vote, returns why if succeeded, None otherwise"
@@ -317,3 +329,17 @@ def stv(candidates, votes, numseats, shuffle = False):
 
     # Return the data
     return winners, winnernames, debug
+
+def getHash(electionID):
+    basedata = getBasedata(electionID)
+    issues = listIssues(electionID)
+    ihash = ""
+    output = []
+    for issue in issues:
+        issuedata = getIssue(electionID, issue)
+        votes = getVotes(electionID, issue)
+        ihash += issuedata['hash']
+        output.append("Issue #%s: %s\n- Checksum: %s\n- Votes cast: %u\n" % (issue, issuedata['title'], issuedata['hash'], len(votes)))
+    tothash = hashlib.sha224(ihash).hexdigest()
+    output.insert(0, ("The following data shows the state of the election data on disk. If any of these checksums change, especially the main checksum, then the election has been edited (rigged?) after invites were sent out.\n\nMain Election Checksum : %s\n\n" % tothash))
+    return tothash, "\n".join(output)

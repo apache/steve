@@ -78,6 +78,28 @@ p {
   transition: 0.3s ease;
 }
 
+.btn-orange {
+  background: #C17E3F !important;
+  border: #C18E3F solid 1px;
+  border-radius: 3px;
+  color: #fff !important;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 4px 8px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 30px;
+  position: relative;
+  transition: color .1s ease;
+  cursor: pointer;
+  margin-left: 10px;
+}
+.btn-orange:hover {
+  background: #D19E3F !important;
+  transition: 0.3s ease;
+}
+
 .btn-black {
   background: #888888 !important;
   border: #aaaaaa solid 1px;

@@ -411,6 +411,20 @@ else:
             else:
                     response.respond(404, {'message': 'No such election or issue'})
         
+        # Send issue hash to monitors
+        elif action == "debug" and electionID:
+            if election.exists(electionID):
+                basedata = election.getBasedata(electionID)
+                if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
+                    ehash, debug = election.getHash(electionID)
+                    for email in basedata['monitors']:
+                        voter.email(email, "Monitoring update for election #%s" % electionID, debug)
+                    response.respond(200, {'message': "Debug sent to monitors", 'hash': ehash, 'debug': debug})
+                else:
+                    response.respond(403, {'message': "You do not have karma to do this"})
+            else:
+                    response.respond(404, {'message': 'No such election'})
+        
         # Get a temp voter ID for peeking
         elif action == "temp" and electionID:
             if electionID and election.exists(electionID):
@@ -499,6 +513,9 @@ else:
                         if reopen:
                             response.respond(200, {'message': "Election reopened"})
                         else:
+                            ehash, debug = election.getHash(electionID)
+                            for email in basedata['monitors']:
+                                voter.email(email, "Monitoring update for election #%s: Election closed!" % electionID, debug)
                             response.respond(200, {'message': "Election closed"})
                     except Exception as err:
                         response.respond(500, {'message': "Could not close election: %s" % err})

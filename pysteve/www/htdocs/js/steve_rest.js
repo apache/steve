@@ -432,6 +432,7 @@ function renderEditBasedata(code, response, election) {
 		obj.appendChild(keyvaluepair("id", "Election ID:", "text", election, true))
 		obj.appendChild(keyvaluepair("type", "Open election?:", "text", response.base_data.open, true))
 		obj.appendChild(keyvaluepair("etitle", "Election title:", "text", response.base_data.title))
+		obj.appendChild(keyvaluepair("etitle", "Monitors:", "text", response.base_data.monitors.join(", "), true))
 		obj.appendChild(document.createElement('hr'))
 		//obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
 		
@@ -939,4 +940,22 @@ function displayIssueYNA(code, response, state) {
 		
 		obj.appendChild(outer)
 	}
+}
+
+
+
+function primeMonitorsCallback(code, response, election) {
+	alert(response.message)
+}
+function primeMonitors() {
+	var l = document.location.search.substr(1).split('/');
+	var election = l[0]
+	
+	
+	postREST("/steve/admin/debug/" + election, {
+		
+	},
+	undefined,
+	primeMonitorsCallback,
+	election)
 }
