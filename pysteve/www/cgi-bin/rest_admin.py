@@ -136,7 +136,7 @@ else:
                                         raise Exception("Required fields missing: %s" % ", ".join(xr))
                                     else:
                                         xr.pop(0)
-                                if not form.getvalue('type') in constants.VALID_VOTE_TYPES:
+                                if not election.validType(form.getvalue('type')):
                                     raise Exception('Invalid vote type: %s' % form.getvalue('type'))
                                 with open(issuepath + ".json", "w") as f:
                                     candidates = []
@@ -485,13 +485,9 @@ else:
                     issuedata = election.getIssue(electionID, issue)
                     votes = election.getVotes(electionID, issue)
                     if issuedata and votes:
-                        if issuedata['type'].startswith("stv"):
-                            numseats = int(issuedata['type'][3])
-                            winners, winnernames, debug = election.stv(issuedata['candidates'], votes, numseats, shuffle = True)
-                            response.respond(200, {'votes': len(votes), 'winners': winners, 'winnernames': winnernames, 'debug': debug})
-                        elif issuedata['type'] == "yna":
-                            yes, no, abstain = election.yna(votes)
-                            response.respond(200, {'votes': len(votes), 'yes': yes, 'no': no, 'abstain': abstain})
+                        if election.validType(issuedata['type']):
+                            result = election.tally(votes, issuedata)
+                            response.respond(200, result)
                         else:
                             response.respond(500, {'message': "Unknown vote type"})
                     elif not votes:
@@ -522,7 +518,14 @@ else:
                 else:
                     response.respond(403, {'message': "You do not have karma to tally the votes here"})
             else:
-                    response.respond(404, {'message': 'No such election or issue'})      
+                    response.respond(404, {'message': 'No such election or issue'})
+        # Get registered vote stpye
+        elif action == "types":
+            types = []
+            for vtype in constants.VOTE_TYPES:
+                types.append(vtype['key'])
+            response.respond(200, {'types': types})
+            
         else:
             response.respond(400, {'message': "No (or invalid) action supplied"})
     else:

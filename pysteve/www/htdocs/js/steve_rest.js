@@ -646,7 +646,7 @@ function renderElectionFrontpage(response, el) {
 		inner.innerHTML = issue.id + ": " + issue.title;
 		outer.appendChild(no)
 		outer.appendChild(inner)
-		outer.setAttribute("onclick", "location.href='ballot_" + (issue.type == "yna" ? "yna" : "stv") + ".html?" + el[0] + "/" + issue.id + "/" + (el[1] ? el[1] : "") + "';")
+		outer.setAttribute("onclick", "location.href='ballot_" + issue.category + ".html?" + el[0] + "/" + issue.id + "/" + (el[1] ? el[1] : "") + "';")
 		outer.style.animation = "fadein " + (0.5 +  (s/6)) + "s"
 		issueList.appendChild(outer)
 	}
