@@ -25,36 +25,42 @@
             <img style="vertical-align: middle;" src="/images/icon_invite.png"/>
             Invite people
         </a>
-        &nbsp; 
+        
         <a
            href="javascript:void(location.href='add_issue.html'+document.location.search);"
            class="btn-green" title="Click to add an issue to this election">
             <img style="vertical-align: middle;"  src="/images/icon_add.png"/>
             Add an issue
         </a>
-        &nbsp; 
+        
         <a id="closea" href="javascript:void(location.href='close.html'+document.location.search);"
            class="btn-red" title="Click to close this election, preventing further voting">
             <img style="vertical-align: middle;"  src="/images/icon_close.png"/>
             <span id="closex">Close election</span>
         </a>
-        &nbsp; 
+        
         <a href="javascript:void(location.href='edit_basedata.html'+document.location.search);"
            class="btn" title="Edit base data (title etc)">
             <img style="vertical-align: middle;"  src="/images/icon_edit.png"/>
-            Edit election base data
+            Edit base data
         </a>
-        &nbsp; 
+        
         <a href="javascript:void(peekAtElection());"
            class="btn-purple" title="Take a sneek peek at this election as viewed by voters">
             <img style="vertical-align: middle;"  src="/images/icon_view.png"/>
             View election
         </a>
-        &nbsp; 
+        
         <a href="javascript:void(location.href='tally.html'+document.location.search);"
            class="btn-black" title="Do a preliminary tally of all votes">
             <img style="vertical-align: middle;"  src="/images/icon_view.png"/>
             Tally votes
+        </a>
+        
+        <a href="javascript:void(primeMonitors());"
+           class="btn-orange" title="Sends the election checksum to monitors. Use this right before you invite people to the election.">
+            <img style="vertical-align: middle;"  src="/images/icon_invite.png"/>
+            Cue monitors
         </a>
         <br/>
 </fieldset>
