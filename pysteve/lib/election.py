@@ -341,5 +341,5 @@ def getHash(electionID):
         ihash += issuedata['hash']
         output.append("Issue #%s: %s\n- Checksum: %s\n- Votes cast: %u\n" % (issue, issuedata['title'], issuedata['hash'], len(votes)))
     tothash = hashlib.sha224(ihash).hexdigest()
-    output.insert(0, ("The following data shows the state of the election data on disk. If any of these checksums change, especially the main checksum, then the election has been edited (rigged?) after invites were sent out.\n\nMain Election Checksum : %s\n\n" % tothash))
+    output.insert(0, ("You are receiving this data because you are listed as a monitor for this election.\nThe following data shows the state of the election data on disk. If any of these checksums change, especially the main checksum, then the election has been edited (rigged?) after invites were sent out.\n\nMain Election Checksum : %s\n\n" % tothash))
     return tothash, "\n".join(output)
