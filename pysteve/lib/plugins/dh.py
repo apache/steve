@@ -52,20 +52,21 @@ def tallyDH(votes, issue):
    
     # Set up vote matrix 
     matrix = {}
-    for vote in votes:
+    for key in votes:
+        vote = votes[key]
         matrix[vote] = [(matrix[vote] if vote in matrix else 0) + 1, 1]
 
     # Start counting
     while len(winners) < numseats:
         m = []
         for c in matrix:
-            quotient = (matrix[c][1]/matrix[c][2])
-            m.push(quotient)
+            quotient = (matrix[c][0]/matrix[c][1])
+            m.append(quotient)
         for c in matrix:
-            quotient = (matrix[c][1]/matrix[c][2])
+            quotient = (matrix[c][0]/matrix[c][1])
             if quotient == max(m):
                 winners.append(c)
-                matrix[c][2] += 1
+                matrix[c][1] += 1
 
     # Compile list of winner names
     winnernames = []
