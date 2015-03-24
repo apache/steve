@@ -660,8 +660,8 @@ function renderElectionFrontpage(response, el) {
 		no.innerHTML = (s)
 		
 		if (issue.hasVoted) {
-			outer.setAttribute("style", "background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%);")
-			outer.setAttribute("title", "Notice: You have already voted once on this issue")
+			outer.setAttribute("style", "background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%); opacity: 0.55;")
+			outer.setAttribute("title", "Notice: You have already voted once on this issue. You may recast your vote if you like.")
 		} else {
 			outer.setAttribute("title", "You have not yet voted on this issue");
 		}
