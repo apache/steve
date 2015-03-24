@@ -959,3 +959,24 @@ function primeMonitors() {
 	primeMonitorsCallback,
 	election)
 }
+
+function setVoteTypes(code, response, state) {
+	if (code == 200) {
+		var tobj = document.getElementById('type');
+		var sortable = []
+		for (i in response.types) {
+			var type = response.types[i]
+			var option = document.createElement("option");
+			option.text = type;
+			option.value = i;
+			sortable.push([option, type])
+		}
+		sortable.sort(function(a,b) { return (a[1] > b[1])})
+		for (i in sortable) {
+			tobj.add(sortable[i][0])
+		}
+	} else {
+		alert(response.message)
+	}
+	
+}
