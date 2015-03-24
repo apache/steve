@@ -22,6 +22,8 @@ import time
 
 from __main__ import homedir, config
 
+import constants
+from plugins import *
 
 def exists(election, *issue):
     "Returns True if an election/issue exists, False otherwise"
@@ -79,6 +81,13 @@ def getIssue(electionID, issueID):
         issuedata['id'] = issueID
         issuedata['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
         issuedata['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
+        
+        # Add vote category for JS magic
+        for vtype in constants.VOTE_TYPES:
+            if vtype['key'] == issuedata['type']:
+                issuedata['category'] = vtype['category']
+                break
+            
     return issuedata
 
 
@@ -156,20 +165,24 @@ def getVotes(electionID, issueID):
             return votes
     else:
         return {}
+    
+def validType(issueType):
+    for voteType in constants.VOTE_TYPES:
+        if voteType['key'] == issueType:
+            return True
+    return False
 
 def invalidate(issueData, vote):
-    "Tries to invalidate a vote, returns why if succeeded, None otherwise"
-    letters = ['y', 'n', 'a']
-    if issueData['type'].find("stv") == 0:
-        letters = [chr(i) for i in range(ord('a'), ord('a') + len(issueData['candidates']))]
-    for char in letters:
-        if vote.count(char) > 1:
-            return "Duplicate letters found"
-    for char in vote:
-        if char not in letters:
-            return "Invalid characters in vote. Accepted are: %s" % ", ".join(letters)
-    return None
+    for voteType in constants.VOTE_TYPES:
+        if voteType['key'] == issueData['type']:
+            return voteType['validate_func'](vote, issueData)
+    return "Invalid vote type!"
 
+def tally(votes, issue):
+    for voteType in constants.VOTE_TYPES:
+        if voteType['key'] == issue['type']:
+            return voteType['tally_func'](votes, issue)
+    raise Exception("Invalid vote type!")
 
 def deleteIssue(electionID, issueID):
     "Deletes an issue if it exists"
@@ -183,152 +196,6 @@ def deleteIssue(electionID, issueID):
     else:
         raise Exception("No such election")
 
-
-
-def yna(votes):
-    """ Simple YNA tallying
-    :param votes: The JSON object from $issueid.json.votes
-    :return: y,n,a as numbers
-    """
-    y = n = a = 0
-    for vote in votes.values():
-        if vote == 'y':
-            y += 1
-        if vote == 'n':
-            n += 1
-        if vote == 'a':
-            a += 1
-
-    return y, n, a
-
-
-def getproportion(votes, winners, step, surplus):
-    """ Proportionally move votes
-    :param votes:
-    :param winners:
-    :param step:
-    :param surplus:
-    :return:
-    """
-    prop = {}
-    tvotes = 0
-    for key in votes:
-        vote = votes[key]
-        xstep = step
-        char = vote[xstep] if len(vote) > xstep else None
-        # Step through votes till we find a non-winner vote
-        while xstep < len(vote) and vote[xstep] in winners:
-            xstep += 1
-        if xstep >= step:
-            tvotes += 1
-        # We found it? Good, let's add that to the tally
-        if xstep < len(vote) and not vote[xstep] in winners:
-            char = vote[xstep]
-            prop[char] = (prop[char] if char in prop else 0) + 1
-
-    # If this isn't the initial 1st place tally, do the proportional math:
-    # surplus votes / votes with an Nth preference * number of votes in that preference for the candidate
-    if step > 0:
-        for c in prop:
-            prop[c] *= (surplus / tvotes) if surplus > 0 else 0
-    return prop
-
-
-def stv(candidates, votes, numseats, shuffle = False):
-    """ Calculate N winners using STV
-    :param candidates:
-    :param votes:
-    :param int numseats: the number of seats available
-    :param shuffle: Whether or not to shuffle winners
-    :return:
-    """
-
-    debug = []
-    
-    # Set up letters for mangling
-    letters = [chr(i) for i in range(ord('a'), ord('a') + len(candidates))]
-    cc = "".join(letters)
-
-    # Keep score of votes
-    points = {}
-
-    # Set all scores to 0 at first
-    for c in cc:
-        points[c] = 0
-
-    # keep score of winners
-    winners = []
-    turn = 0
-
-    # Find quota to win a seat
-    quota = ( len(votes) / (numseats + 1) ) + 1
-    debug.append("Seats available: %u. Votes cast: %u" % (numseats, len(votes)))
-    debug.append("Votes required to win a seat: %u ( (%u/(%u+1))+1 )" % (quota, len(votes), numseats))
-
-    
-    surplus = 0
-    # While we still have seats to fill
-    if not len(candidates) < numseats:
-        y = 0
-        while len(winners) < numseats and len(cc) > 0 and turn < 1000:  #Don't run for > 1000 iterations, that's a bug
-            turn += 1
-
-            s = 0
-            
-            # Get votes
-            xpoints = getproportion(votes, winners, 0, surplus)
-            surplus = 0
-            if turn == 1:
-                debug.append("Initial tally: %s" % json.dumps(xpoints))
-            else:
-                debug.append("Proportional move: %s" % json.dumps(xpoints))
-                
-            for x in xpoints:
-                points[x] += xpoints[x]
-            mq = 0
-
-            # For each candidate letter, find if someone won a seat
-            for c in cc:
-                if len(winners) >= numseats:
-                    break
-                if points[c] >= quota and not c in winners:
-                    winners.append(c)
-                    debug.append("WINNER: %s got elected in with %u votes! %u seats remain" % (c, points[c], numseats - len(winners)))
-                    cc.replace(c, "")
-                    mq += 1
-                    surplus += points[c] - quota
-
-            # If we found no winners in this round, eliminate the lowest scorer and retally
-            if mq < 1:
-                lowest = 99999999
-                lowestC = None
-                for c in cc:
-                    if points[c] < lowest:
-                        lowest = points[c]
-                        lowestC = c
-
-                debug.append("DRAW: %s is eliminated" % lowestC)
-                if lowestC:
-                    cc.replace(lowestC, "")
-                else:
-                    debug.append("No more canididates?? buggo?")
-                    break
-            y += 1
-
-    # Everyone's a winner!!
-    else:
-        winners = letters
-
-    # Compile list of winner names
-    winnernames = []
-    if shuffle:
-        random.shuffle(winners)
-    for c in winners:
-        i = ord(c) - ord('a')
-        winnernames.append(candidates[i]['name'])
-
-    # Return the data
-    return winners, winnernames, debug
 
 def getHash(electionID):
     basedata = getBasedata(electionID)

@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""
+yna
+stv
+"""
 
-VOTE_TYPES = (
-    
-)
-
+__all__ = ['yna','stv']
