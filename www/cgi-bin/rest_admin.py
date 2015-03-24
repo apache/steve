@@ -418,7 +418,7 @@ else:
                 if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
                     ehash, debug = election.getHash(electionID)
                     for email in basedata['monitors']:
-                        voter.email(email, "Monitoring update for election #%s" % electionID, debug)
+                        voter.email(email, "Monitoring update for election #%s: %s" % (electionID, basedata['title']), debug)
                     response.respond(200, {'message': "Debug sent to monitors", 'hash': ehash, 'debug': debug})
                 else:
                     response.respond(403, {'message': "You do not have karma to do this"})
