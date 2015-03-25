@@ -19,3 +19,6 @@ VOTE_TYPES = (
     
 )
 
+# For vote types with N number of seats/spots, this value denotes
+# the max number of useable types to display via the API
+MAX_NUM = 20
