@@ -84,7 +84,7 @@ constants.VOTE_TYPES += (
     {
         'key': "mntv1",
         'description': "Multiple Non-Transferable Votes with 1 seat",
-        'category': 'dh',
+        'category': 'mntv',
         'validate_func': validateMNTV,
         'vote_func': None,
         'tally_func': tallyMNTV
