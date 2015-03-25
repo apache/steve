@@ -26,49 +26,54 @@ from smtplib import SMTPException
 
 
 def get(election, basedata, uid):
-    elpath = os.path.join(homedir, "issues", election)
-    with open(elpath + "/voters.json", "r") as f:
-        voters = json.loads(f.read())
-        f.close()
-        xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
-        for voter in voters:
-            if voters[voter] == xhash:
-                return voter
+    if config.get("database", "dbsys") == "file":
+        elpath = os.path.join(homedir, "issues", election)
+        with open(elpath + "/voters.json", "r") as f:
+            voters = json.loads(f.read())
+            f.close()
+            xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
+            for voter in voters:
+                if voters[voter] == xhash:
+                    return voter
     return None
         
 def add(election, basedata, email):
     uid = hashlib.sha224("%s%s%s%s" % (email, basedata['hash'], time.time(), random.randint(1,99999999))).hexdigest()
     xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
-    elpath = os.path.join(homedir, "issues", election)
-    with open(elpath + "/voters.json", "r") as f:
-        voters = json.loads(f.read())
-        f.close()
-    voters[email] = xhash
-    with open(elpath + "/voters.json", "w") as f:
-        f.write(json.dumps(voters))
-        f.close()
+    if config.get("database", "dbsys") == "file":
+        elpath = os.path.join(homedir, "issues", election)
+        with open(elpath + "/voters.json", "r") as f:
+            voters = json.loads(f.read())
+            f.close()
+        voters[email] = xhash
+        with open(elpath + "/voters.json", "w") as f:
+            f.write(json.dumps(voters))
+            f.close()
     return uid, xhash
 
 def remove(election, basedata, email):
-    elpath = os.path.join(homedir, "issues", election)
-    with open(elpath + "/voters.json", "r") as f:
-        voters = json.loads(f.read())
-        f.close()
-    if email in voters:
-        del voters[email]
-    with open(elpath + "/voters.json", "w") as f:
-        f.write(json.dumps(voters))
-        f.close()
+    if config.get("database", "dbsys") == "file":
+        elpath = os.path.join(homedir, "issues", election)
+        with open(elpath + "/voters.json", "r") as f:
+            voters = json.loads(f.read())
+            f.close()
+        if email in voters:
+            del voters[email]
+        with open(elpath + "/voters.json", "w") as f:
+            f.write(json.dumps(voters))
+            f.close()
 
 def hasVoted(election, issue, uid):
     issue = issue.strip(".json")
-    path = os.path.join(homedir, "issues", election, issue)
-    votes = {}
-    if os.path.isfile(path + ".json.votes"):
-        with open(path + ".json.votes", "r") as f:
-            votes = json.loads(f.read())
-            f.close()
-    return True if uid in votes else False
+    if config.get("database", "dbsys") == "file":
+        path = os.path.join(homedir, "issues", election, issue)
+        votes = {}
+        if os.path.isfile(path + ".json.votes"):
+            with open(path + ".json.votes", "r") as f:
+                votes = json.loads(f.read())
+                f.close()
+        return True if uid in votes else False
+    return False
 
 def email(rcpt, subject, message):
     sender = config.get("email", "sender")
