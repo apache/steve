@@ -140,8 +140,8 @@ function displayIssueDH(code, response, state) {
             candidates.push(candidate.name);
             statements[chars[c]] = candidate.statement;
         }
-        document.getElementById('cnum').innerHTML = candidates.length
-        document.getElementById('snum').innerHTML = seats        
+        if (document.getElementById('cnum')) document.getElementById('cnum').innerHTML = candidates.length
+        if (document.getElementById('snum')) document.getElementById('snum').innerHTML = seats        
         while (chars.length > candidates.length) chars.splice(-1,1)
         
         
