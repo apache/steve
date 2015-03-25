@@ -22,7 +22,7 @@ import time
 
 from __main__ import homedir, config
 
-import constants
+import constants, voter
 from plugins import *
 
 def exists(election, *issue):
@@ -152,6 +152,20 @@ def vote(electionID, issueID, voterID, vote):
             f.write(json.dumps(votes))
             f.close()
         votehash = hashlib.sha224(basedata['hash'] + issueID + voterID + vote).hexdigest()
+        
+        # LURK on who voted :O :O :O
+        if config.has_option("general", "lurk") and config.get("general", "lurk") == "yes":
+            email = voter.get(electionID, basedata, voterID)
+            lurks = {}
+            lurkpath = os.path.join(homedir, "issues", electionID, "who.voted")
+            if os.path.isfile(lurkpath):
+                with open(lurkpath, "r") as f:
+                    lurks = json.loads(f.read())
+                    f.close()
+            lurks[email] = True
+            with open(lurkpath, "w") as f:
+                f.write(json.dumps(lurks))
+                f.close()
         return votehash
     else:
         raise Exception("No such election")
