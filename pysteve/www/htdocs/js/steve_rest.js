@@ -471,7 +471,7 @@ function renderEditIssue(code, response, issue) {
 		else if (edit_i.type.match(/^mntv/)) {
 			
 			// base data
-			obj.innerHTML = "<h3>Editing a Multiple Non-Transferable Vote issue</h3>"
+			obj.innerHTML = "<h3>Editing a Multiple Non-Transferable Vote (" + edit_i.type.toUpperCase() + ") issue</h3>"
 			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
 			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
 			obj.appendChild(keyvaluepair("description", "Description (optinal):", "textarea", edit_i.description))
@@ -497,7 +497,7 @@ function renderEditIssue(code, response, issue) {
 		else if (edit_i.type.match(/^cop/)) {
 			
 			// base data
-			obj.innerHTML = "<h3>Editing a Candidate or Party Vote issue</h3>"
+			obj.innerHTML = "<h3>Editing a Candidate or Party Vote (" + edit_i.type.toUpperCase() + ") issue</h3>"
 			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
 			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
 			obj.appendChild(keyvaluepair("description", "Description (optinal):", "textarea", edit_i.description))
