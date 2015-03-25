@@ -494,6 +494,32 @@ function renderEditIssue(code, response, issue) {
 			obj.appendChild(div)
 			renderEditCandidates()
 		}
+		else if (edit_i.type.match(/^fic/)) {
+			
+			// base data
+			obj.innerHTML = "<h3>Editing a First in Class Vote (" + edit_i.type.toUpperCase() + ") issue</h3>"
+			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
+			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
+			obj.appendChild(keyvaluepair("description", "Description (optinal):", "textarea", edit_i.description))
+			obj.appendChild(document.createElement('hr'))
+			
+			// candidates
+			var cobj = document.createElement('div')
+			cobj.setAttribute("id", "candidateList")
+			cobj.setAttribute("class", "candidateEditList")
+			obj.appendChild(cobj)
+			
+			var div = document.createElement('div')
+			div.setAttribute("class", "keyvaluepair")
+			var btn = document.createElement('input')
+			btn.setAttribute("type", "button")
+			btn.setAttribute("class", "btn-green")
+			btn.setAttribute("value", "Save changes")
+			btn.setAttribute("onclick", "saveSTV();")
+			div.appendChild(btn)
+			obj.appendChild(div)
+			renderEditCandidates()
+		}
 		else if (edit_i.type.match(/^cop/)) {
 			
 			// base data
