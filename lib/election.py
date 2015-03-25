@@ -137,6 +137,12 @@ def listElections():
         elections = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
     return elections
 
+def getVoteType(issue):
+    for voteType in constants.VOTE_TYPES:
+        if voteType['key'] == issue['type']:
+            return voteType
+    return {}
+
 def vote(electionID, issueID, voterID, vote):
     "Casts a vote on an issue"
     votes = {}
