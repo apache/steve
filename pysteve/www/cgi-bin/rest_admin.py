@@ -156,6 +156,11 @@ else:
                                         for entry in c:
                                             candidates.append({'name': entry.strip(), 'statement': s[z] if len(s) > z else ""})
                                             z += 1
+                                    # HACK: If candidate parsing is outsourced, let's do that instead (primarily for COP)
+                                    voteType = election.getVoteType({'type': form.getvalue('type')})
+                                    if 'parsers' in voteType and 'candidates' in voteType['parsers']:
+                                        candidates = voteType['parsers']['candidates'](form.getvalue('candidates'))
+                                        
                                     f.write(json.dumps({
                                         'title': form.getvalue('title'),
                                         'description': form.getvalue('description'),
@@ -259,6 +264,12 @@ else:
                                                 statements.append(entry)
                                         if field == "seconds":
                                             val = [x.strip() for x in val.split("\n")]
+                                            
+                                        # HACK: If field  parsing is outsourced, let's do that instead (primarily for COP)
+                                        voteType = election.getVoteType(js)
+                                        if 'parsers' in voteType and field in voteType['parsers']:
+                                            val = voteType['parsers'][field](form.getvalue(field))
+                                            
                                         js[field] = val
                                 with open(issuepath + ".json", "w") as f:
                                     f.write(json.dumps(js))
