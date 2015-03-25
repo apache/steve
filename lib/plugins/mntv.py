@@ -83,7 +83,7 @@ def tallyMNTV(votes, issue):
 constants.VOTE_TYPES += (
     {
         'key': "mntv1",
-        'description': "Multiple Non-Transferable Votes (MNTV) with 1 seat",
+        'description': "Multiple Non-Transferable Votes with 1 seat",
         'category': 'dh',
         'validate_func': validateMNTV,
         'vote_func': None,
@@ -96,7 +96,7 @@ for i in range(2,constants.MAX_NUM+1):
     constants.VOTE_TYPES += (
         {
             'key': "mntv%u" % i,
-            'description': "Multiple Non-Transferable Votes (MNTV) with %u seats" % i,
+            'description': "Multiple Non-Transferable Votes with %u seats" % i,
             'category': 'mntv',
             'validate_func': validateMNTV,
             'vote_func': None,
