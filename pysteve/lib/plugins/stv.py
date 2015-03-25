@@ -182,7 +182,7 @@ constants.VOTE_TYPES += (
 for i in range(2,constants.MAX_NUM+1):
     constants.VOTE_TYPES += (
         {
-            'key': "stv%02u" % i,
+            'key': "stv%u" % i,
             'description': "Single Transferable Vote with %u seats" % i,
             'category': 'stv',
             'validate_func': validateSTV,
