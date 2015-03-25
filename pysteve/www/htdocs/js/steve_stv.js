@@ -25,6 +25,7 @@ var ballotChars = []
 var chars;
 var fading = false
 var seats = 0;
+var maxnum = 9999
 
 // Make copies for reset
 var candidates_copy = []
@@ -103,7 +104,7 @@ function dropComplete(z) {
         ballotNames.splice(did, 0, ballotNames.splice(sid, 1)[0])
         ballotChars.splice(did, 0, ballotChars.splice(sid, 1)[0])
     } else {
-        alert(source + ":" + dest)
+        //alert(source + ":" + dest)
     }
     //ev.preventDefault();
     // Redraw and carry on
@@ -206,8 +207,10 @@ function drawCandidates() {
 
 // Did we drop a vote on top of another?
 function dropCandidate(ev) {
-    
     ev.preventDefault();
+    if (ballotNames.length >= maxnum) {
+        return; // MNTV lockout
+    }
     source = ev.dataTransfer.getData("Text");
     dest = ev.target.getAttribute("data")
     var z = 0;
@@ -517,6 +520,9 @@ function displayIssueSTV(code, response, state) {
         var m = response.issue.type.match(/(\d+)/);
         if (m) {
             seats = parseInt(m[1])
+            if (response.issue.type.match(/mntv/)) {
+                maxnum = seats
+            }
         }
         for (c in response.issue.candidates) {
             var candidate = response.issue.candidates[c];
@@ -610,3 +616,4 @@ function castVotesCallback(code, response, state) {
         document.getElementById('votebox').innerHTML = "<h2>Your vote has been registered!</h2><p style='text-align:center;'><big>Should you reconsider, you can always reload this page and vote again.<br/><br/><a href=\"javascript:void(location.href='election.html'+document.location.search);\">Back to election front page</a></big></p>"
     }
 }
+

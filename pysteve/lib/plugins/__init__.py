@@ -19,6 +19,7 @@ yna
 stv
 dh
 fpp
+mntv
 """
 
-__all__ = ['yna','stv','dh','fpp']
+__all__ = ['yna','stv','dh','fpp','mntv']
