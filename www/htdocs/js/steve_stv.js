@@ -520,7 +520,7 @@ function displayIssueSTV(code, response, state) {
         var m = response.issue.type.match(/(\d+)/);
         if (m) {
             seats = parseInt(m[1])
-            if (response.issue.type.match(/mntv/)) {
+            if (response.issue.type.match(/mntv/) || response.issue.type.match(/fic/)) {
                 maxnum = seats
             }
         }

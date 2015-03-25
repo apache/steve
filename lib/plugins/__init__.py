@@ -23,6 +23,7 @@ CORE VOTE PLUGINS:
     fpp:    First Past the Post (Presidential elections)
     mntv:   Multiple Non-Transferable Votes
     cop:    Candidate or Party Voting
+    fic:    First in Class Voting
 """
 
-__all__ = ['yna','stv','dh','fpp','mntv','cop']
+__all__ = ['yna','stv','dh','fpp','mntv','cop','fic']
