@@ -91,68 +91,17 @@ constants.VOTE_TYPES += (
         'vote_func': None,
         'tally_func': tallyDH
     },
-    {
-        'key': "dh2",
-        'description': "D'Hondt Election with 2 seats",
-        'category': 'dh',
-        'validate_func': validateDH,
-        'vote_func': None,
-        'tally_func': tallyDH
-    },
-    {
-        'key': "dh3",
-        'description': "D'Hondt Election with 3 seats",
-        'category': 'dh',
-        'validate_func': validateDH,
-        'vote_func': None,
-        'tally_func': tallyDH
-    },
-    {
-        'key': "dh4",
-        'description': "D'Hondt Election with 4 seats",
-        'category': 'dh',
-        'validate_func': validateDH,
-        'vote_func': None,
-        'tally_func': tallyDH
-    },
-    {
-        'key': "dh5",
-        'description': "D'Hondt Election with 5 seats",
-        'category': 'dh',
-        'validate_func': validateDH,
-        'vote_func': None,
-        'tally_func': tallyDH
-    },
-    {
-        'key': "dh6",
-        'description': "D'Hondt Election with 6 seats",
-        'category': 'dh',
-        'validate_func': validateDH,
-        'vote_func': None,
-        'tally_func': tallyDH
-    },
-    {
-        'key': "dh7",
-        'description': "D'Hondt Election with 7 seats",
-        'category': 'dh',
-        'validate_func': validateDH,
-        'vote_func': None,
-        'tally_func': tallyDH
-    },
-    {
-        'key': "dh8",
-        'description': "D'Hondt Election with 8 seats",
-        'category': 'dh',
-        'validate_func': validateDH,
-        'vote_func': None,
-        'tally_func': tallyDH
-    },
-    {
-        'key': "dh9",
-        'description': "D'Hondt Election with 9 seats",
-        'category': 'dh',
-        'validate_func': validateDH,
-        'vote_func': None,
-        'tally_func': tallyDH
-    }
 )
+
+# Add ad nauseam
+for i in range(2,21):
+    constants.VOTE_TYPES += (
+        {
+            'key': "dh%u" % i,
+            'description': "D'Hondt Election with %u seats" % i,
+            'category': 'dh',
+            'validate_func': validateDH,
+            'vote_func': None,
+            'tally_func': tallyDH
+        },
+    )

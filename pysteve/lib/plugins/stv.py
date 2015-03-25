@@ -176,68 +176,17 @@ constants.VOTE_TYPES += (
         'vote_func': None,
         'tally_func': tallySTV
     },
-    {
-        'key': "stv2",
-        'description': "Single Transferrable Vote with 2 seats",
-        'category': 'stv',
-        'validate_func': validateSTV,
-        'vote_func': None,
-        'tally_func': tallySTV
-    },
-    {
-        'key': "stv3",
-        'description': "Single Transferrable Vote with 3 seats",
-        'category': 'stv',
-        'validate_func': validateSTV,
-        'vote_func': None,
-        'tally_func': tallySTV
-    },
-    {
-        'key': "stv4",
-        'description': "Single Transferrable Vote with 4 seats",
-        'category': 'stv',
-        'validate_func': validateSTV,
-        'vote_func': None,
-        'tally_func': tallySTV
-    },
-    {
-        'key': "stv5",
-        'description': "Single Transferrable Vote with 5 seats",
-        'category': 'stv',
-        'validate_func': validateSTV,
-        'vote_func': None,
-        'tally_func': tallySTV
-    },
-    {
-        'key': "stv6",
-        'description': "Single Transferrable Vote with 6 seats",
-        'category': 'stv',
-        'validate_func': validateSTV,
-        'vote_func': None,
-        'tally_func': tallySTV
-    },
-    {
-        'key': "stv7",
-        'description': "Single Transferrable Vote with 7 seats",
-        'category': 'stv',
-        'validate_func': validateSTV,
-        'vote_func': None,
-        'tally_func': tallySTV
-    },
-    {
-        'key': "stv8",
-        'description': "Single Transferrable Vote with 8 seats",
-        'category': 'stv',
-        'validate_func': validateSTV,
-        'vote_func': None,
-        'tally_func': tallySTV
-    },
-    {
-        'key': "stv9",
-        'description': "Single Transferrable Vote with 9 seats",
-        'category': 'stv',
-        'validate_func': validateSTV,
-        'vote_func': None,
-        'tally_func': tallySTV
-    }
 )
+
+# Add ad nauseam
+for i in range(2,21):
+    constants.VOTE_TYPES += (
+        {
+            'key': "stv%02u" % i,
+            'description': "Single Transferrable Vote with %u seats" % i,
+            'category': 'stv',
+            'validate_func': validateSTV,
+            'vote_func': None,
+            'tally_func': tallySTV
+        },
+    )
