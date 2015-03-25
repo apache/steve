@@ -54,7 +54,9 @@ def tallyDH(votes, issue):
     matrix = {}
     for key in votes:
         vote = votes[key]
-        matrix[vote] = [(matrix[vote] if vote in matrix else 0) + 1, 1]
+        if not vote in matrix:
+            matrix[vote] = [0,1]
+        matrix[vote][0] += 1
 
     # Start counting
     while len(winners) < numseats:
@@ -67,6 +69,7 @@ def tallyDH(votes, issue):
             if quotient == max(m):
                 winners.append(c)
                 matrix[c][1] += 1
+                break
 
     # Compile list of winner names
     winnernames = []
