@@ -2,7 +2,13 @@
  Welcome to Apache Steve <http://steve.apache.org/>
 =============================================================
 
-Apache Steve is...
+Apache Steve is software for conducting a vote using the STV - Single
+Transferrable Vote - voting algorithm. The tool grew out of the voting
+system used to elect the Apache Software Foundation Board of
+Directors.
+
+Read more about STV at
+http://en.wikipedia.org/wiki/Single_transferable_vote
 
 Getting Started
 ===============
