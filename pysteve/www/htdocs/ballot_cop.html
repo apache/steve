@@ -1,0 +1,39 @@
+ <!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/steve_interactive.css">
+<link rel="stylesheet" href="css/jquery-ui.css">
+<script src="js/steve_rest.js" type="text/javascript"></script>
+<script src="js/steve_cop.js" type="text/javascript"></script>
+<script src="js/jquery.js" type="text/javascript"></script>
+<script src="js/jquery-ui.js" type="text/javascript"></script>
+<title>Apache STeVe: Candidate or Party vote</title>
+
+</head>
+<body onload="window.setTimeout(loadIssue, 500, null, null, null, displayIssueCOP);">
+    <div id="popups"></div>
+    <p style="text-align: center;">
+        <img src="/images/steve_logo.png"/>
+    </p>
+    <a href="javascript:void(location.href='election.html' + document.location.search);">Back to election front page</a>
+<div class="formbox">
+    <p>
+        This is a standard Candidate or Party vote.
+        To vote, click on the candidate or party of your choice and then click on <kbd>Cast vote</kbd>.
+        Should you reconsider later, you can always recast your vote for as long as the election remains open.
+    </p>
+<div id="preloaderWrapper">
+    <img src="/images/steve_spinner.gif"/>
+    <div id="preloader">
+        Loading issue, please wait...
+    </div>
+</div>
+</div>
+<p style="font-size: 12px; font-style: italic; text-align: center;">
+    Powered by <a href="https://steve.apache.org/">Apache STeVe</a>.
+    Copyright 2015, the Apache Software Foundation.
+    Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>
+</p>
+</body>
+</html>

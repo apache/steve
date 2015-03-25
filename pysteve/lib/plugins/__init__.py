@@ -15,11 +15,14 @@
 # limitations under the License.
 #
 """
-yna
-stv
-dh
-fpp
-mntv
+CORE VOTE PLUGINS:
+
+    yna:    Yes/No/Abstain
+    stv:    Single Transferable Vote
+    dh:     D'Hondt (Jefferson) Voting
+    fpp:    First Past the Post (Presidential elections)
+    mntv:   Multiple Non-Transferable Votes
+    cop:    Candidate or Party Voting
 """
 
-__all__ = ['yna','stv','dh','fpp','mntv']
+__all__ = ['yna','stv','dh','fpp','mntv','cop']

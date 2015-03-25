@@ -276,15 +276,16 @@ function saveYNA() {
 	var issue = l[1]
 	
 	var title = document.getElementById('ititle').value
-	var nominatedby = document.getElementById('nominatedby').value
-	var seconds = document.getElementById('seconds').value.split(/,\s*/).join("\n")
+	var nominatedby = document.getElementById('nominatedby') ? document.getElementById('nominatedby').value : null
+	var seconds = document.getElementById('seconds') ? document.getElementById('seconds').value.split(/,\s*/).join("\n") : null
 	var description = document.getElementById('description').value
 	
 	postREST("/steve/admin/edit/" + election + "/" + issue, {
 		title: title,
 		nominatedby: nominatedby,
 		seconds: seconds,
-		description: description
+		description: description,
+		candidates: document.getElementById('candidates') ? document.getElementById('candidates').value : null
 	},
 	undefined,
 	saveCallback,
@@ -492,6 +493,39 @@ function renderEditIssue(code, response, issue) {
 			div.appendChild(btn)
 			obj.appendChild(div)
 			renderEditCandidates()
+		}
+		else if (edit_i.type.match(/^cop/)) {
+			
+			// base data
+			obj.innerHTML = "<h3>Editing a Candidate or Party Vote issue</h3>"
+			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
+			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
+			obj.appendChild(keyvaluepair("description", "Description (optinal):", "textarea", edit_i.description))
+			obj.appendChild(document.createElement('hr'))
+			
+			// candidates/parties
+			var p = null
+			var pletter = null
+			var biglist = ""
+			for (i in edit_i.candidates) {
+				var c = edit_i.candidates[i]
+				if (c['pletter'] != pletter) {
+					biglist += "\n" + c['pletter'].toUpperCase() + ":" + c['pname'] + "\n"
+					pletter = c['pletter']
+				}
+				biglist += c['name'] + "\n"
+			}
+			obj.appendChild(keyvaluepair("candidates", "Candidate/Party List:", "textarea", biglist))
+			
+			var div = document.createElement('div')
+			div.setAttribute("class", "keyvaluepair")
+			var btn = document.createElement('input')
+			btn.setAttribute("type", "button")
+			btn.setAttribute("class", "btn-green")
+			btn.setAttribute("value", "Save changes")
+			btn.setAttribute("onclick", "saveYNA();")
+			div.appendChild(btn)
+			obj.appendChild(div)
 		}
 	} else {
 		alert(response.message)
