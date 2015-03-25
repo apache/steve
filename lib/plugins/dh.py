@@ -94,7 +94,7 @@ constants.VOTE_TYPES += (
 )
 
 # Add ad nauseam
-for i in range(2,21):
+for i in range(2,constants.MAX_NUM+1):
     constants.VOTE_TYPES += (
         {
             'key': "dh%u" % i,
