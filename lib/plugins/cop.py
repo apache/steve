@@ -120,10 +120,13 @@ def tallyCOP(votes, issue):
                 surplus = 0
                 movedOn = False
                 for candidate in parties[party]['candidates']:
+                    # If a candidate has not yet been elected, and has >= votes than the required quota, elect her/him
                     if not candidate['elected'] and numseats > len(winners):
                         if candidate['votes'] >= quota:
                             candidate['elected'] = True
                             winners.append("%s (%s) %u" % ( candidate['name'], parties[party]['name'], candidate['votes']))
+                            
+                            # Did X receive more votes than needed? if so, add back to the party surplus
                             surplus += candidate['votes'] - quota
                     
                 # If surplus of votes, add it to the next candidate in the same party
