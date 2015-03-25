@@ -996,7 +996,16 @@ function setVoteTypes(code, response, state) {
 			option.value = i;
 			sortable.push([option, type])
 		}
-		sortable.sort(function(a,b) { return (a[1] > b[1])})
+		sortable.sort(
+			function(a,b) {
+				var ta = a[1].match(/^(.+?)\d+/) ? a[1].match(/(.+?)\d+/)[1] : null
+				var tb = b[1].match(/^(.+?)\d+/) ? b[1].match(/(.+?)\d+/)[1] : null
+				if ( ta && tb && ta == tb ) {
+					return parseInt(a[1].match(/(\d+)/)[1]) > parseInt(b[1].match(/(\d+)/)[1])
+				} else  {
+					return (a[1] > b[1])
+				}
+			})
 		for (i in sortable) {
 			tobj.add(sortable[i][0])
 		}
