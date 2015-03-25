@@ -170,7 +170,7 @@ def tallySTV(votes, issue):
 constants.VOTE_TYPES += (
     {
         'key': "stv1",
-        'description': "Single Transferrable Vote with 1 seat",
+        'description': "Single Transferable Vote with 1 seat",
         'category': 'stv',
         'validate_func': validateSTV,
         'vote_func': None,
@@ -183,7 +183,7 @@ for i in range(2,constants.MAX_NUM+1):
     constants.VOTE_TYPES += (
         {
             'key': "stv%02u" % i,
-            'description': "Single Transferrable Vote with %u seats" % i,
+            'description': "Single Transferable Vote with %u seats" % i,
             'category': 'stv',
             'validate_func': validateSTV,
             'vote_func': None,
