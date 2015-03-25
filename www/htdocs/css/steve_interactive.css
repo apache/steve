@@ -302,6 +302,10 @@ pre {
     float: left;
     min-height: 400px;
     background-repeat: no-repeat;
+    height:auto;
+    margin-left:auto;
+    margin-right:auto;
+    padding: 10px 20px 30px 20px;
 }
 
 #ballot {
@@ -435,6 +439,11 @@ body, html {
   list-style: none;
   text-align: left;
 }
+
+ol .showList {
+  list-style: outside !important;
+}
+
 #ballot .ballotNumber {
   /*background: linear-gradient(to bottom, #fccd41 0%,#cea202 100%);*/
   background: linear-gradient(to bottom, #4f7bff 0%,#1444bc 100%);
@@ -465,7 +474,9 @@ body, html {
   border-radius: 5px;
   border: 2px solid #333;
   box-shadow: 3px 4px 4px 0px rgba(153,153,153,1);
-  min-width: 800px;
+  height:auto;  
+  font-family: Helvetica, Arial, sans-serif;
+  overflow: auto;
 }
 
 .formbox h2 {
@@ -494,6 +505,8 @@ body, html {
 .formbox .keyvaluepair {
   min-height: 32px;
   min-width: 700px;
+  position: relative;
+  clear: both;
 }
 
 .formbox .keyfield {
@@ -610,3 +623,18 @@ fieldset legend {
   margin: 0px auto;
   text-align: center;
 }
+
+
+
+#contents {
+    width:80%;
+    height:auto;
+    margin-left:auto;
+    margin-right:auto;
+    padding: 10px 20px 30px 20px;
+    
+    color: #333333;
+    font-family: Helvetica, Arial, sans-serif;
+    overflow: auto.
+}
+
