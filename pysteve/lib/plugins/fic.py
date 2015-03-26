@@ -68,7 +68,8 @@ def tallyFIC(votes, issue):
     
     # Start counting
     sorted_matrix = sorted(matrix.items(), key=operator.itemgetter(1))
-    winners = [l[0] for l in sorted_matrix if matrix[l[0]] in heapq.nlargest(numseats, matrix.values())]
+    bignums = heapq.nlargest(numseats, matrix.values())
+    winners = [l[0] for l in sorted_matrix if matrix[l[0]] in bignums]
 
     # Compile list of winner names
     winnernames = []
