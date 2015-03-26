@@ -164,7 +164,7 @@ def vote(electionID, issueID, voterID, vote):
         
         # Vote verification
         voteType = getVoteType(issueData)
-        if 'vote_func' in voteType and voteType['vote_func']:
+        if voteType.get('vote_func'):
             # This will/should raise an exception if the vote is invalid
             voteType['vote_func'](basedata, issueID, voterID, vote)
             
