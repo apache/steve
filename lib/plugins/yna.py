@@ -26,10 +26,12 @@ def tallyYNA(votes, issue):
     for vote in votes.values():
         if vote == 'y':
             y += 1
-        if vote == 'n':
+        elif vote == 'n':
             n += 1
-        if vote == 'a':
+        elif vote == 'a':
             a += 1
+        else:
+            raise Exception("Invalid vote found!")
 
     return {
         'votes': len(votes),
