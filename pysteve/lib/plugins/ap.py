@@ -27,14 +27,16 @@ def tallyAP(votes, issue):
     for vote in votes.values():
         if vote == 'y':
             y += 1
-        if vote == 'n':
+        elif vote == 'n':
             n += 1
-        if vote == 'a':
+        elif vote == 'a':
             a += 1
-        if vote == 'by':
+        elif vote == 'by':
             by += 1
-        if vote == 'bn':
+        elif vote == 'bn':
             bn += 1
+        else:
+            raise Exception("Invalid vote found in votes db!")
 
     return {
         'votes': len(votes),
