@@ -42,42 +42,6 @@ def validateSTV(vote, issue):
     return None
 
 
-def getproportion(votes, winners, step, surplus):
-    """ Proportionally move votes
-    :param votes:
-    :param winners:
-    :param step:
-    :param surplus:
-    :return:
-    """
-    prop = {}
-    tvotes = 0
-    for key in votes:
-        vote = votes[key]
-        xstep = step
-        char = vote[xstep] if len(vote) > xstep else None
-        # Step through votes till we find a non-winner vote
-        while xstep < len(vote) and vote[xstep] in winners:
-            xstep += 1
-        if xstep >= step:
-            tvotes += 1
-        # We found it? Good, let's add that to the tally
-        if xstep < len(vote) and not vote[xstep] in winners:
-            char = vote[xstep]
-            prop[char] = (prop[char] if char in prop else 0) + 1
-
-    # If this isn't the initial 1st place tally, do the proportional math:
-    # surplus votes / votes with an Nth preference * number of votes in that preference for the candidate
-    if step > 0:
-        for c in prop:
-            prop[c] *= (surplus / tvotes) if surplus > 0 else 0
-    return prop
-
-
-
-
-
-
 def run_vote(names, votes, num_seats):
   candidates = CandidateList(names)
 
