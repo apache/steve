@@ -19,6 +19,18 @@ VOTE_TYPES = (
     
 )
 
+def appendVote(*types):
+    global VOTE_TYPES
+    for t in types:
+        found = False
+        for v in VOTE_TYPES:
+            if v['key'] == t['key']:
+                found = True
+                break
+        if not found:
+            VOTE_TYPES += (t,)
+        
+
 # For vote types with N number of seats/spots, this value denotes
 # the max number of useable types to display via the API
 MAX_NUM = 10

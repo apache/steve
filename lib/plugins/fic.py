@@ -76,7 +76,7 @@ def tallyFIC(votes, issue):
     x = 0
     for c in winners:
         i = ord(c) - ord('a')
-        winnernames.append("%s (%u points)" % ( candidates[i], heapq.nlargest(numseats, matrix.values())[x]))
+        winnernames.append("%s (%u points)" % ( candidates[i], bignums[x]))
         x+=1
 
     # Return the data
@@ -87,7 +87,7 @@ def tallyFIC(votes, issue):
     }
 
 
-constants.VOTE_TYPES += (
+constants.appendVote(
     {
         'key': "fic1",
         'description': "First in Class Votes with 1 point max",
@@ -100,7 +100,7 @@ constants.VOTE_TYPES += (
 
 # Add ad nauseam
 for i in range(2,constants.MAX_NUM+1):
-    constants.VOTE_TYPES += (
+    constants.appendVote (
         {
             'key': "fic%u" % i,
             'description': "First in Class Votes with %u points max" % i,

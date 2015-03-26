@@ -45,7 +45,7 @@ def validateYNA(vote, issue):
         return "Invalid vote. Accepted votes are: %s" % ", ".join(letters)
     return None
 
-constants.VOTE_TYPES += (
+constants.appendVote (
     {
         'key': "yna",
         'description': "YNA (Yes/No/Abstain) vote",

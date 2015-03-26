@@ -85,7 +85,7 @@ def tallyDH(votes, issue):
     }
 
 
-constants.VOTE_TYPES += (
+constants.appendVote (
     {
         'key': "dh1",
         'description': "D'Hondt Election with 1 seat",
@@ -98,7 +98,7 @@ constants.VOTE_TYPES += (
 
 # Add ad nauseam
 for i in range(2,constants.MAX_NUM+1):
-    constants.VOTE_TYPES += (
+    constants.appendVote (
         {
             'key': "dh%u" % i,
             'description': "D'Hondt Election with %u seats" % i,

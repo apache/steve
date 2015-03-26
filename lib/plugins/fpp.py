@@ -71,7 +71,7 @@ def tallyFPP(votes, issue):
     }
 
 
-constants.VOTE_TYPES += (
+constants.appendVote (
     {
         'key': "fpp",
         'description': "First Past the Post (FPP) Election",

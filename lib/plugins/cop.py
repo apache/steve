@@ -158,7 +158,7 @@ def tallyCOP(votes, issue):
     }
 
 
-constants.VOTE_TYPES += (
+constants.appendVote (
     {
         'key': "cop1",
         'description': "Candidate or Party Vote with 1 seat",
@@ -174,7 +174,7 @@ constants.VOTE_TYPES += (
 
 # Add ad nauseam
 for i in range(2,constants.MAX_NUM+1):
-    constants.VOTE_TYPES += (
+    constants.appendVote (
         {
             'key': "cop%02u" % i,
             'description': "Candidate or Party Vote with %u seats" % i,
