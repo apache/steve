@@ -158,9 +158,16 @@ def vote(electionID, issueID, voterID, vote):
     "Casts a vote on an issue"
     votes = {}
     basedata = getBasedata(electionID)
-    if basedata:
+    issueData = getIssue(electionID, issueID)
+    if basedata and issueData:
         votehash = hashlib.sha224(basedata['hash'] + issueID + voterID + vote).hexdigest()
         
+        # Vote verification
+        voteType = getVoteType(issueData)
+        if 'vote_func' in voteType and voteType['vote_func']:
+            # This will/should raise an exception if the vote is invalid
+            voteType['vote_func'](electionID, issueID, voterID, vote)
+            
         if config.get("database", "dbsys") == "file":
             issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
             if os.path.isfile(issuepath + ".votes"):
