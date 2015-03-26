@@ -24,6 +24,7 @@ CORE VOTE PLUGINS:
     mntv:   Multiple Non-Transferable Votes
     cop:    Candidate or Party Voting
     fic:    First in Class Voting
+    ap:     Apache PMC Style voting
 """
 
-__all__ = ['yna','stv','dh','fpp','mntv','cop','fic']
+__all__ = ['yna','stv','dh','fpp','mntv','cop','fic','ap']

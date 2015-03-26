@@ -153,11 +153,15 @@ function displayTally(code, response, issue) {
 				obj.innerHTML += "<li>" + winner + ": " + winnerName + pct + "</li>"
 			}
 			obj.innerHTML += "</ol>"
-		} else if (response.yes && response.yes != undefined) {
+		} else if (response.yes != undefined) {
 			obj.innerHTML = "<i>(" + response.votes + " votes cast)</i>\n\n"
-			obj.innerHTML += "<b>Yes:     </b>" + response.yes + "\n"
-			obj.innerHTML += "<b>No:      </b>" + response.no + "\n"
-			obj.innerHTML += "<b>Abstain: </b>" + response.abstain + "\n"
+			obj.innerHTML += "<b>Yes:             </b>" + response.yes + "\n"
+			obj.innerHTML += "<b>No:              </b>" + response.no + "\n"
+			obj.innerHTML += "<b>Abstain:         </b>" + response.abstain + "\n"
+			if (response.binding_yes != undefined) {
+				obj.innerHTML += "<b>Binding Yes:     </b>" + response.binding_yes + "\n"
+				obj.innerHTML += "<b>Binding No:      </b>" + response.binding_no + "\n"
+			}
 		} else {
 			obj.innerHTML = "Unknonwn vote type or no votes cast yet"
 		}
@@ -374,6 +378,26 @@ function renderEditIssue(code, response, issue) {
 		}
 		else if (edit_i.type == "yna") {
 			obj.innerHTML = "<h3>Editing a YNA issue</h3>"
+			
+			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
+			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
+			obj.appendChild(keyvaluepair("nominatedby", "Nominated by:", "text", edit_i.nominatedby))
+			obj.appendChild(keyvaluepair("seconds", "Seconded by:", "text", (edit_i.seconds ? edit_i.seconds : []).join(", ")))
+			obj.appendChild(document.createElement('hr'))
+			obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
+			
+			var div = document.createElement('div')
+			div.setAttribute("class", "keyvaluepair")
+			var btn = document.createElement('input')
+			btn.setAttribute("type", "button")
+			btn.setAttribute("class", "btn-green")
+			btn.setAttribute("value", "Save changes")
+			btn.setAttribute("onclick", "saveYNA();")
+			div.appendChild(btn)
+			obj.appendChild(div)
+			
+		} else if (edit_i.type == "ap") {
+			obj.innerHTML = "<h3>Editing a Apache PMC Style issue</h3>"
 			
 			obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
 			obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
@@ -660,7 +684,7 @@ function peekCallback(code, response, election) {
 }
 
 function changeSTVType(type) {
-	if (type == "yna") {
+	if (type == "yna" || type == "ap") {
 		document.getElementById('yna').style.display = "block";
 		document.getElementById('stv').style.display = "none";
 	} else {
