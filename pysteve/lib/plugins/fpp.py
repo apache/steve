@@ -20,7 +20,7 @@ import re, json
 from lib import constants
 
 def validateFPP(vote, issue):
-    "Tries to invalidate a vote, returns why if succeeded, None otherwise"
+    "Tries to validate a vote, returns why if not valid, None otherwise"
     letters = [chr(i) for i in range(ord('a'), ord('a') + len(issue['candidates']))]
     if len(vote) > 1:
         return "Vote may only contain one letter!"

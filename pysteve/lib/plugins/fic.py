@@ -20,7 +20,7 @@ import re, heapq, operator
 from lib import constants
 
 def validateFIC(vote, issue):
-    "Tries to invalidate a vote, returns why if succeeded, None otherwise"
+    "Tries to validate a vote, returns why if not valid, None otherwise"
     m = re.match(r"fic(\d+)", issue['type'])
     if not m:
         return "Not an FiC vote!"

@@ -20,7 +20,7 @@ import re, json, random
 from lib import constants
 
 def validateSTV(vote, issue):
-    "Tries to invalidate a vote, returns why if succeeded, None otherwise"
+    "Tries to validate a vote, returns why if not valid, None otherwise"
     letters = [chr(i) for i in range(ord('a'), ord('a') + len(issue['candidates']))]
     for char in letters:
         if vote.count(char) > 1:

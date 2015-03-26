@@ -41,7 +41,7 @@ def tallyYNA(votes, issue):
     }
 
 def validateYNA(vote, issue):
-    "Tries to invalidate a vote, returns why if succeeded, None otherwise"
+    "Tries to validate a vote, returns why if not valid, None otherwise"
     letters = ['y','n','a']
     if len(vote) != 1 or not vote in letters:
         return "Invalid vote. Accepted votes are: %s" % ", ".join(letters)

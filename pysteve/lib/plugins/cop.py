@@ -23,7 +23,7 @@ import re, json, random
 from lib import constants, form
 
 def validateCOP(vote, issue):
-    "Tries to invalidate a vote, returns why if succeeded, None otherwise"
+    "Tries to validate a vote, returns why if not valid, None otherwise"
     parties = {}
     for c in issue['candidates']:
         parties[c['pletter']] = True

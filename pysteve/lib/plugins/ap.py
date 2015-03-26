@@ -49,7 +49,7 @@ def tallyAP(votes, issue):
 
 
 def validateAP(vote, issue):
-    "Tries to invalidate a vote, returns why if succeeded, None otherwise"
+    "Tries to validate a vote, returns why if not valid, None otherwise"
     letters = ['y','n','a', 'by', 'bn']
     if len(vote) >= 3 or not vote in letters:
         return "Invalid vote. Accepted votes are: %s" % ", ".join(letters)
