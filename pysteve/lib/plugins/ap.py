@@ -64,7 +64,7 @@ def verifyAP(basedata, issueID, voterID, vote):
             raise Exception("You are not allowed to cast a binding vote!")
 
 
-constants.VOTE_TYPES += (
+constants.appendVote(
     {
         'key': "ap",
         'description': "ASF PMC Style vote (YNA with binding votes)",

@@ -167,7 +167,7 @@ def tallySTV(votes, issue):
     }
 
 
-constants.VOTE_TYPES += (
+constants.appendVote (
     {
         'key': "stv1",
         'description': "Single Transferable Vote with 1 seat",
@@ -180,7 +180,7 @@ constants.VOTE_TYPES += (
 
 # Add ad nauseam
 for i in range(2,constants.MAX_NUM+1):
-    constants.VOTE_TYPES += (
+    constants.appendVote (
         {
             'key': "stv%u" % i,
             'description': "Single Transferable Vote with %u seats" % i,

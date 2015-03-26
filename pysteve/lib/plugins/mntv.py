@@ -80,7 +80,7 @@ def tallyMNTV(votes, issue):
     }
 
 
-constants.VOTE_TYPES += (
+constants.appendVote (
     {
         'key': "mntv1",
         'description': "Multiple Non-Transferable Votes with 1 seat",
@@ -93,7 +93,7 @@ constants.VOTE_TYPES += (
 
 # Add ad nauseam
 for i in range(2,constants.MAX_NUM+1):
-    constants.VOTE_TYPES += (
+    constants.appendVote (
         {
             'key': "mntv%u" % i,
             'description': "Multiple Non-Transferable Votes with %u seats" % i,
