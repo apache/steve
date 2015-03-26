@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 """ First in Class (FiC) Based Voting Plugin """
-import re, heapq
+import re, heapq, operator
 
 from lib import constants
 
@@ -65,15 +65,17 @@ def tallyFIC(votes, issue):
             matrix[letter] += numseats - i
             i += 1
 
+    
     # Start counting
-    winners = [l for l in matrix if matrix[l] in heapq.nlargest(numseats, matrix.values())]
+    sorted_matrix = sorted(matrix.items(), key=operator.itemgetter(1))
+    winners = [l[0] for l in sorted_matrix if matrix[l[0]] in heapq.nlargest(numseats, matrix.values())]
 
     # Compile list of winner names
     winnernames = []
     x = 0
     for c in winners:
         i = ord(c) - ord('a')
-        winnernames.append("%s ( %u)" % ( candidates[i], heapq.nlargest(numseats, matrix.values())[x]))
+        winnernames.append("%s (%u points)" % ( candidates[i], heapq.nlargest(numseats, matrix.values())[x]))
         x+=1
 
     # Return the data
