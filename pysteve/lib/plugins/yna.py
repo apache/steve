@@ -38,7 +38,11 @@ def tallyYNA(votes, issue):
         'yes': y,
         'no': n,
         'abstain': a
-    }
+    }, """
+Yes:            %4u
+No:             %4u
+Abstain:        %4u
+""" % (y,n,a)
 
 def validateYNA(vote, issue):
     "Tries to validate a vote, returns why if not valid, None otherwise"
