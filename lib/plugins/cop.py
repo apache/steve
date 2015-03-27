@@ -155,7 +155,10 @@ def tallyCOP(votes, issue):
         'winners': winners,
         'winnernames': winners,
         'debug': debug
-    }
+    }, """
+Winners:
+ - %s
+""" % "\n - ".join(winners)
 
 
 constants.appendVote (

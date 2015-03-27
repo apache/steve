@@ -38,7 +38,7 @@ def tallyAP(votes, issue):
         else:
             raise Exception("Invalid vote found in votes db!")
 
-    return {
+    js = {
         'votes': len(votes),
         'yes': y,
         'no': n,
@@ -46,6 +46,14 @@ def tallyAP(votes, issue):
         'binding_yes': by,
         'binding_no': bn
     }
+    
+    return js, """
+Yes:            %4u
+No:             %4u
+Abstain:        %4u
+Binding Yes:    %4u
+Binding No:     %4u
+""" % (y,n,a,by,bn)
 
 
 def validateAP(vote, issue):

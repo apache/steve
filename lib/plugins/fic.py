@@ -84,7 +84,10 @@ def tallyFIC(votes, issue):
         'votes': len(votes),
         'winners': winners,
         'winnernames': winnernames,
-    }
+    }, """
+Winners:
+ - %s
+""" % "\n - ".join(winnernames)
 
 
 constants.appendVote(

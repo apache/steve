@@ -347,7 +347,10 @@ def tallySTV(votes, issue):
         'winners': winners,
         'winnernames': winnernames,
         'debug': debug
-    }
+    }, """
+Winners:
+ - %s
+""" % "\n - ".join(winnernames)
 
 
 constants.appendVote (

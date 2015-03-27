@@ -62,13 +62,18 @@ def tallyFPP(votes, issue):
 
 
     # Return the data
-    return {
+    js = {
         'votes': len(votes),
         'winners': winners,
         'winnernames': winnernames,
         'winnerpct': ((1.00*max(l)/len(votes))*100) if len(votes) > 0 else 0.00,
         'tie': True if len(winners) > 1 else False
     }
+    
+    return js, """
+Winners:
+ - %s
+""" % "\n - ".join(["%s (%f%%)" % (n,js['winnerpct']) for n in winnernames])
 
 
 constants.appendVote (
