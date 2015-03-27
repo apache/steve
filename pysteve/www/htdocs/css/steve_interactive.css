@@ -101,7 +101,7 @@ p {
 }
 
 .btn-black {
-  background: #888888 !important;
+  background: #333 !important;
   border: #aaaaaa solid 1px;
   border-radius: 3px;
   color: #fff !important;
@@ -118,7 +118,7 @@ p {
   margin-left: 10px;
 }
 .btn-black:hover {
-  background: #aaaaaa !important;
+  background: #666 !important;
   transition: 0.3s ease;
 }
 
