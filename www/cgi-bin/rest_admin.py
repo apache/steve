@@ -138,7 +138,7 @@ else:
                                         xr.pop(0)
                                 if not election.validType(form.getvalue('type')):
                                     raise Exception('Invalid vote type: %s' % form.getvalue('type'))
-                                with open(issuepath + ".json", "w") as f:
+                                else:
                                     candidates = []
                                     c = []
                                     s = []
@@ -161,15 +161,14 @@ else:
                                     if 'parsers' in voteType and 'candidates' in voteType['parsers']:
                                         candidates = voteType['parsers']['candidates'](form.getvalue('candidates'))
                                         
-                                    f.write(json.dumps({
+                                    election.createIssue(electionID, issue, {
                                         'title': form.getvalue('title'),
                                         'description': form.getvalue('description'),
                                         'type': form.getvalue('type'),
                                         'candidates': candidates,
                                         'seconds': [x.strip() for x in form.getvalue('seconds').split("\n")] if form.getvalue('seconds') else [],
                                         'nominatedby': form.getvalue('nominatedby')
-                                    }))
-                                    f.close()
+                                    })
                                 response.respond(201, {'message': 'Created!', 'id': issue})
                             except Exception as err:
                                 response.respond(500, {'message': "Could not create issue: %s" % err})
@@ -403,9 +402,9 @@ else:
                         del basedata['hash']
                     response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': "https://%s/steve/election.html?%s" % (config.get("general", "rooturl"), electionID)})
                 else:
-                    response.respond(404, {'message': 'No such election'})
+                    response.respond(404, {'message': 'No such election: %s' % electionID})
             else:
-                    response.respond(404, {'message': 'No such election'})
+                    response.respond(404, {'message': 'Invalid election ID'})
         # Delete an issue
         elif action == "delete" and electionID and issue:
             if electionID and issue:
