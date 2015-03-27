@@ -90,3 +90,6 @@ if baseData and issueData:
         print("Votes cast: %u" % len(votes))
         print("\n-----------------\nElection results:\n-----------------")
         print(prettyprint)
+else:
+    print("No such election or issue!")
+    sys.exit(-1)
