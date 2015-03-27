@@ -150,7 +150,11 @@ function displayTally(code, response, issue) {
 				var winner = response.winners[i]
 				var winnerName = response.winnernames[i]
 				var pct = response.winnerpct ? " (" + response.winnerpct + "%)" : ""
-				obj.innerHTML += "<li>" + winner + ": " + winnerName + pct + "</li>"
+				if (winner == winnerName) {
+					obj.innerHTML += "<li>" + winner + pct + "</li>"
+				} else {
+					obj.innerHTML += "<li>" + winner + ": " + winnerName + pct + "</li>"
+				}
 			}
 			obj.innerHTML += "</ol>"
 		} else if (response.yes != undefined) {
