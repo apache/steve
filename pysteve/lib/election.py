@@ -174,7 +174,10 @@ def vote(electionID, issueID, voterID, vote):
                 with open(issuepath + ".votes", "r") as f:
                     votes = json.loads(f.read())
                     f.close()
-            votes[voterID] = vote
+            votes[voterID] = {
+                'vote': vote,
+                'timestamp': time.time()
+            }
             with open(issuepath + ".votes", "w") as f:
                 f.write(json.dumps(votes))
                 f.close()
@@ -197,6 +200,25 @@ def vote(electionID, issueID, voterID, vote):
         raise Exception("No such election")
 
 def getVotes(electionID, issueID):
+    if config.get("database", "dbsys") == "file":
+        issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
+        if os.path.isfile(issuepath):
+            votes = {}
+            rvotes = {}
+            with open(issuepath, "r") as f:
+                rvotes = json.loads(f.read())
+                f.close()
+            for key in rvotes:
+                if isinstance(rvotes[key], dict):
+                    votes[key] = rvotes[key]['vote']
+                elif isinstance(rvotes[key], str) or isinstance(rvotes[key], unicode):
+                    votes[key] =rvotes[key]
+                else:
+                    raise Exception("Invalid vote data found: %s" % type(rvotes[key]))
+            return votes
+    return {}
+
+def getVotesRaw(electionID, issueID):
     if config.get("database", "dbsys") == "file":
         issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
         if os.path.isfile(issuepath):
