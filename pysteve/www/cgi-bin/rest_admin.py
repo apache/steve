@@ -210,7 +210,6 @@ else:
                             response.respond(404, {'message': 'No such election'})
                         else:
                             try:
-                                js = {}
                                 basedata = election.getBasedata(electionID)
                                 fields = ['title','owner','monitors','starts','ends']
                                 for field in fields:
