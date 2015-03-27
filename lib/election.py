@@ -234,7 +234,7 @@ def updateElection(electionID, basedata):
         with open(elpath  + "/basedata.json", "w") as f:
             f.write(json.dumps(basedata))
             f.close()
-    elif dbtype == "elasticsearh":
+    elif dbtype == "elasticsearch":
         es.index(index = "steve", doc_type = "elections", id=electionID, body = basedata)
 
 def updateIssue(electionID, issueID, issueData):
