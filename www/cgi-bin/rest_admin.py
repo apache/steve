@@ -206,38 +206,29 @@ else:
             if (issue and karma >= 4) or (karma >= 5 and electionID):
                 if electionID:
                     if not issue:
-                        elpath = os.path.join(homedir, "issues", electionID)
-                        if not os.path.isdir(elpath) or not os.path.isfile(elpath+"/basedata.json"):
-                            response.respond(404, {'message': 'No such issue'})
+                        if not election.exists(electionID,):
+                            response.respond(404, {'message': 'No such election'})
                         else:
                             try:
                                 js = {}
-                                with open(elpath + "/basedata.json", "r") as f:
-                                    js = json.loads(f.read())
-                                    f.close()
+                                basedata = election.getBasedata(electionID)
                                 fields = ['title','owner','monitors','starts','ends']
                                 for field in fields:
                                     val = form.getvalue(field)
                                     if val:
                                         if field == "monitors":
                                             val = [x.strip() for x in val.split(",")]
-                                        js[field] = val
-                                with open(elpath + "/basedata.json", "w") as f:
-                                    f.write(json.dumps(js))
-                                    f.close()
+                                        basedata[field] = val
+                                election.updateElection(electionID, basedata)
                                 response.respond(200, {'message': "Changed saved"})
                             except Exception as err:
                                 response.respond(500, {'message': "Could not edit election: %s" % err})
                     else:
-                        issuepath = os.path.join(homedir, "issues", electionID, issue)
-                        if not os.path.isfile(issuepath + ".json"):
+                        if not election.exists(electionID, issue):
                             response.respond(404, {'message': 'No such issue'})
                         else:
                             try:
-                                js = {}
-                                with open(issuepath + ".json", "r") as f:
-                                    js = json.loads(f.read())
-                                    f.close()
+                                issuedata = election.getIssue(electionID, issue)
                                 fields = ['title','description','type','statements','candidates','seconds','nominatedby']
                                 statements = []
                                 for field in fields:
@@ -265,14 +256,12 @@ else:
                                             val = [x.strip() for x in val.split("\n")]
                                             
                                         # HACK: If field  parsing is outsourced, let's do that instead (primarily for COP)
-                                        voteType = election.getVoteType(js)
+                                        voteType = election.getVoteType(issuedata)
                                         if 'parsers' in voteType and field in voteType['parsers']:
                                             val = voteType['parsers'][field](form.getvalue(field))
                                             
-                                        js[field] = val
-                                with open(issuepath + ".json", "w") as f:
-                                    f.write(json.dumps(js))
-                                    f.close()
+                                        issuedata[field] = val
+                                election.updateIssue(electionID, issue, issuedata)
                                 response.respond(200, {'message': "Changed saved"})
                             except Exception as err:
                                 response.respond(500, {'message': "Could not edit issue: %s" % err})
@@ -281,107 +270,6 @@ else:
             else:
                 response.respond(403, {'message': 'You do not have enough karma for this'})
         
-        # Edit/add a statement
-        elif action == "statement":
-            issue = l[2] if len(l) > 2 else None
-            if (issue and karma >= 4):
-                issuepath = os.path.join(homedir, "issues", electionID, issue)
-                if not os.path.isfile(issuepath + ".json"):
-                    response.respond(404, {'message': 'No such issue'})
-                else:
-                    try:
-                        js = {}
-                        with open(issuepath + ".json", "r") as f:
-                            js = json.loads(f.read())
-                            f.close()
-                        
-                        cand = form.getvalue('candidate')
-                        stat = form.getvalue('statement')
-                        found = False
-                        for entry in js['candidates']:
-                            if entry['name'] == cand:
-                                found = True
-                                entry['statement'] = stat
-                                break
-                        if not found:
-                            raise Exception("No such candidate: " + cand)                    
-                        with open(issuepath + ".json", "w") as f:
-                            f.write(json.dumps(js))
-                            f.close()
-                        response.respond(200, {'message': "Changed saved"})
-                    except Exception as err:
-                        response.respond(500, {'message': "Could not edit issue: %s" % err})
-            else:
-                response.respond(403, {'message': 'You do not have enough karma for this'})
-                
-        # Edit/add a statement
-        elif action == "addcandidate":
-            issue = l[2] if len(l) > 2 else None
-            if (issue and karma >= 4):
-                issuepath = os.path.join(homedir, "issues", electionID, issue)
-                if not os.path.isfile(issuepath + ".json"):
-                    response.respond(404, {'message': 'No such issue'})
-                else:
-                    try:
-                        js = {}
-                        with open(issuepath + ".json", "r") as f:
-                            js = json.loads(f.read())
-                            f.close()
-                        
-                        cand = form.getvalue('candidate')
-                        stat = form.getvalue('statement')
-                        found = False
-                        for entry in js['candidates']:
-                            if entry['name'] == cand:
-                                found = True
-                                break
-                        if found:
-                            raise Exception("Candidate already exists: " + cand)
-                        else:
-                            js['candidates'].append( {
-                                'name': cand,
-                                'statement': stat
-                            })
-                        with open(issuepath + ".json", "w") as f:
-                            f.write(json.dumps(js))
-                            f.close()
-                        response.respond(200, {'message': "Changed saved"})
-                    except Exception as err:
-                        response.respond(500, {'message': "Could not edit issue: %s" % err})
-            else:
-                response.respond(403, {'message': 'You do not have enough karma for this'})
-        elif action == "delcandidate":
-            issue = l[2] if len(l) > 2 else None
-            if (issue and karma >= 4):
-                issuepath = os.path.join(homedir, "issues", electionID, issue)
-                if not os.path.isfile(issuepath + ".json"):
-                    response.respond(404, {'message': 'No such issue'})
-                else:
-                    try:
-                        js = {}
-                        with open(issuepath + ".json", "r") as f:
-                            js = json.loads(f.read())
-                            f.close()
-                        
-                        cand = form.getvalue('candidate')
-                        found = False
-                        i = 0
-                        for entry in js['candidates']:
-                            if entry['name'] == cand:
-                                js['candidates'].pop(i)
-                                found = True
-                                break
-                            i += 1
-                        if not found:
-                            raise Exception("Candidate does nost exist: " + cand)
-                        with open(issuepath + ".json", "w") as f:
-                            f.write(json.dumps(js))
-                            f.close()
-                        response.respond(200, {'message': "Changed saved"})
-                    except Exception as err:
-                        response.respond(500, {'message': "Could not edit issue: %s" % err})
-            else:
-                response.respond(403, {'message': 'You do not have enough karma for this'})
         elif action == "view" and karma >= 3:
             # View a list of issues for an election
             if electionID:

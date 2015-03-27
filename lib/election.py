@@ -63,7 +63,7 @@ def exists(election, *issue):
         doc = "elections"
         if issue and issue[0]:
             doc = "issues"
-            s = "id:%s" % issue[0]
+            s = "election:%s AND id:%s" % (election, issue[0])
         res = es.search(index="steve", doc_type=doc, q = s, size = 1)
         if len(res['hits']['hits']) > 0:
             return True
@@ -130,7 +130,7 @@ def getIssue(electionID, issueID):
                 f.close()
                 issuedata = json.loads(data)
     elif dbtype == "elasticsearch":
-        res = es.search(index="steve", doc_type="issues", q = "id:%s" % issueID, size = 1)
+        res = es.search(index="steve", doc_type="issues", q = "election:%s AND id:%s" % (electionID, issueID), size = 1)
         results = len(res['hits']['hits'])
         if results > 0:
             issuedata = res['hits']['hits'][0]['_source']
@@ -226,6 +226,26 @@ def createElection(eid, title, owner, monitors, starts, ends, isopen):
                 'open': isopen
             }
         );
+
+def updateElection(electionID, basedata):
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
+        elpath = os.path.join(homedir, "issues", electionID)
+        with open(elpath  + "/basedata.json", "w") as f:
+            f.write(json.dumps(basedata))
+            f.close()
+    elif dbtype == "elasticsearh":
+        es.index(index = "steve", doc_type = "elections", id=electionID, body = basedata)
+
+def updateIssue(electionID, issueID, issueData):
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
+        issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
+        with open(issuepath, "w") as f:
+            f.write(json.dumps(issueData))
+            f.close()
+    elif dbtype == "elasticsearch":
+        es.index(index = "steve", doc_type = "issues", id=hashlib.sha224(electionID + "/" + issueID).hexdigest(), body = issueData)
 
 
 def listIssues(election):
@@ -362,7 +382,7 @@ def deleteIssue(electionID, issueID):
             if os.path.isfile(issuepath + ".votes"):
                 os.unlink(issuepath + ".votes")
         elif dbtype == "elasticsearch":
-            es.delete(index="steve", doc_type="votes", id=votehash);
+            es.delete(index="steve", doc_type="votes", id=hashlib.sha224(electionID + "/" + issueID).hexdigest());
         return True
     else:
         raise Exception("No such election")
