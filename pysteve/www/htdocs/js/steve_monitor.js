@@ -63,7 +63,7 @@ function updateVotes(code, response, issue) {
 			}
 		}
 		if (is.hash && response.issue.hash != is.hash) {
-			riggedIssues[issue] = true
+			riggedIssues[issue] = "WAS: " + JSON.stringify(is) + " - IS NOW: " + JSON.stringify(response.issue)
 		}
 		if (ehash == null) {
 			ehash = response.hash
@@ -169,8 +169,8 @@ function showChanges(issue) {
 			sinceLast = a[0]
 			nrc = a[1]
 			header.innerHTML = ""
-			if (riggedIssues[issue.id] == true) {
-				header.innerHTML += "<font color='red'>ISSUE POSSIBLY RIGGED! </font>"
+			if (riggedIssues[issue.id] && riggedIssues[issue.id].length > 0) {
+				header.innerHTML += "<a href='#' onclick=\"alert(riggedIssues['" + issue.id + "']);\"><font color='red'>ISSUE POSSIBLY RIGGED! </font></a><br/> "
 			}
 			header.innerHTML += numvotes + " votes cast, " + sinceLast + " new votes cast since last update. " + recasts[issue.id] + " votes have been recast, split among " + nrc + " voters."
 			header.innerHTML += " <a href='javascript:void(showDetails(\"" + issue.id + "\"));'>Show details</a>"
