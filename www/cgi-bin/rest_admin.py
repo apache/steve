@@ -556,7 +556,7 @@ else:
                             })
                         else:
                             response.respond(500, {'message': "Unknown vote type"})
-                    elif not votes:
+                    elif issuedata and not votes:
                         response.respond(404, {'message': "No votes found"})
                     else:
                         response.respond(404, {'message': "Issue not found"})

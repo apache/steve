@@ -72,9 +72,9 @@ function updateVotes(code, response, issue) {
 			rigged = true
 		}
 		recasts[issue] = recasts[issue] ? recasts[issue] : 0
-	} else {
-		var header = document.getElementById('issue_' + issue.id + "_header")
-		header.innerHTML = "Issue deleted?: " + response.message
+	} else if (response.message == "Issue not found") {
+		var header = document.getElementById('issue_' + issue + "_header")
+		header.innerHTML = "<font color='red'><b>Issue deleted?: " + response.message + "</b></font>"
 	}
 }
 
