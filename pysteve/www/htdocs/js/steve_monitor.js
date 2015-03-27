@@ -73,7 +73,8 @@ function updateVotes(code, response, issue) {
 		}
 		recasts[issue] = recasts[issue] ? recasts[issue] : 0
 	} else {
-		alert(response.message)
+		var header = document.getElementById('issue_' + issue.id + "_header")
+		header.innerHTML = "Issue deleted?: " + response.message
 	}
 }
 
