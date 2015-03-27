@@ -103,8 +103,12 @@ function renderEditElection(code, response, election) {
 		document.getElementById('title').innerHTML = "Edit election: " + response.base_data.title + " (#" + election  + ")" + c
 		
 		if (response.base_data.closed) {
+			document.getElementById('invite_btn').setAttribute("style", "pointer-events:none; background: #999 !important; color: #bbb !important;")
+			document.getElementById('invite_btn').setAttribute("href", null)
+			document.getElementById('cue').setAttribute("style", "pointer-events:none; background: #999 !important; color: #bbb !important;")
+			document.getElementById('cue').setAttribute("href", null)
 			document.getElementById('closea').setAttribute("href", "javascript:void(location.href='reopen.html'+document.location.search);");
-			document.getElementById('closex').innerHTML = "Reopen election"
+			document.getElementById('closex').innerHTML = "Reopen"
 			document.getElementById('closea').setAttribute("title", "Click to reopen this election")
 		}
 		var obj = document.getElementById('ballot')
