@@ -187,6 +187,11 @@ function showChanges(issue) {
 }
 
 
-function disableF5(e) { if ((e.which || e.keyCode) == 116 || (e.which || e.keyCode) == 82) e.preventDefault(); };
+function disableF5(e) {
+	if ((e.which || e.keyCode) == 116 || (e.which || e.keyCode) == 82) {
+		e.preventDefault();
+		alert("PLEASE...Do not refresh this page")
+	}
+}
 
 window.onkeydown = disableF5
