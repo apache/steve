@@ -144,7 +144,7 @@ function showChanges(issue) {
 		
 		window.setTimeout(showChanges, 2000, issue)
 	} else {
-		window.setTimeout(showChanges, 5000, issue)
+		window.setTimeout(showChanges, 15000, issue)
 		numvotes = 0;
 		if (votes[issue.id]) {
 			for (i in votes[issue.id]) numvotes++;
