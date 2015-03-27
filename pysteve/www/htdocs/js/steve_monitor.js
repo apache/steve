@@ -99,10 +99,13 @@ function calcChanges(issue, oldv, newv) {
 	return [sinceLast, nrc]
 }
 
+var timeouts = {}
+
 function showDetails(issueid, update) {
 	var obj = document.getElementById('issue_' + issueid + '_details')
 	if (obj.innerHTML.length > 0 && !update) {
 		obj.innerHTML = ""
+		window.clearTimeout(timeouts[issueid])
 	} else {
 		obj.innerHTML = ""
 		for (i in votes[issueid]) {
@@ -123,7 +126,7 @@ function showDetails(issueid, update) {
 			}
 			obj.innerHTML += "<b>" + i + ": </b> " + vote + " - " + nrc + add + "<br/>"
 		}
-		window.setTimeout(showDetails, 2500, issueid, true)
+		timeouts[issueid] = window.setTimeout(showDetails, 2500, issueid, true)
 	}
 	
 }
