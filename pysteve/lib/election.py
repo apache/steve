@@ -19,27 +19,62 @@ import json
 import os
 import random
 import time
+from itertools import izip
+
 
 from __main__ import homedir, config
 
+es = None
+
+if config.get("database", "dbsys") == "elasticsearch":
+    from elasticsearch import Elasticsearch
+    es = Elasticsearch([
+                    {
+                        'host': config.get("elasticsearch", "host"),
+                        'port': int(config.get("elasticsearch", "port")),
+                        'url_prefix': config.get("elasticsearch", "uri"),
+                        'use_ssl': False if config.get("elasticsearch", "secure") == "false" else True
+                    },
+                ])
+    if not es.indices.exists("steve"):
+        es.indices.create(index = "steve", body = {
+                "settings": {
+                    "number_of_shards" : 3,
+                    "number_of_replicas" : 1
+                }
+            }
+        )
+    
 import constants, voter
 from plugins import *
 
 def exists(election, *issue):
     "Returns True if an election/issue exists, False otherwise"
-    if config.get("database", "dbsys") == "file":
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
         elpath = os.path.join(homedir, "issues", election)
         if issue:
             elpath += "/" + issue[0] + ".json"
             return os.path.isfile(elpath)
         else:
             return os.path.isdir(elpath)
-
+    elif dbtype == "elasticsearch":
+        s = "id:%s" % election
+        doc = "elections"
+        if issue and issue[0]:
+            doc = "issues"
+            s = "id:%s" % issue[0]
+        res = es.search(index="steve", doc_type=doc, q = s, size = 1)
+        if len(res['hits']['hits']) > 0:
+            return True
+        else:
+            return False
 
 def getBasedata(election, hideHash=False):
     "Get base data from an election"
     
-    if config.get("database", "dbsys") == "file":
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
         elpath = os.path.join(homedir, "issues", election)
         if os.path.isdir(elpath):
             with open(elpath + "/basedata.json", "r") as f:
@@ -50,18 +85,20 @@ def getBasedata(election, hideHash=False):
                     del basedata['hash']
                 basedata['id'] = election
                 return basedata
+    elif dbtype == "elasticsearch":
+        res = es.search(index="steve", doc_type="elections", sort = "id", q = "id:%s" % election, size = 1)
+        results = len(res['hits']['hits'])
+        if results > 0:
+            return res['hits']['hits'][0]['_source']
     return None
 
 def close(election, reopen = False):
     "Mark an election as closed"
-    if config.get("database", "dbsys") == "file":
-        elpath = os.path.join(homedir, "issues", election)
-        if os.path.isdir(elpath):
-            basedata = {}
-            with open(elpath + "/basedata.json", "r") as f:
-                data = f.read()
-                f.close()
-                basedata = json.loads(data)
+    dbtype = config.get("database", "dbsys")
+    if exists(election):
+        if dbtype == "file":
+            elpath = os.path.join(homedir, "issues", election)
+            basedata = getBasedata(election)
             if reopen:
                 basedata['closed'] = False
             else:
@@ -69,36 +106,54 @@ def close(election, reopen = False):
             with open(elpath + "/basedata.json", "w") as f:
                 f.write(json.dumps(basedata))
                 f.close()
+    elif dbtype == "elasticsearch":
+        basedata = getBasedata(election)
+        if reopen:
+            basedata['closed'] = False
+        else:
+            basedata['closed'] = True
+        es.index(index="steve", doc_type="elections", id=election, body = basedata )
+        
 
 def getIssue(electionID, issueID):
     "Get JSON data from an issue"
     issuedata = None
-    if config.get("database", "dbsys") == "file":
+    ihash = ""
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
         issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
         if os.path.isfile(issuepath):
-            ihash = ""
+            
             with open(issuepath, "r") as f:
                 data = f.read()
                 ihash = hashlib.sha224(data).hexdigest()
                 f.close()
                 issuedata = json.loads(data)
-            issuedata['hash'] = ihash
-            issuedata['id'] = issueID
-            issuedata['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
-            issuedata['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
-            
-            # Add vote category for JS magic
-            for vtype in constants.VOTE_TYPES:
-                if vtype['key'] == issuedata['type']:
-                    issuedata['category'] = vtype['category']
-                    break
+    elif dbtype == "elasticsearch":
+        res = es.search(index="steve", doc_type="issues", q = "id:%s" % issueID, size = 1)
+        results = len(res['hits']['hits'])
+        if results > 0:
+            issuedata = res['hits']['hits'][0]['_source']
+            ihash = hashlib.sha224(json.dumps(issuedata)).hexdigest()
+    if issuedata:
+        issuedata['hash'] = ihash
+        issuedata['id'] = issueID
+        issuedata['APIURL'] = "https://%s/steve/voter/view/%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
+        issuedata['prettyURL'] = "https://%s/steve/ballot?%s/%s" % (config.get("general", "rooturl"), electionID, issueID)
+        
+        # Add vote category for JS magic
+        for vtype in constants.VOTE_TYPES:
+            if vtype['key'] == issuedata['type']:
+                issuedata['category'] = vtype['category']
+                break
                 
     return issuedata
 
 
 def getVotes(electionID, issueID):
     "Read votes from the vote file"
-    if config.get("database", "dbsys") == "file":
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
         issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
         issuedata = {}
         if os.path.isfile(issuepath):
@@ -107,10 +162,41 @@ def getVotes(electionID, issueID):
                 f.close()
                 issuedata = json.loads(data)
         return issuedata
+    elif dbtype == "elasticsearch":
+        res = es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999999)
+        results = len(res['hits']['hits'])
+        if results > 0:
+            votes = {}
+            for entry in res['hits']['hits']:
+                votes[entry['_source']['key']] = entry['_source']['data']['vote']
+            return votes
     return {}
 
+
+
+def getVotesRaw(electionID, issueID):
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
+        issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
+        if os.path.isfile(issuepath):
+            with open(issuepath, "r") as f:
+                votes = json.loads(f.read())
+                f.close()
+                return votes
+    elif dbtype == "elasticsearch":
+        res = es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999999)
+        results = len(res['hits']['hits'])
+        if results > 0:
+            votes = {}
+            for entry in res['hits']['hits']:
+                votes[entry['key']] = entry['_source']['data']
+            return votes
+    return {}
+
+
 def createElection(eid, title, owner, monitors, starts, ends, isopen):
-    if config.get("database", "dbsys") == "file":
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
         elpath = os.path.join(homedir, "issues", eid)
         os.mkdir(elpath)
         with open(elpath  + "/basedata.json", "w") as f:
@@ -127,25 +213,58 @@ def createElection(eid, title, owner, monitors, starts, ends, isopen):
         with open(elpath  + "/voters.json", "w") as f:
             f.write("{}")
             f.close()
+    elif dbtype == "elasticsearch":
+        es.index(index="steve", doc_type="elections", id=eid, body =
+            {
+                'id': eid,
+                'title': title,
+                'owner': owner,
+                'monitors': monitors,
+                'starts': starts,
+                'ends': ends,
+                'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'] if 'REMOTE_ADDR' in os.environ else random.randint(1,99999999999))).hexdigest(),
+                'open': isopen
+            }
+        );
 
 
 def listIssues(election):
     "List all issues in an election"
     issues = []
-    if config.get("database", "dbsys") == "file":
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
         elpath = os.path.join(homedir, "issues", election)
         if os.path.isdir(elpath):
             issues = [f.strip(".json") for f in os.listdir(elpath) if os.path.isfile(os.path.join(elpath, f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
+    elif dbtype == "elasticsearch":
+        try:
+            res = es.search(index="steve", doc_type="issues", sort = "id", q = "election:%s" % election, size = 999)
+            results = len(res['hits']['hits'])
+            if results > 0:
+                for entry in res['hits']['hits']:
+                    issues.append(entry['_source']['id'])
+        except:
+            pass # THIS IS OKAY! ES WILL FAIL IF THERE ARE NO ISSUES YET
     return issues
 
 def listElections():
     "List all elections"
     elections = []
-    if config.get("database", "dbsys") == "file":
+    dbtype = config.get("database", "dbsys")
+    if dbtype == "file":
         path = os.path.join(homedir, "issues")
         if os.path.isdir(path):
             elections = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
-            
+    elif dbtype == "elasticsearch":
+        try:
+            res = es.search(index="steve", doc_type="elections", sort = "id", q = "*", size = 99999)
+            results = len(res['hits']['hits'])
+            if results > 0:
+                for entry in res['hits']['hits']:
+                    source  = entry['_source']
+                    elections.append(source['id'])
+        except Exception as err:
+            pass # THIS IS OKAY! On initial setup, this WILL fail until an election has been created
     return elections
 
 def getVoteType(issue):
@@ -168,7 +287,8 @@ def vote(electionID, issueID, voterID, vote):
             # This will/should raise an exception if the vote is invalid
             voteType['vote_func'](basedata, issueID, voterID, vote)
             
-        if config.get("database", "dbsys") == "file":
+        dbtype = config.get("database", "dbsys")
+        if dbtype == "file":
             issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
             if os.path.isfile(issuepath + ".votes"):
                 with open(issuepath + ".votes", "r") as f:
@@ -195,38 +315,22 @@ def vote(electionID, issueID, voterID, vote):
                 with open(lurkpath, "w") as f:
                     f.write(json.dumps(lurks))
                     f.close()
+        elif dbtype == "elasticsearch":
+            es.index(index="steve", doc_type="votes", id=votehash, body =
+                {
+                    'issue': issueID,
+                    'election': electionID,
+                    'key': votehash,
+                    'data': {
+                        'timestamp': time.time(),
+                        'vote': vote
+                    }
+                }
+            );
         return votehash
     else:
         raise Exception("No such election")
 
-def getVotes(electionID, issueID):
-    if config.get("database", "dbsys") == "file":
-        issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
-        if os.path.isfile(issuepath):
-            votes = {}
-            rvotes = {}
-            with open(issuepath, "r") as f:
-                rvotes = json.loads(f.read())
-                f.close()
-            for key in rvotes:
-                if isinstance(rvotes[key], dict):
-                    votes[key] = rvotes[key]['vote']
-                elif isinstance(rvotes[key], str) or isinstance(rvotes[key], unicode):
-                    votes[key] =rvotes[key]
-                else:
-                    raise Exception("Invalid vote data found: %s" % type(rvotes[key]))
-            return votes
-    return {}
-
-def getVotesRaw(electionID, issueID):
-    if config.get("database", "dbsys") == "file":
-        issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json.votes"
-        if os.path.isfile(issuepath):
-            with open(issuepath, "r") as f:
-                votes = json.loads(f.read())
-                f.close()
-                return votes
-    return {}
     
 def validType(issueType):
     for voteType in constants.VOTE_TYPES:
@@ -250,12 +354,15 @@ def deleteIssue(electionID, issueID):
     "Deletes an issue if it exists"
     
     if exists(electionID):
-        if config.get("database", "dbsys") == "file":
+        dbtype = config.get("database", "dbsys")
+        if dbtype == "file":
             issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
             if os.path.isfile(issuepath):
                 os.unlink(issuepath)
             if os.path.isfile(issuepath + ".votes"):
                 os.unlink(issuepath + ".votes")
+        elif dbtype == "elasticsearch":
+            es.delete(index="steve", doc_type="votes", id=votehash);
         return True
     else:
         raise Exception("No such election")
@@ -275,3 +382,18 @@ def getHash(electionID):
     output.insert(0, ("You are receiving this data because you are listed as a monitor for this election.\nThe following data shows the state of the election data on disk. If any of these checksums change, especially the main checksum, then the election has been edited (rigged?) after invites were sent out.\n\nMain Election Checksum : %s\n\n" % tothash))
     output.append("\nYou can monitor votes and recasts online at: %s/monitor.html?%s" % (config.get("general", "rooturl"), electionID))
     return tothash, "\n".join(output)
+
+def createIssue(electionID, issueID, data):
+    if not exists(electionID, issueID):
+        dbtype = config.get("database", "dbsys")
+        if dbtype == "file":
+            issuepath = os.path.join(homedir, "issues", electionID, issueID) + ".json"
+            with open(issuepath, "w") as f:
+                f.write(json.dumps(data))
+                f.close()
+        elif dbtype == "elasticsearch":
+            data['election'] = electionID
+            data['id'] = issueID
+            es.index(index="steve", doc_type="issues", id=hashlib.sha224(electionID + "/" + issueID).hexdigest(), body = data);
+    else:
+        raise Exception("Issue already exists!")
