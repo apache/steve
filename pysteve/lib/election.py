@@ -189,7 +189,7 @@ def getVotesRaw(electionID, issueID):
         if results > 0:
             votes = {}
             for entry in res['hits']['hits']:
-                votes[entry['key']] = entry['_source']['data']
+                votes[entry['_source']['key']] = entry['_source']['data']
             return votes
     return {}
 
