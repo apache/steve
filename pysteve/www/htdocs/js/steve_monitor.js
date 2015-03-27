@@ -31,6 +31,7 @@ var oldvotes = {}
 var recasts = {}
 var recasters = {}
 var rigged = false
+var riggedIssues = {}
 
 function listIssues(code, response, election) {
 	if (code == 200) {
@@ -54,6 +55,16 @@ function updateVotes(code, response, issue) {
 		recasters[issue] = recasters[issue] ? recasters[issue] : {}
 		oldvotes[issue] = votes[issue] ? votes[issue] : {}
 		votes[issue] = response.votes
+		var is = {}
+		for (i in issues) {
+			if (issues[i].id == issue) {
+				is = issues[i]
+				break
+			}
+		}
+		if (is.hash && response.issue.hash != is.hash) {
+			riggedIssues[issue] = true
+		}
 		if (ehash == null) {
 			ehash = response.hash
 		}
@@ -154,7 +165,11 @@ function showChanges(issue) {
 			var a = calcChanges(issue.id, oldvotes[issue.id], v)
 			sinceLast = a[0]
 			nrc = a[1]
-			header.innerHTML = numvotes + " votes cast, " + sinceLast + " new votes cast since last update. " + recasts[issue.id] + " votes have been recast, split among " + nrc + " voters."
+			header.innerHTML = ""
+			if (riggedIssues[issue.id] == true) {
+				header.innerHTML += "<font color='red'>ISSUE POSSIBLY RIGGED! </font>"
+			}
+			header.innerHTML += numvotes + " votes cast, " + sinceLast + " new votes cast since last update. " + recasts[issue.id] + " votes have been recast, split among " + nrc + " voters."
 			header.innerHTML += " <a href='javascript:void(showDetails(\"" + issue.id + "\"));'>Show details</a>"
 			header.innerHTML += " &nbsp; <a href='/steve/admin/monitor/" + eid + "/" + issue.id + "'>Get JSON</a>"
 		} else {
