@@ -536,7 +536,35 @@ else:
             for vtype in constants.VOTE_TYPES:
                 types[vtype['key']] = vtype['description']
             response.respond(200, {'types': types})
-            
+        
+        # Get vote data
+        elif action == "monitor" and electionID:
+            issue = l[2] if len(l) > 2 else None
+            if electionID and issue:
+                basedata = election.getBasedata(electionID, hideHash=True)
+                if karma >= 2 or ('owner' in basedata and basedata['owner'] == whoami):
+                    issuedata = election.getIssue(electionID, issue)
+                    votes = election.getVotesRaw(electionID, issue)
+                    if issuedata and votes:
+                        if election.validType(issuedata['type']):
+                            ehash, blergh = election.getHash(electionID)
+                            response.respond(200, {
+                                'issue': issuedata,
+                                'base': basedata,
+                                'votes': votes,
+                                'hash': ehash
+                            })
+                        else:
+                            response.respond(500, {'message': "Unknown vote type"})
+                    elif not votes:
+                        response.respond(404, {'message': "No votes found"})
+                    else:
+                        response.respond(404, {'message': "Issue not found"})
+                else:
+                    response.respond(403, {'message': "You do not have karma to tally the votes here"})
+            else:
+                    response.respond(404, {'message': 'No such election or issue'})
+                    
         else:
             response.respond(400, {'message': "No (or invalid) action supplied"})
     else:

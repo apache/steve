@@ -258,6 +258,15 @@ pre {
   word-wrap: break-word;
   white-space: pre-wrap;
 }
+
+.monitor_details {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  font-family: monospace;
+  background: #FFD;
+  border: 1px dotted #333;
+}
+
 .modal-header,
 .modal-footer {
   padding: 10px 20px;
