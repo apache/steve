@@ -105,13 +105,13 @@ def close(election, reopen = False):
             with open(elpath + "/basedata.json", "w") as f:
                 f.write(json.dumps(basedata))
                 f.close()
-    elif dbtype == "elasticsearch":
-        basedata = getBasedata(election)
-        if reopen:
-            basedata['closed'] = False
-        else:
-            basedata['closed'] = True
-        es.index(index="steve", doc_type="elections", id=election, body = basedata )
+        elif dbtype == "elasticsearch":
+            basedata = getBasedata(election)
+            if reopen:
+                basedata['closed'] = False
+            else:
+                basedata['closed'] = True
+            es.index(index="steve", doc_type="elections", id=election, body = basedata )
         
 
 def getIssue(electionID, issueID):
