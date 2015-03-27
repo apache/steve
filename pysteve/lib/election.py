@@ -59,13 +59,13 @@ def exists(election, *issue):
         else:
             return os.path.isdir(elpath)
     elif dbtype == "elasticsearch":
-        s = "id:%s" % election
         doc = "elections"
+        eid = election
         if issue and issue[0]:
             doc = "issues"
-            s = "election:%s AND id:%s" % (election, issue[0])
-        res = es.search(index="steve", doc_type=doc, q = s, size = 1)
-        if len(res['hits']['hits']) > 0:
+            eid = hashlib.sha224(electionID + "/" + issueID).hexdigest()
+        res = es.get(index="steve", doc_type=doc, id=eid)
+        if res:
             return True
         else:
             return False
@@ -86,10 +86,9 @@ def getBasedata(election, hideHash=False):
                 basedata['id'] = election
                 return basedata
     elif dbtype == "elasticsearch":
-        res = es.search(index="steve", doc_type="elections", sort = "id", q = "id:%s" % election, size = 1)
-        results = len(res['hits']['hits'])
-        if results > 0:
-            return res['hits']['hits'][0]['_source']
+        res = es.get(index="steve", doc_type="elections", id=election)
+        if res:
+            return res['_source']
     return None
 
 def close(election, reopen = False):
@@ -130,10 +129,10 @@ def getIssue(electionID, issueID):
                 f.close()
                 issuedata = json.loads(data)
     elif dbtype == "elasticsearch":
-        res = es.search(index="steve", doc_type="issues", q = "election:%s AND id:%s" % (electionID, issueID), size = 1)
-        results = len(res['hits']['hits'])
-        if results > 0:
-            issuedata = res['hits']['hits'][0]['_source']
+        iid = hashlib.sha224(electionID + "/" + issueID).hexdigest()
+        res = es.get(index="steve", doc_type="issues", id=iid)
+        if res:
+            issuedata = res['_source']
             ihash = hashlib.sha224(json.dumps(issuedata)).hexdigest()
     if issuedata:
         issuedata['hash'] = ihash
