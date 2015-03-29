@@ -15,15 +15,16 @@
 # limitations under the License.
 #
 """ ASF PMC style voting plugin """
-from lib import constants, voter
+from lib import constants
 
 def tallyAP(votes, issue):
     """ Simple YNA tallying
     :param votes: The JSON object from $issueid.json.votes
-    :return: y,n,a as numbers
+    :return: dict with y,n,a,by,bn numbers as well as pretty-printed version
     """
     y = n = a = 0
     by = bn = 0
+    # For each vote cast, tally it
     for vote in votes.values():
         if vote == 'y':
             y += 1
@@ -65,12 +66,11 @@ def validateAP(vote, issue):
 
 
 # Verification process
-def verifyAP(basedata, issueID, voterID, vote):
+def verifyAP(basedata, issueID, voterID, vote, uid):
     "Invalidate a binding vote if not allowed to cast such"
-    email = voter.get(basedata['id'], basedata, voterID)
     if vote.startswith('b'):
         # Simple check example: if not apache committer, discard vote if binding
-        if not email.endswith("@apache.org"):
+        if not uid.endswith("@apache.org"):
             raise Exception("You are not allowed to cast a binding vote!")
 
 
