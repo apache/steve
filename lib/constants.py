@@ -15,11 +15,17 @@
 # limitations under the License.
 #
 
+
 VOTE_TYPES = (
     
 )
 
+DB_TYPES = (
+    
+)
+
 def appendVote(*types):
+    """ Append a new type of voting to the list"""
     global VOTE_TYPES
     for t in types:
         found = False
@@ -30,6 +36,33 @@ def appendVote(*types):
         if not found:
             VOTE_TYPES += (t,)
         
+def appendBackend(*args):
+    """Append a new database backend"""
+    global DB_TYPES
+    for t in args:
+        found = False
+        for v in DB_TYPES:
+            if v['id'] == t['id']:
+                found = True
+                break
+        if not found:
+            DB_TYPES += (t,)
+            
+def initBackend(config):
+    # Set up DB backend
+    backend = None
+    
+    dbtype = config.get("database", "dbsys")
+    for b in DB_TYPES:
+        if b.get('id') == dbtype:
+            backend = b
+            break
+    
+    if not backend:
+        raise Exception("Unknown database backend: %s" % dbtype)
+    else:
+        backend['init'](config)
+    return backend
 
 # For vote types with N number of seats/spots, this value denotes
 # the max number of useable types to display via the API
