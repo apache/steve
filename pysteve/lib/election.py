@@ -65,7 +65,7 @@ def exists(election, *issue):
             doc = "issues"
             eid = hashlib.sha224(election + "/" + issue[0]).hexdigest()
         try:
-            res = es.get(index="steve", doc_type=doc, id=eid)
+            res = es.exists(index="steve", doc_type=doc, id=eid)
             if res:
                 return True
             else:
