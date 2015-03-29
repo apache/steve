@@ -162,6 +162,8 @@ else:
                                         candidates = voteType['parsers']['candidates'](form.getvalue('candidates'))
                                         
                                     election.createIssue(electionID, issue, {
+                                        'election': electionID,
+                                        'id': issue,
                                         'title': form.getvalue('title'),
                                         'description': form.getvalue('description'),
                                         'type': form.getvalue('type'),
@@ -383,7 +385,7 @@ else:
                     votes = election.getVotes(electionID, issue)
                     if issuedata and votes:
                         if election.validType(issuedata['type']):
-                            result = election.tally(votes, issuedata)
+                            result , pp = election.tally(votes, issuedata)
                             response.respond(200, result)
                         else:
                             response.respond(500, {'message': "Unknown vote type"})
