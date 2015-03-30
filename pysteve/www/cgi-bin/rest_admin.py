@@ -84,7 +84,7 @@ else:
                 response.respond(200, { 'elections': output})
         # Set up new election?
         elif action == "setup":
-            if karma >= 5: # karma of 5 required to set up an election base
+            if karma >= 4: # karma of 4 required to set up an election base
                 if electionID:
                     if election.exists(electionID):
                         response.respond(403, {'message': "Election already exists!"})
