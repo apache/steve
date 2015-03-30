@@ -29,7 +29,7 @@ class FileBasedBackend:
         self.homedir = config.get("general", "homedir")
     
     
-    def document_exists(election, *issue):
+    def document_exists(self, election, *issue):
         "Returns True if an election/issue exists, False otherwise"
         elpath = os.path.join(self.homedir, "issues", election)
         if issue:
@@ -39,7 +39,7 @@ class FileBasedBackend:
             return os.path.isdir(elpath)
     
     
-    def get_basedata(election):
+    def get_basedata(self, election):
         "Get base data from an election"
         elpath = os.path.join(self.homedir, "issues", election)
         if os.path.isdir(elpath):
@@ -53,7 +53,7 @@ class FileBasedBackend:
                 return basedata
         return None
     
-    def close(election, reopen = False):
+    def close(self, election, reopen = False):
         "Mark an election as closed"
     
         elpath = os.path.join(self.homedir, "issues", election)
@@ -67,7 +67,7 @@ class FileBasedBackend:
             f.close()
     
     
-    def issue_get(electionID, issueID):
+    def issue_get(self, electionID, issueID):
         "Get JSON data from an issue"
         issuedata = None
         ihash = ""
@@ -82,7 +82,7 @@ class FileBasedBackend:
         return issuedata, ihash
     
     
-    def votes_get(electionID, issueID):
+    def votes_get(self, electionID, issueID):
         "Read votes from the vote file"
         rvotes = getVotesRaw(electionID, issueID)
         votes = {}
@@ -91,7 +91,7 @@ class FileBasedBackend:
         return {}
     
     
-    def votes_get_raw(electionID, issueID):
+    def votes_get_raw(self, electionID, issueID):
         issuepath = os.path.join(self.homedir, "issues", electionID, issueID) + ".json.votes"
         if os.path.isfile(issuepath):
             with open(issuepath, "r") as f:
@@ -101,7 +101,7 @@ class FileBasedBackend:
         return {}
     
     
-    def election_create(eid, basedata):
+    def election_create(self, eid, basedata):
         elpath = os.path.join(self.homedir, "issues", eid)
         os.mkdir(elpath)
         with open(elpath  + "/basedata.json", "w") as f:
@@ -112,20 +112,20 @@ class FileBasedBackend:
             f.close()
     
     
-    def election_update(electionID, basedata):
+    def election_update(self, electionID, basedata):
         elpath = os.path.join(self.homedir, "issues", electionID)
         with open(elpath  + "/basedata.json", "w") as f:
             f.write(json.dumps(basedata))
             f.close()
     
-    def issue_update(electionID, issueID, issueData):
+    def issue_update(self, electionID, issueID, issueData):
         issuepath = os.path.join(self.homedir, "issues", electionID, issueID) + ".json"
         with open(issuepath, "w") as f:
             f.write(json.dumps(issueData))
             f.close()
     
     
-    def issue_list(election):
+    def issue_list(self, election):
         "List all issues in an election"
         issues = []
         elpath = os.path.join(self.homedir, "issues", election)
@@ -133,7 +133,7 @@ class FileBasedBackend:
             issues = [f.strip(".json") for f in os.listdir(elpath) if os.path.isfile(os.path.join(elpath, f)) and f != "basedata.json" and f != "voters.json" and f.endswith(".json")]
         return issues
     
-    def election_list():
+    def election_list(self):
         "List all elections"
         elections = []
         path = os.path.join(self.homedir, "issues")
@@ -141,7 +141,7 @@ class FileBasedBackend:
             elections = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
         return elections
     
-    def vote(electionID, issueID, uid, vote):
+    def vote(self, electionID, issueID, uid, vote):
         "Casts a vote on an issue"
         votes = {}
         issuepath = os.path.join(self.homedir, "issues", electionID, issueID) + ".json"
@@ -158,7 +158,7 @@ class FileBasedBackend:
             f.close()
         
     
-    def issue_delete(electionID, issueID):
+    def issue_delete(self, electionID, issueID):
         "Deletes an issue if it exists"
         
         issuepath = os.path.join(self.homedir, "issues", electionID, issueID) + ".json"
@@ -167,13 +167,13 @@ class FileBasedBackend:
         if os.path.isfile(issuepath + ".votes"):
             os.unlink(issuepath + ".votes")
     
-    def issue_create(electionID, issueID, data):
+    def issue_create(self, electionID, issueID, data):
         issuepath = os.path.join(self.homedir, "issues", electionID, issueID) + ".json"
         with open(issuepath, "w") as f:
             f.write(json.dumps(data))
             f.close()
     
-    def voter_get_uid(electionID, votekey):
+    def voter_get_uid(self, electionID, votekey):
         "Get vote UID/email with a given vote key hash"
         elpath = os.path.join(self.homedir, "issues", electionID)
         with open(elpath + "/voters.json", "r") as f:
@@ -184,7 +184,7 @@ class FileBasedBackend:
                     return voter
         return None
     
-    def voter_add(election, PID, xhash):
+    def voter_add(self, election, PID, xhash):
         elpath = os.path.join(self.homedir, "issues", election)
         with open(elpath + "/voters.json", "r") as f:
             voters = json.loads(f.read())
@@ -194,7 +194,7 @@ class FileBasedBackend:
             f.write(json.dumps(voters))
             f.close()
     
-    def voter_remove(election, UID):
+    def voter_remove(self, election, UID):
         elpath = os.path.join(self.homedir, "issues", election)
         with open(elpath + "/voters.json", "r") as f:
             voters = json.loads(f.read())
@@ -205,7 +205,7 @@ class FileBasedBackend:
             f.write(json.dumps(voters))
             f.close()
             
-    def voter_has_voted(election, issue, uid):
+    def voter_has_voted(self, election, issue, uid):
         path = os.path.join(self.homedir, "issues", election, issue)
         votes = {}
         if os.path.isfile(path + ".json.votes"):
