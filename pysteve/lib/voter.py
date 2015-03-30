@@ -29,22 +29,22 @@ backend = constants.initBackend(config)
 
 def get(election, basedata, uid):
     xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
-    return backend['voter_get_uid'](election, xhash)
+    return backend.voter_get_uid(election, xhash)
     
         
 def add(election, basedata, PID):
     uid = hashlib.sha224("%s%s%s%s" % (PID, basedata['hash'], time.time(), random.randint(1,99999999))).hexdigest()
     xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
-    backend['voter_add'](election, PID, xhash)
+    backend.voter_add(election, PID, xhash)
     return uid, xhash
     
 def remove(election, basedata, UID):
-    backend['voter_remove'](election, UID)
+    backend.voter_remove(election, UID)
     
 
 def hasVoted(election, issue, uid):
     issue = issue.strip(".json")
-    return backend['voter_has_voted'](election, issue, uid)
+    return backend.voter_has_voted(election, issue, uid)
 
 
 def email(rcpt, subject, message):

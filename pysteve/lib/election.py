@@ -36,20 +36,20 @@ backend = constants.initBackend(config)
 
 def exists(election, *issue):
     "Returns True if an election/issue exists, False otherwise"
-    return backend['document_exists'](election, *issue)
+    return backend.document_exists(election, *issue)
 
 def getBasedata(election, hideHash=False):
     "Get base data from an election"
-    return backend['get_basedata'](election)
+    return backend.get_basedata(election)
 
 def close(election, reopen = False):
     "Mark an election as closed"
-    backend['election_close'](election, reopen)
+    backend.close(election, reopen)
     
 
 def getIssue(electionID, issueID):
     "Get JSON data from an issue"
-    issuedata, ihash = backend['issue_get'](electionID, issueID)
+    issuedata, ihash = backend.issue_get(electionID, issueID)
     if issuedata:
         issuedata['hash'] = ihash
         issuedata['id'] = issueID
@@ -67,10 +67,10 @@ def getIssue(electionID, issueID):
 
 def getVotes(electionID, issueID):
     "Read votes from the vote file"
-    return backend['votes_get'](electionID, issueID)
+    return backend.votes_get(electionID, issueID)
 
 def getVotesRaw(electionID, issueID):
-    return backend['votes_get_raw'](electionID, issueID)
+    return backend.votes_get_raw(electionID, issueID)
 
 
 def createElection(eid, title, owner, monitors, starts, ends, isopen):
@@ -84,24 +84,24 @@ def createElection(eid, title, owner, monitors, starts, ends, isopen):
             'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'] if 'REMOTE_ADDR' in os.environ else random.randint(1,99999999999))).hexdigest(),
             'open': isopen
         }
-    backend['election_create'](eid, basedata)
+    backend.election_create(eid, basedata)
     
 
 def updateElection(electionID, basedata):
-    backend['election_update'](electionID, basedata)
+    backend.election_update(electionID, basedata)
 
 
 def updateIssue(electionID, issueID, issueData):
-    backend['issue_update'](electionID, issueID, issueData)
+    backend.issue_update(electionID, issueID, issueData)
 
 
 def listIssues(election):
     "List all issues in an election"
-    return backend['issue_list'](election)
+    return backend.issue_list(election)
 
 def listElections():
     "List all elections"
-    return backend['election_list']()
+    return backend.election_list()
 
 
 def getVoteType(issue):
@@ -124,7 +124,7 @@ def vote(electionID, issueID, voterID, vote):
             uid = voter.get(electionID, basedata, voterID)
             voteType['vote_func'](basedata, issueID, voterID, vote, uid)
             
-        backend['vote'](electionID, issueID, voterID, vote)
+        backend.vote(electionID, issueID, voterID, vote)
         
         # LURK on who voted :O :O :O
        # if config.has_option("general", "lurk") and config.get("general", "lurk") == "yes":
@@ -158,7 +158,7 @@ def deleteIssue(electionID, issueID):
     "Deletes an issue if it exists"
     
     if exists(electionID, issueID):
-        backend['issue_delete'](electionID, issueID)
+        backend.issue_delete(electionID, issueID)
     else:
         raise Exception("No such election")
 
@@ -179,4 +179,4 @@ def getHash(electionID):
     return tothash, "\n".join(output)
 
 def createIssue(electionID, issueID, data):
-    backend['issue_create'](electionID, issueID, data)
+    backend.issue_create(electionID, issueID, data)
