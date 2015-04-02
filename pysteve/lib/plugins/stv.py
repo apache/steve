@@ -299,7 +299,7 @@ def exclude_lowest(candidates):
       elif c.ahead == ahead:
         use_rand = True
         if c.rand < rand:
-          ran = c.rand
+          rand = c.rand
           which = c
 
   if use_rand:
