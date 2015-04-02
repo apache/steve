@@ -107,9 +107,9 @@ class ElasticSearchBackend:
         res = self.es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999999)
         results = len(res['hits']['hits'])
         if results > 0:
-            votes = {}
+            votes = []
             for entry in res['hits']['hits']:
-                votes[entry['_source']['key']] = entry['_source']['data']
+                votes.append(entry['_source'])
             return votes
         return {}
     
