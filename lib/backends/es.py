@@ -25,6 +25,7 @@ class ElasticSearchBackend:
     es = None
     
     def __init__(self, config):
+        " Init - get config and turn it into an ES instance"
         from elasticsearch import Elasticsearch
         self.es = Elasticsearch([
                         {
@@ -34,6 +35,8 @@ class ElasticSearchBackend:
                             'use_ssl': False if config.get("elasticsearch", "secure") == "false" else True
                         },
                     ])
+        
+        # Check that we have a 'steve' index. If not, create it.
         if not self.es.indices.exists("steve"):
             self.es.indices.create(index = "steve", body = {
                     "settings": {
@@ -46,6 +49,7 @@ class ElasticSearchBackend:
     
     
     def document_exists(self, election, *issue):
+        "Does this election or issue exist?"
         doc = "elections"
         eid = election
         if issue and issue[0]:
@@ -86,7 +90,7 @@ class ElasticSearchBackend:
     
     
     def votes_get(self, electionID, issueID):
-        "Read votes from the vote file"
+        "Read votes and return as a dict"
         res = self.es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999999)
         results = len(res['hits']['hits'])
         if results > 0:
@@ -99,6 +103,7 @@ class ElasticSearchBackend:
     
     
     def votes_get_raw(self, electionID, issueID):
+        "Read votes and retunn raw format"
         res = self.es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999999)
         results = len(res['hits']['hits'])
         if results > 0:
@@ -116,9 +121,12 @@ class ElasticSearchBackend:
         );
     
     def election_update(self,electionID, basedata):
+        "Update an election with new data"
         self.es.index(index = "steve", doc_type = "elections", id=electionID, body = basedata)
     
+    
     def issue_update(self,electionID, issueID, issueData):
+        "Update an issue with new data"
         self.es.index(index = "steve", doc_type = "issues", id=hashlib.sha224(electionID + "/" + issueID).hexdigest(), body = issueData)
     
     
@@ -170,6 +178,7 @@ class ElasticSearchBackend:
         self.es.delete(index="steve", doc_type="issues", id=hashlib.sha224(electionID + "/" + issueID).hexdigest());
         
     def issue_create(self,electionID, issueID, data):
+        "Create an issue"
         self.es.index(index="steve", doc_type="issues", id=hashlib.sha224(electionID + "/" + issueID).hexdigest(), body = data);
     
     
@@ -188,6 +197,7 @@ class ElasticSearchBackend:
             return False # ES Error, probably not seeded the voters doc yet
     
     def voter_add(self,election, PID, xhash):
+        "Add a voter to the DB"
         eid = hashlib.sha224(election + ":" + PID).hexdigest()
         self.es.index(index="steve", doc_type="voters", id=eid, body = {
             'election': election,
@@ -197,10 +207,12 @@ class ElasticSearchBackend:
         )
         
     def voter_remove(self,election, UID):
+        "Remove the voter with the given UID"
         votehash = hashlib.sha224(election + ":" + UID).hexdigest()
         self.es.delete(index="steve", doc_type="voters", id=votehash);
     
     def voter_has_voted(self,election, issue, uid):
+        "Return true if the voter has voted on this issue, otherwise false"
         eid = hashlib.sha224(election + ":" + issue + ":" + uid).hexdigest()
         try:
             return self.es.exists(index="steve", doc_type="votes", id=eid)
