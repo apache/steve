@@ -175,7 +175,7 @@ function showChanges(issue) {
 			}
 			header.innerHTML += numvotes + " votes cast, " + sinceLast + " new votes cast since last update. " + recasts[issue.id] + " votes have been recast, split among " + nrc + " voters."
 			header.innerHTML += " <a href='javascript:void(showDetails(\"" + issue.id + "\"));'>Show details</a>"
-			header.innerHTML += " &nbsp; <a href='/steve/admin/monitor/" + eid + "/" + issue.id + " target='_blank''>Get JSON</a>"
+			header.innerHTML += " &nbsp; <a href='/steve/admin/monitor/" + eid + "/" + issue.id + "' target='_blank'>Get JSON</a>"
 		} else {
 			header.innerHTML = "No votes cast yet..!"
 		}
