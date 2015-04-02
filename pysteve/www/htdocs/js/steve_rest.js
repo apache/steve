@@ -173,6 +173,14 @@ function displayTally(code, response, issue) {
 		} else {
 			obj.innerHTML = "Unknonwn vote type or no votes cast yet"
 		}
+		if (response.debug) {
+			var pre = document.createElement('pre')
+			pre.innerHTML = response.debug.join("\n")
+			pre.setAttribute("id", "debug_" + issue)
+			pre.setAttribute("style", "display: hidden")
+			obj.innerHTML += "<a href=\"javascript:void(document.getElementById('debug_" + issue + "').style.display = 'visible');\">Show debug</a>"
+			obj.appendChild(pre)
+		}
 	}
 }
 function readTally(code, response, election) {
