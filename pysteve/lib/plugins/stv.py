@@ -289,6 +289,8 @@ def exclude_lowest(candidates):
   which = None
   used_rand = False
 
+  random.shuffle(candidates)
+  
   for c in candidates:
     if c.status == HOPEFUL or c.status == ALMOST:
       if c.ahead < ahead:
