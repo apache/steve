@@ -433,15 +433,16 @@ else:
                 if karma >= 2 or ('owner' in basedata and basedata['owner'] == whoami):
                     issuedata = election.getIssue(electionID, issue)
                     votes = election.getVotesRaw(electionID, issue)
+                    jvotes = {}
                     for vote in votes:
-                        vote['key'] = hashlib.sha224(vote['key']).hexdigest()   # yeah, let's not show the actual UID here..
+                        jvotes[hashlib.sha224(vote['key']).hexdigest()] = vote['data']['vote']   # yeah, let's not show the actual UID here..
                     if issuedata and votes:
                         if election.validType(issuedata['type']):
                             ehash, blergh = election.getHash(electionID)
                             response.respond(200, {
                                 'issue': issuedata,
                                 'base': basedata,
-                                'votes': votes,
+                                'votes': jvotes,
                                 'hash': ehash
                             })
                         else:
