@@ -265,6 +265,9 @@ def try_remove_lowest(surplus, candidates):
     if c.status == HOPEFUL and c.vote < lowest1:
       lowest1 = c.vote
       which = c
+  if not which:
+    debug.append("Could not find a subject to eliminate")
+    return False
   for c in candidates.l:
     if c != which and c.status != ELIMINATED and c.vote < lowest2:
       lowest2 = c.vote
