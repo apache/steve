@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 """ STV Voting Plugin """
-import re, json, random
+import re, json, random, time
 
 ELECTED = 1
 HOPEFUL = 2
@@ -312,7 +312,7 @@ def exclude_lowest(candidates):
 
 
 def generate_random(count):
-  random.seed(0)  ### choose a seed based on input? for now: repeatable.
+  random.seed(time.time()) # Seed based on current time.
   while True:
     # Generate COUNT values in [0.0, 1.0)
     values = [random.random() for x in range(count)]
