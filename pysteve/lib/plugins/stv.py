@@ -43,7 +43,7 @@ def validateSTV(vote, issue):
 
 
 def run_vote(names, votes, num_seats):
-  candidates = CandidateList(names)
+  candidates = CandidateList(names, votes)
 
   # name -> Candidate
   remap = dict((c.name, c) for c in candidates.l)
@@ -74,9 +74,9 @@ def run_vote(names, votes, num_seats):
 
 
 class CandidateList(object):
-  def __init__(self, names):
+  def __init__(self, names, votes):
     num_cand = len(names)
-    randset = generate_random(num_cand)
+    randset = generate_random(num_cand, votes)
 
     self.l = [ ]
     for n, r in zip(names, randset):
@@ -311,9 +311,8 @@ def exclude_lowest(candidates):
   which.eliminate()
 
 
-def generate_random(count):
-  random.seed(time.time()) # Seed based on current time.
-  while True:
+def generate_random(count, votes):
+    random.seed(len(votes)) # Seed based on number of votes
     # Generate COUNT values in [0.0, 1.0)
     values = [random.random() for x in range(count)]
 
