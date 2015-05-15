@@ -13,6 +13,10 @@ http://en.wikipedia.org/wiki/Single_transferable_vote
 Getting Started
 ===============
 
+Getting Started documentation is not yet writte. Come to the
+#apache-steve channel on the Freenode IRC network, and we'd be glad to
+help you.
+
 
 License (see also LICENSE.txt)
 ==============================
@@ -38,6 +42,10 @@ limitations under the License.
 Documentation
 =============
 
+Documentation may be found at http://steve.apache.org/documentation.html
+
+Contributions to the documentation are very welcome.
+
 Mailing Lists
 =============
 
@@ -57,8 +65,13 @@ dev-subscribe@steve...).  To unsubscribe, send a message to
 <LIST>-unsubscribe@steve.apache.org.  For more instructions, send a
 message to <LIST>-help@steve.apache.org.
 
+Additional mailing list details may be found at
+http://steve.apache.org/support.html
+
 Issue Tracker
 =============
 
 If you encounter errors in Steve or want to suggest an improvement or a new
 feature, please visit the Steve issue tracker at
+https://issues.apache.org/jira/browse/STEVE
+
