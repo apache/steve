@@ -230,7 +230,7 @@ else:
                         else:
                             try:
                                 issuedata = election.getIssue(electionID, issue)
-                                fields = ['title','description','type','statements','candidates','seconds','nominatedby', 'seconds_txt']
+                                fields = ['title','description','type','statements','seconds_txt','candidates','seconds','nominatedby']
                                 statements = []
                                 seconds = []
                                 for field in fields:
