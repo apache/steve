@@ -197,7 +197,7 @@ function drawCandidates() {
             var seconds = document.createElement('div')
             seconds.setAttribute("class", "statement_marker")
             seconds.style.float = 'right'
-            seconds.style.paddingLeft = '4px'
+            seconds.style.marginRight = '4px'
             seconds.setAttribute("title", "Click to read " + name + "'s nomination and/or seconds")
             seconds.innerHTML = "<a href='#seconds_"+char+"'>2nds</a>"
 
