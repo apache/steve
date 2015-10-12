@@ -230,8 +230,9 @@ else:
                         else:
                             try:
                                 issuedata = election.getIssue(electionID, issue)
-                                fields = ['title','description','type','statements','candidates','seconds','nominatedby']
+                                fields = ['title','description','type','statements','candidates','seconds','nominatedby', 'seconds_txt']
                                 statements = []
+                                seconds = []
                                 for field in fields:
                                     val = form.getvalue(field)
                                     if val:
@@ -243,7 +244,11 @@ else:
                                             val = []
                                             z = 0
                                             for entry in xval:
-                                                val.append({'name': entry.strip(), 'statement': statements[z] if len(statements) > z else ""})
+                                                val.append({
+                                                    'name': entry.strip(),
+                                                    'statement': statements[z] if len(statements) > z else "",
+                                                    'seconds_txt': seconds[z] if len(seconds) > z else ""
+                                                    })
                                                 z += 1
                                         if field == "statements":
                                             try:
@@ -253,8 +258,17 @@ else:
                                             val = []
                                             for entry in xval:
                                                 statements.append(entry)
+                                        if field == "seconds_txt":
+                                            try:
+                                                xval = json.loads(val)
+                                            except:
+                                                xval = val.split("\n")
+                                            val = []
+                                            for entry in xval:
+                                                seconds.append(entry)
                                         if field == "seconds":
                                             val = [x.strip() for x in val.split("\n")]
+                                        
                                             
                                         # HACK: If field  parsing is outsourced, let's do that instead (primarily for COP)
                                         voteType = election.getVoteType(issuedata)

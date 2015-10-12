@@ -18,6 +18,7 @@
 
 var candidates = []
 var statements = []
+var seconds = []
 var ballotNames = []
 var ballotChars = []
 var chars;
@@ -174,7 +175,7 @@ function drawCandidates() {
             
             var popuph = document.createElement("div")
             popuph.setAttribute("class", "modal-header")
-            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">×</a>'
+            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">&#00D7;</a>'
             
             var popupb = document.createElement("div")
             popupb.setAttribute("class", "modal-body")
@@ -189,15 +190,44 @@ function drawCandidates() {
             popupd.appendChild(popupf)
             
             document.getElementsByTagName('body')[0].appendChild(popup)
-        }/* else {
-            var statement = document.createElement('div')
-            statement.setAttribute("class", "statement_marker")
-            statement.style = "background: linear-gradient(to bottom, #e2e2e2 0%,#dbdbdb 50%,#d1d1d1 51%,#fefefe 100%) !important;"
-            statement.style.color = "#666";
-            statement.innerHTML = "<i>No statement</i>"
+        }
+        
+        // Does the candidate have a nomination and/or seconds? if so, put it on there
+        if (seconds[char]) {
+            var seconds = document.createElement('div')
+            seconds.setAttribute("class", "statement_marker")
+            seconds.setAttribute("title", "Click to read " + name + "'s nomination and/or seconds")
+            seconds.innerHTML = "<a href='#statement_"+char+"'>2nds</a>"
 
             outer.appendChild(statement)
-        }*/
+            
+            var popup = document.createElement("div")
+            popup.setAttribute("class", "modal")
+            popup.setAttribute("id", "statement_" + char)
+            popup.setAttribute("aria-hidden", "true")
+            
+            var popupd = document.createElement("div")
+            popupd.setAttribute("class", "modal-dialog")
+            popup.appendChild(popupd)
+            
+            var popuph = document.createElement("div")
+            popuph.setAttribute("class", "modal-header")
+            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">&#00D7;</a>'
+            
+            var popupb = document.createElement("div")
+            popupb.setAttribute("class", "modal-body")
+            popupb.innerHTML = '<pre>' + (seconds[char] ? seconds[char] : "This candidate does not have a nomination statement") +'</pre>'
+            
+            var popupf = document.createElement("div")
+            popupf.setAttribute("class", "modal-footer")
+            popupf.innerHTML = '<a href="#close" class="btn">Close window</a>'
+            
+            popupd.appendChild(popuph)
+            popupd.appendChild(popupb)
+            popupd.appendChild(popupf)
+            
+            document.getElementsByTagName('body')[0].appendChild(popup)
+        }
         box.appendChild(outer)
         
     }
@@ -526,6 +556,7 @@ function displayIssueSTV(code, response, state) {
             var candidate = response.issue.candidates[c];
             candidates.push(candidate.name);
             statements[chars[c]] = candidate.statement;
+            seconds[chars[c]] = candidate.seconds_txt; // don't use .seconds, that's for arrays!
         }
         document.getElementById('cnum').innerHTML = candidates.length
         document.getElementById('snum').innerHTML = seats        
