@@ -196,6 +196,8 @@ function drawCandidates() {
         if (seconds_txt[char]) {
             var seconds = document.createElement('div')
             seconds.setAttribute("class", "statement_marker")
+            seconds.style.float = 'right'
+            seconds.style.paddingLeft = '4px'
             seconds.setAttribute("title", "Click to read " + name + "'s nomination and/or seconds")
             seconds.innerHTML = "<a href='#seconds_"+char+"'>2nds</a>"
 
@@ -216,7 +218,7 @@ function drawCandidates() {
             
             var popupb = document.createElement("div")
             popupb.setAttribute("class", "modal-body")
-            popupb.innerHTML = '<pre>' + (seconds[char] ? seconds[char] : "This candidate does not have a nomination statement") +'</pre>'
+            popupb.innerHTML = '<pre>' + (seconds_txt[char] ? seconds_txt[char] : "This candidate does not have a nomination statement") +'</pre>'
             
             var popupf = document.createElement("div")
             popupf.setAttribute("class", "modal-footer")
