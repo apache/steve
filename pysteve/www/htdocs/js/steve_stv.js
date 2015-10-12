@@ -175,7 +175,7 @@ function drawCandidates() {
             
             var popuph = document.createElement("div")
             popuph.setAttribute("class", "modal-header")
-            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">&#00D7;</a>'
+            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">&#xd7;</a>'
             
             var popupb = document.createElement("div")
             popupb.setAttribute("class", "modal-body")
@@ -212,7 +212,7 @@ function drawCandidates() {
             
             var popuph = document.createElement("div")
             popuph.setAttribute("class", "modal-header")
-            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">&#00D7;</a>'
+            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">&#xd7;</a>'
             
             var popupb = document.createElement("div")
             popupb.setAttribute("class", "modal-body")
