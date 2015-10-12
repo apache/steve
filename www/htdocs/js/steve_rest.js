@@ -340,12 +340,15 @@ function saveSTV() {
 	
 	candidates = []
 	statements = []
+	seconds = []
 	for (var i = 0; i < 256; i++) {
 		if (document.getElementById('name_' + i)) {
 			var name = document.getElementById('name_' + i).value;
 			var statement = document.getElementById('statement_' + i).value;
+			var seconds_txt = document.getElementById('seconds_txt_' + i).value;
 			candidates.push(name)
 			statements.push(statement ? statement : "")
+			seconds.push(seconds_txt ? seconds_txt : "")
 		}
 	}
 	
@@ -353,7 +356,8 @@ function saveSTV() {
 		title: title,
 		description: description,
 		candidates: JSON.stringify(candidates),
-		statements: JSON.stringify(statements)
+		statements: JSON.stringify(statements),
+		seconds_txt: JSON.stringify(seconds)
 	},
 	undefined,
 	saveCallback,
@@ -387,11 +391,13 @@ function renderEditCandidates() {
 		var candidate = edit_i.candidates[c]
 		var name = candidate.name
 		var statement = candidate.statement
+		var seconds = candidate.seconds_txt
 		var h = document.createElement('h4')
 		h.innerHTML = name + " &nbsp; - &nbsp <a href='javascript:void(removeEditCandidate(\"" + name + "\"));'>Delete</a>"
 		obj.appendChild(h)
 		obj.appendChild(keyvaluepair("name_" + c, "Name:", "text", name, false, "edit_i.candidates[" + c + "].name = this.value"))
-		obj.appendChild(keyvaluepair("statement_" + c, "Statement/seconds:", "textarea", statement ? statement : "", false, "edit_i.candidates[" + c + "].statement = this.value"))
+		obj.appendChild(keyvaluepair("statement_" + c, "Statement:", "textarea", statement ? statement : "", false, "edit_i.candidates[" + c + "].statement = this.value"))
+		obj.appendChild(keyvaluepair("seconds_txt_" + c, "Nomination/Seconds:", "textarea", seconds ? seconds : "", false, "edit_i.candidates[" + c + "].seconds_txt = this.value"))
 		obj.appendChild(document.createElement('hr'))
 	}
 }
