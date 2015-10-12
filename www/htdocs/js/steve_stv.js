@@ -197,13 +197,13 @@ function drawCandidates() {
             var seconds = document.createElement('div')
             seconds.setAttribute("class", "statement_marker")
             seconds.setAttribute("title", "Click to read " + name + "'s nomination and/or seconds")
-            seconds.innerHTML = "<a href='#statement_"+char+"'>2nds</a>"
+            seconds.innerHTML = "<a href='#seconds_"+char+"'>2nds</a>"
 
-            outer.appendChild(statement)
+            outer.appendChild(seconds)
             
             var popup = document.createElement("div")
             popup.setAttribute("class", "modal")
-            popup.setAttribute("id", "statement_" + char)
+            popup.setAttribute("id", "seconds_" + char)
             popup.setAttribute("aria-hidden", "true")
             
             var popupd = document.createElement("div")
