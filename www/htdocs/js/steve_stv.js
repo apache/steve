@@ -18,7 +18,7 @@
 
 var candidates = []
 var statements = []
-var seconds = []
+var seconds_txt = []
 var ballotNames = []
 var ballotChars = []
 var chars;
@@ -193,7 +193,7 @@ function drawCandidates() {
         }
         
         // Does the candidate have a nomination and/or seconds? if so, put it on there
-        if (seconds[char]) {
+        if (seconds_txt[char]) {
             var seconds = document.createElement('div')
             seconds.setAttribute("class", "statement_marker")
             seconds.setAttribute("title", "Click to read " + name + "'s nomination and/or seconds")
@@ -544,6 +544,7 @@ function displayIssueSTV(code, response, state) {
         document.getElementById('preloaderWrapper').innerHTML = "<h1>Could not load issue:</h1><h2>" + response.message + "</h2>";
     } else {
         candidates = []
+        seconds_txt = []
         statements = {}
         var m = response.issue.type.match(/(\d+)/);
         if (m) {
@@ -556,7 +557,7 @@ function displayIssueSTV(code, response, state) {
             var candidate = response.issue.candidates[c];
             candidates.push(candidate.name);
             statements[chars[c]] = candidate.statement;
-            seconds[chars[c]] = candidate.seconds_txt; // don't use .seconds, that's for arrays!
+            seconds_txt[chars[c]] = candidate.seconds_txt; // don't use .seconds, that's for arrays!
         }
         document.getElementById('cnum').innerHTML = candidates.length
         document.getElementById('snum').innerHTML = seats        
