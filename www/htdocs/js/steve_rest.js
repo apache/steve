@@ -734,13 +734,24 @@ function changeSTVType(type) {
 
 function createIssueCallback(code, response, state) {
 	if (code == 201) {
-		location.href = "/admin/edit_election.html?" + state.election
+		// If create & continue button pressed, just reset most fields instead of redirecting
+		if (state.cont) {
+			document.getElementById('iid').value = parseInt(Math.random()*987654321).toString(16).toLowerCase();
+			document.getElementById('ititle').value = ''
+			document.getElementById('description').value = ''
+			document.getElementById('seconds').value = ''
+			document.getElementById('nominatedby').value = ''
+			document.getElementById('candidates').value = ''
+			document.getElementById('contd').value = "Issue #" + state.issue + " created, fields reset."
+		} else {
+			location.href = "/admin/edit_election.html?" + state.election
+		}
 	} else {
 		alert(response.message)
 	}
 }
 
-function createIssue(election) {
+function createIssue(election, cont) {
 	election = election ? election : document.location.search.substr(1);
 	var iid = document.getElementById('iid').value;
 	var type = document.getElementById('type').value;
@@ -761,7 +772,7 @@ function createIssue(election) {
 		nominatedby: nominatedby,
 		seconds: seconds,
 		candidates: candidates
-	}, undefined, createIssueCallback, { election: election, issue: iid})
+	}, undefined, createIssueCallback, { cont: cont, election: election, issue: iid})
 }
 
 
