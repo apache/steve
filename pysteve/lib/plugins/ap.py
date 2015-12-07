@@ -77,7 +77,7 @@ def verifyAP(basedata, issueID, voterID, vote, uid):
 constants.appendVote(
     {
         'key': "ap",
-        'description': "ASF PMC Style vote (YNA with binding votes)",
+        'description': "PMC Style vote (YNA with binding votes)",
         'category': 'ap',
         'validate_func': validateAP,
         'vote_func': verifyAP,
