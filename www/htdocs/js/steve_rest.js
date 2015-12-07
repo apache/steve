@@ -1179,7 +1179,7 @@ function setVoteTypes(code, response, state) {
 				if ( ta && tb && ta == tb ) {
 					return parseInt(a[1].match(/(\d+)/)[1]) > parseInt(b[1].match(/(\d+)/)[1])
 				} else  {
-					return (a[1] > b[1])
+					return (a[1] < b[1])
 				}
 			})
 		for (i in sortable) {
