@@ -29,7 +29,7 @@ RUN rm /etc/apache2/sites-enabled/*.conf
 ADD https://svn.apache.org/repos/asf/steve/trunk/pysteve/httpd.conf /etc/apache2/sites-enabled/000-default.conf
 
 
-# Start ElasticSearch, set up Pony Mail
+# Start ElasticSearch
 EXPOSE 9200 9300
 RUN service elasticsearch start && sleep 30 && service elasticsearch status
 
