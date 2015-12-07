@@ -91,7 +91,7 @@ class ElasticSearchBackend:
     
     def votes_get(self, electionID, issueID):
         "Read votes and return as a dict"
-        res = self.es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999999)
+        res = self.es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999)
         results = len(res['hits']['hits'])
         if results > 0:
             votes = {}
@@ -104,7 +104,7 @@ class ElasticSearchBackend:
     
     def votes_get_raw(self, electionID, issueID):
         "Read votes and retunn raw format"
-        res = self.es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999999)
+        res = self.es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999)
         results = len(res['hits']['hits'])
         if results > 0:
             votes = []
@@ -147,7 +147,7 @@ class ElasticSearchBackend:
         "List all elections"
         elections = []
         try:
-            res = self.es.search(index="steve", doc_type="elections", sort = "id", q = "*", size = 99999)
+            res = self.es.search(index="steve", doc_type="elections", sort = "id", q = "*", size = 9999)
             results = len(res['hits']['hits'])
             if results > 0:
                 for entry in res['hits']['hits']:
@@ -186,7 +186,7 @@ class ElasticSearchBackend:
     def voter_get_uid(self, electionID, votekey):
         "Get the UID/email for a voter given the vote key hash"
         try:
-            res = self.es.search(index="steve", doc_type="voters", q = "election:%s" % electionID, size = 999999)
+            res = self.es.search(index="steve", doc_type="voters", q = "election:%s" % electionID, size = 9999)
             results = len(res['hits']['hits'])
             if results > 0:
                 for entry in res['hits']['hits']:
