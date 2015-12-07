@@ -742,7 +742,7 @@ function createIssueCallback(code, response, state) {
 			document.getElementById('seconds').value = ''
 			document.getElementById('nominatedby').value = ''
 			document.getElementById('candidates').value = ''
-			document.getElementById('contd').innerHTML = "<b style='color: #396;'>Issue #" + state.issue + " created at " + new Date().toLocaleString + ", fields reset.</b>"
+			document.getElementById('contd').innerHTML = "<b style='color: #396;'>Issue #" + state.issue + " created at " + new Date().toLocaleString() + ", fields reset.</b>"
 		} else {
 			location.href = "/admin/edit_election.html?" + state.election
 		}
