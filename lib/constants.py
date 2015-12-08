@@ -55,6 +55,8 @@ def initBackend(config):
     # Set up DB backend
     backend = None
     
+    if config.has_option("database", "disabled") and config.get("database", "disabled") == "true":
+        return
     dbtype = config.get("database", "dbsys")
     for b in DB_TYPES:
         if b.get('id') == dbtype:
