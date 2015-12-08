@@ -25,7 +25,11 @@ from lib import constants, form
 def validateCOP(vote, issue):
     "Tries to validate a vote, returns why if not valid, None otherwise"
     parties = {}
+    if not 'candidates' in issue:
+        return "Invalid issue data detected"
     for c in issue['candidates']:
+        if not 'pletter' in c:
+            return "Invalid issue data detected"
         parties[c['pletter']] = True
     letters = [chr(i) for i in range(ord('a'), ord('a') + len(parties))]
     ivote = -1
