@@ -169,7 +169,7 @@ function displayIssueDH(code, response, state) {
         
         if (response.issue.description) {
             var p = document.createElement('pre')
-            p.innerHTML = response.issue.description.replace("&lt;", "<")
+            p.innerHTML = response.issue.description.replace(/&lt;/g, "<")
             obj.appendChild(p)
         }
         
