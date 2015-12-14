@@ -167,6 +167,11 @@ function displayIssueDH(code, response, state) {
         obj.setAttribute("style", "min-width: 100%; min-height: 400px;")
         obj.setAttribute("id", "votebox")
         
+        if (response.issue.description) {
+            var p = document.createElement('pre')
+            p.innerHTML = response.issue.description
+            obj.appendChild(p)
+        }
         
         var l = document.createElement('ol')
         l.setAttribute("id", "candidates")
