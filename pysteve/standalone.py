@@ -19,6 +19,7 @@
 
 portno = 8080
 
+
 import BaseHTTPServer
 import CGIHTTPServer
 from SocketServer import ThreadingMixIn
@@ -73,7 +74,7 @@ class pysteveHTTPHandler(handler):
                     return
                 else:
                     authed = False
-                    auth = self.headers.getheader('Authorization').strip("Basic ")
+                    auth = self.headers.getheader('Authorization')[6:]
                     arr = base64.decodestring(auth).split(":", 2)
                     if len(arr) == 2:
                         name = arr[0]
@@ -97,7 +98,7 @@ class pysteveHTTPHandler(handler):
                 return
             else:
                 os.chdir(path)
-                self.path = self.path = "/www/html" + self.path
+                self.path = "/www/htdocs" + self.path
             print(self.path)
             handler.do_GET(self)
             
