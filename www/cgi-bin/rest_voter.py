@@ -154,8 +154,8 @@ if pathinfo:
                     if 'closed' in basedata and basedata['closed'] == True:
                         raise Exception("This election has closed")
                     if 'open' in basedata and basedata['open'] == "true":
-                        uid, xhash = voter.add(election, basedata, email)
-                        voter.email(email, "Your voter link for %s" % basedata['title'], "Your personal vote link is: %s/election.html?%s/%s\nDo not share this link with anyone." % (config.get("general", "rooturl"), election, uid))
+                        uid, xhash = voter.add(electionID, basedata, email)
+                        voter.email(email, "Your voter link for %s" % basedata['title'], "Your personal vote link is: %s/election.html?%s/%s\nDo not share this link with anyone." % (config.get("general", "rooturl"), electionID, uid))
                         response.respond(200, {'message': "Voter ID sent via email"})
                     else:
                         response.respond(403, {'message': "Could not request voter ID: This eleciton is closed for the public"})
