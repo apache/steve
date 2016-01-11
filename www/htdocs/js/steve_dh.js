@@ -39,35 +39,34 @@ function shuffleCandidates() {
 }
 
 function loadIssue(election, issue, uid, callback) {
-	
-	var messages = ["Herding cats...", "Shaving yaks...", "Shooing some cows away...", "Fetching election data...", "Loading issues..."]
-	if (!election || !uid) {
-		var l = document.location.search.substr(1).split("/");
-		election = l[0];
-		issue = l.length > 1 ? l[l.length-2] : "";
-		uid = l.length > 2 ? l[l.length-1] : "";
-	}
-	if (step == -1) {
-		getJSON("/steve/voter/view/" + election + "/" + issue + "?uid=" + uid, [election, issue, uid], callback)
-	}
-	
-	var obj = document.getElementById('preloader');
-	step++;
-	if (!election_data && obj) {
-		if (step % 2 == 1) obj.innerHTML = messages[parseInt(Math.random()*messages.length-0.01)]
-	} else if (obj && (step % 2 == 1)) {
-		obj.innerHTML = "Ready..!"
-	}
-	if (step % 2 == 1) {
-		obj.style.transform = "translate(0,0)"
-	} else if (obj) {
-		obj.style.transform = "translate(0,-500%)"
-	}
-	if (!election_data|| (step % 2 == 0) ) {
-		window.setTimeout(loadElection, 750, election, uid, callback);
-	}
+    
+    var messages = ["Herding cats...", "Shaving yaks...", "Shooing some cows away...", "Fetching election data...", "Loading issues..."]
+    if (!election || !uid) {
+        var l = document.location.search.substr(1).split("/");
+        election = l[0];
+        issue = l.length > 1 ? l[l.length-2] : "";
+        uid = l.length > 2 ? l[l.length-1] : "";
+    }
+    if (step == -1) {
+        getJSON("/steve/voter/view/" + election + "/" + issue + "?uid=" + uid, [election, issue, uid], callback)
+    }
+    
+    var obj = document.getElementById('preloader');
+    step++;
+    if (!election_data && obj) {
+        if (step % 2 == 1) obj.innerHTML = messages[parseInt(Math.random()*messages.length-0.01)]
+    } else if (obj && (step % 2 == 1)) {
+        obj.innerHTML = "Ready..!"
+    }
+    if (step % 2 == 1) {
+        obj.style.transform = "translate(0,0)"
+    } else if (obj) {
+        obj.style.transform = "translate(0,-500%)"
+    }
+    if (!election_data|| (step % 2 == 0) ) {
+        window.setTimeout(loadElection, 750, election, uid, callback);
+    }
 }
-
 
 function drawCandidatesDH() {
     var box = document.getElementById('candidates')
@@ -97,7 +96,7 @@ function drawCandidatesDH() {
             statement.setAttribute("class", "statement_marker")
             statement.setAttribute("title", "Click to read " + name + "'s statement")
             statement.innerHTML = "<a href='#statement_"+char+"'>Statement</a>"
-
+            
             li.appendChild(statement)
             
             var popup = document.createElement("div")
@@ -111,7 +110,7 @@ function drawCandidatesDH() {
             
             var popuph = document.createElement("div")
             popuph.setAttribute("class", "modal-header")
-            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">×</a>'
+            popuph.innerHTML = '<h2>Statement from ' + name + '</h2><a href="#close" class="btn-close" aria-hidden="true">ï¿½</a>'
             
             var popupb = document.createElement("div")
             popupb.setAttribute("class", "modal-body")

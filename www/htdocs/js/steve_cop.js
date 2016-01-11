@@ -24,73 +24,73 @@ var chars;
 
 
 function loadIssue(election, issue, uid, callback) {
-	
-	var messages = ["Herding cats...", "Shaving yaks...", "Shooing some cows away...", "Fetching election data...", "Loading issues..."]
-	if (!election || !uid) {
-		var l = document.location.search.substr(1).split("/");
-		election = l[0];
-		issue = l.length > 1 ? l[l.length-2] : "";
-		uid = l.length > 2 ? l[l.length-1] : "";
-	}
-	if (step == -1) {
-		getJSON("/steve/voter/view/" + election + "/" + issue + "?uid=" + uid, [election, issue, uid], callback)
-	}
-	
-	var obj = document.getElementById('preloader');
-	step++;
-	if (!election_data && obj) {
-		if (step % 2 == 1) obj.innerHTML = messages[parseInt(Math.random()*messages.length-0.01)]
-	} else if (obj && (step % 2 == 1)) {
-		obj.innerHTML = "Ready..!"
-	}
-	if (step % 2 == 1) {
-		obj.style.transform = "translate(0,0)"
-	} else if (obj) {
-		obj.style.transform = "translate(0,-500%)"
-	}
-	if (!election_data|| (step % 2 == 0) ) {
-		window.setTimeout(loadElection, 750, election, uid, callback);
-	}
+    
+    var messages = ["Herding cats...", "Shaving yaks...", "Shooing some cows away...", "Fetching election data...", "Loading issues..."]
+    if (!election || !uid) {
+        var l = document.location.search.substr(1).split("/");
+        election = l[0];
+        issue = l.length > 1 ? l[l.length-2] : "";
+        uid = l.length > 2 ? l[l.length-1] : "";
+    }
+    if (step == -1) {
+        getJSON("/steve/voter/view/" + election + "/" + issue + "?uid=" + uid, [election, issue, uid], callback)
+    }
+    
+    var obj = document.getElementById('preloader');
+    step++;
+    if (!election_data && obj) {
+        if (step % 2 == 1) obj.innerHTML = messages[parseInt(Math.random()*messages.length-0.01)]
+    } else if (obj && (step % 2 == 1)) {
+        obj.innerHTML = "Ready..!"
+    }
+    if (step % 2 == 1) {
+        obj.style.transform = "translate(0,0)"
+    } else if (obj) {
+        obj.style.transform = "translate(0,-500%)"
+    }
+    if (!election_data|| (step % 2 == 0) ) {
+        window.setTimeout(loadElection, 750, election, uid, callback);
+    }
 }
 
 
 function drawCandidatesCOP() {
     var box = document.getElementById('candidates')
     box.innerHTML = "<h3>Candidates:</h3>"
-	var pname = null
-	var pli = null;
+    var pname = null
+    var pli = null;
     for (i in candidates) {
         var name = candidates[i]
-		if (pname != name['pname']) {
-			pname = name['pname']
-			var char = name['pletter']
-			pli = document.createElement('ol')
-			pli.setAttribute("class", "showList")
-			pli.style.marginTop = "20px"
-			var outer = document.createElement('div')
-			var inner = document.createElement('span')
-			inner.style.fontFamily = "monospace"
-			inner.style.fontWeigth = "bold"
-			inner.innerHTML = name['pname'];
-			outer.setAttribute("class", "ballotbox_clist_DH")
-			if (char == vote_COP) {
-				outer.setAttribute("class", "ballotbox_clist_selectedDH")
-			}
-			outer.setAttribute("id", name)
-			outer.setAttribute("onclick", "vote_COP = '"+char+"'; drawCandidatesCOP();")
-			outer.appendChild(inner)
-			outer.setAttribute("title", "Click to select "  + name + " as your preference")
-			pli.appendChild(outer)
-			box.appendChild(pli)
-			
-		}
+        if (pname != name['pname']) {
+            pname = name['pname']
+            var char = name['pletter']
+            pli = document.createElement('ol')
+            pli.setAttribute("class", "showList")
+            pli.style.marginTop = "20px"
+            var outer = document.createElement('div')
+            var inner = document.createElement('span')
+            inner.style.fontFamily = "monospace"
+            inner.style.fontWeigth = "bold"
+            inner.innerHTML = name['pname'];
+            outer.setAttribute("class", "ballotbox_clist_DH")
+            if (char == vote_COP) {
+                outer.setAttribute("class", "ballotbox_clist_selectedDH")
+            }
+            outer.setAttribute("id", name)
+            outer.setAttribute("onclick", "vote_COP = '"+char+"'; drawCandidatesCOP();")
+            outer.appendChild(inner)
+            outer.setAttribute("title", "Click to select "  + name + " as your preference")
+            pli.appendChild(outer)
+            box.appendChild(pli)
+            
+        }
         var char = name['letter']
         var li = document.createElement('li')
         var outer = document.createElement('div')
         var inner = document.createElement('span')
         inner.style.fontFamily = "monospace"
-		li.style.marginLeft = "30px"
-		li.style.marginBottom = "10px"
+        li.style.marginLeft = "30px"
+        li.style.marginBottom = "10px"
         inner.innerHTML = name['name'];
         outer.setAttribute("class", "ballotbox_clist_DH")
         if (char == vote_COP) {
@@ -135,8 +135,8 @@ function displayIssueCOP(code, response, state) {
         
         var l = document.createElement('ol')
         l.setAttribute("id", "candidates")
-		l.setAttribute("type", "a")
-		l.setAttribute("class", "showList")
+        l.setAttribute("type", "a")
+        l.setAttribute("class", "showList")
         obj.appendChild(l)
         
         drawCandidatesCOP();
