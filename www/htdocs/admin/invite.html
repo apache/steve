@@ -35,14 +35,17 @@
         document.getElementById('invitestatus').innerHTML = "<img src=\"/images/steve_spinner.gif\"/><br/><big>Preparing.....</big>"
         for (i in emails) {
             var email = emails[i]
-            postREST("/steve/admin/invite/" + election, {
-                email: email,
-                msgtype: msgtype,
-                msgtemplate: msgtemplate
-            },
-            undefined,
-            removeEmail,
-            null)
+            if (email.length > 4 && email.match(/(.+@.+)/)) {
+                postREST("/steve/admin/invite/" + election, {
+                    email: email,
+                    msgtype: msgtype,
+                    msgtemplate: msgtemplate
+                },
+                undefined,
+                removeEmail,
+                null)
+            }
+            
         }
     }
 </script>
