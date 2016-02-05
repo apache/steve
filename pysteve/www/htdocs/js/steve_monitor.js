@@ -34,9 +34,13 @@ function getJSON(theUrl, xstate, callback) {
     }
 }
 
+var firstTime = true
 function getIssues() {
     election = document.location.search.substr(1)
-    fetchData(election)
+    if (firstTime) {
+        fetchData(election)
+        firstTime = false
+    }
     getJSON("/steve/admin/view/" + election, election, listIssues)
 }
 
