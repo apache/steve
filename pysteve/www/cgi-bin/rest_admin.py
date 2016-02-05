@@ -375,7 +375,13 @@ else:
                             if (not 'open' in basedata or basedata['open'] != "true") and msgtype == "open":
                                 raise Exception("An open vote invite was requested, but this election is not public")
                             if msgtype != "open":
-                                voterid, xhash = voter.add(electionID, basedata, email)
+                                # If we have a proxy, we have to append the proxy name
+                                # so as to not override the voters own ID
+                                mailID = email
+                                if proxy:
+                                    mailID = "%s-%s" % (email, proxy)
+                                # Generate voter ID
+                                voterid, xhash = voter.add(electionID, basedata, mailID)
                                 message = msgtemplate.replace("$votelink", "%s/election.html?%s/%s" % (config.get("general", "rooturl"), electionID, voterid))
                                 message = message.replace("$title", basedata['title'])
                                 subject = "Election open for votes: %s (%s)" % (electionID, basedata['title'])
