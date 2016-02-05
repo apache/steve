@@ -61,7 +61,7 @@ function saveData(election) {
             oldvotes: oldvotes,
             recasts: recasts,
             recasters: recasters,
-            rigged: rigger,
+            rigged: rigged,
             riggedIssues: riggedIssues
         }
         window.localStorage.SetItem("monitor_" + election, JSON.stringify(js))
