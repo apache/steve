@@ -18,7 +18,7 @@
     function removeEmail(code, response, state) {
         if (code == 200) {
             ecount--;
-            document.getElementById('invitestatus').innerHTML = "<img src='/images/steve_spinner.gif'/><br/><big>" + ecount + " emails left to send...</big>"
+            document.getElementById('invitestatus').innerHTML = "<img src=\"/images/steve_spinner.gif\"/><br/><big>" + ecount + " emails left to send...</big>"
             if (ecount == 0) {
                 document.getElementById('invitestatus').innerHTML = "<big>All invites have been sent!</big>"
             }
@@ -32,6 +32,7 @@
         var msgtemplate = document.getElementById('msgtemplate').value;
         var election = document.location.search.substr(1);
         ecount = emails.length;
+        document.getElementById('invitestatus').innerHTML = "<img src=\"/images/steve_spinner.gif\"/><br/><big>Preparing.....</big>"
         for (i in emails) {
             var email = emails[i]
             postREST("/steve/admin/invite/" + election, {
