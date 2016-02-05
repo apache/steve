@@ -57,7 +57,6 @@ var riggedIssues = {}
 
 function saveData(election) {
     if (typeof(window.localStorage) !== "undefined" ) {
-        var d = window.localStorage.getItem("monitor_" + election)
         var js = {
             issues: issues,
             basedata: basedata,
@@ -236,7 +235,7 @@ function showChanges(issue) {
             header.innerHTML = "No votes cast yet..!"
         }
     }
-    saveData(election)
+    saveData(eid)
     getJSON("/steve/admin/monitor/" + eid + "/" + issue.id, issue.id, updateVotes)
     
 }
