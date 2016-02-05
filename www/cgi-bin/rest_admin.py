@@ -456,7 +456,10 @@ else:
                     votes = election.getVotesRaw(electionID, issue)
                     jvotes = {}
                     for vote in votes:
-                        jvotes[hashlib.sha224(vote['key']).hexdigest()] = vote['data']['vote']   # yeah, let's not show the actual UID here..
+                        jvotes[hashlib.sha224(vote['key']).hexdigest()] = {
+                            'vote': vote['data']['vote'],
+                            'timestamp': vote['data']['timestamp']
+                        } # yeah, let's not show the actual UID here..
                     if issuedata and votes:
                         if election.validType(issuedata['type']):
                             ehash, blergh = election.getHash(electionID)
