@@ -380,7 +380,7 @@ else:
                                 message = message.replace("$title", basedata['title'])
                                 subject = "Election open for votes: %s (%s)" % (electionID, basedata['title'])
                                 if proxy:
-                                    subject = "%s (PROXY FOR %s)" % (subject, proxy)
+                                    subject = "%s [PROXY FOR: %s]" % (subject, proxy)
                                 voter.email(email, subject, message)
                             else:
                                 message = msgtemplate.replace("$votelink", "%s/request_link.html?%s" % (config.get("general", "rooturl"), electionID))
