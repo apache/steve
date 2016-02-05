@@ -36,6 +36,7 @@ function getJSON(theUrl, xstate, callback) {
 
 function getIssues() {
     election = document.location.search.substr(1)
+    fetchData(election)
     getJSON("/steve/admin/view/" + election, election, listIssues)
 }
 
@@ -49,6 +50,40 @@ var recasts = {}
 var recasters = {}
 var rigged = false
 var riggedIssues = {}
+
+function saveData(election) {
+    if (typeof(window.localStorage) !== "undefined" ) {
+        var d = window.localStorage.getItem("monitor_" + election)
+        var js = {
+            issues: issues,
+            basedata: basedata,
+            votes: votes,
+            oldvotes: oldvotes,
+            recasts: recasts,
+            recasters: recasters,
+            rigged: rigger,
+            riggedIssues: riggedIssues
+        }
+        window.localStorage.SetItem("monitor_" + election, JSON.stringify(js))
+    }
+}
+
+function fetchData(election) {
+    if (typeof(window.localStorage) !== "undefined" ) {
+        var d = window.localStorage.getItem("monitor_" + election)
+        if (d) {
+            var js = JSON.parse(d)
+            issues = js.issues
+            basedata = js.basedata
+            votes = js.votes
+            oldvotes = js.oldvotes
+            recasts = js.recasts
+            recasters = js.recasters
+            rigged = js.rigged
+            riggedIssues = js.riggedIssues
+        }
+    }
+}
 
 function listIssues(code, response, election) {
     if (code == 200) {
@@ -197,9 +232,8 @@ function showChanges(issue) {
             header.innerHTML = "No votes cast yet..!"
         }
     }
+    saveData(election)
     getJSON("/steve/admin/monitor/" + eid + "/" + issue.id, issue.id, updateVotes)
-    
-    
     
 }
 
