@@ -355,6 +355,11 @@ else:
             # invite one or more people to an election
             if electionID:
                 email = form.getvalue('email')
+                proxy = None
+                m = re.match(r"^(\S+)\s+(\S+)$", email)
+                if m:
+                    email = m.group(1)
+                    proxy = m.group(2)
                 msgtype = form.getvalue('msgtype')
                 msgtemplate = form.getvalue('msgtemplate')
                 if not email or len(email) > 300 or not re.match(r"([^@]+@[^@]+)", email):
@@ -374,6 +379,8 @@ else:
                                 message = msgtemplate.replace("$votelink", "%s/election.html?%s/%s" % (config.get("general", "rooturl"), electionID, voterid))
                                 message = message.replace("$title", basedata['title'])
                                 subject = "Election open for votes: %s (%s)" % (electionID, basedata['title'])
+                                if proxy:
+                                    subject = "%s (PROXY FOR %s)" % (subject, proxy)
                                 voter.email(email, subject, message)
                             else:
                                 message = msgtemplate.replace("$votelink", "%s/request_link.html?%s" % (config.get("general", "rooturl"), electionID))
