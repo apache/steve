@@ -18,9 +18,9 @@
     function removeEmail(code, response, state) {
         if (code == 200) {
             ecount--;
-            document.getElementById('invitestatus').innerHTML = ecount + " emails left to send..."
+            document.getElementById('invitestatus').innerHTML = "<img src='/images/steve_spinner.gif'/><br/><big>" + ecount + " emails left to send...</big>"
             if (ecount == 0) {
-                document.getElementById('invitestatus').innerHTML = "All invites have been sent!"
+                document.getElementById('invitestatus').innerHTML = "<big>All invites have been sent!</big>"
             }
         } else {
             alert(response.message)
