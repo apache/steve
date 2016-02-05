@@ -874,7 +874,7 @@ function renderElectionFrontpage(response, el) {
         par.appendChild(btn)
         var p = document.createElement('p')
         p.innerHTML = "Click on an issue to start voting. As this election has more than one yes/no vote, we have placed a button at the bottom of this page for batch-voting on these issues."
-        par.insertAfter(p, title)
+        par.insertBefore(p, title.nextSibling)
     }
     
     if (response.base_data.monitors && response.base_data.monitors.length > 0) {
