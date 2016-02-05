@@ -872,6 +872,9 @@ function renderElectionFrontpage(response, el) {
         btn.setAttribute("value", "Bulk vote on YNA issues")
         btn.setAttribute("onclick", "location.href='/bulk_yna.html?" + el[0] + "/" + el[1] + "';")
         par.appendChild(btn)
+        var p = document.createElement('p')
+        p.innerHTML = "Click on an issue to start voting. As this election has more than one yes/no vote, we have placed a button at the bottom of this page for batch-voting on these issues."
+        par.insertAfter(p, title)
     }
     
     if (response.base_data.monitors && response.base_data.monitors.length > 0) {
