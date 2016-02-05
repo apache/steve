@@ -875,6 +875,10 @@ function renderElectionFrontpage(response, el) {
         var p = document.createElement('p')
         p.innerHTML = "Click on an issue to start voting. As this election has more than one yes/no vote, we have placed a button at the bottom of this page for batch-voting on these issues."
         par.insertBefore(p, title.nextSibling)
+    } else {
+        var p = document.createElement('p')
+        p.innerHTML = "Click on an issue to start voting. You may recast your vote on any issue as often as you like."
+        par.insertBefore(p, title.nextSibling)
     }
     
     if (response.base_data.monitors && response.base_data.monitors.length > 0) {
