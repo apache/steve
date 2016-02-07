@@ -225,7 +225,7 @@ function showChanges(issue) {
         }
         if (numvotes > 0) {
             var v = votes[issue.id]
-            sinceLast = (backlog[issue] || []).length - (oldbacklog[issue] || []).length
+            sinceLast = (backlog[issue.id] || []).length - (oldbacklog[issue.id] || []).length
             nrc = 0
             var fuid = {}
             for (var z in backlog[issue.id]) {
