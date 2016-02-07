@@ -134,7 +134,8 @@ if pathinfo:
                             response.respond(500, {'message': invalid})
                         else:
                             votehash = election.vote(electionID, issueID, voterID, vote)
-                            voter.email(email, "Vote registered: %s (%s)" % (issueID, issuedata['title']), "This is a receipt that your vote was registered for issue #%s:\n\nElection: %s (%s)\nIssue: %s (%s)\nVote cryptohash: %s" % (issueID, basedata['title'], electionID, issuedata['title'], issueID, votehash))
+                            voteuid = hashlib.sha224(voterID).hexdigest()
+                            voter.email(email, "Vote registered: %s (%s)" % (issueID, issuedata['title']), "This is a receipt that your vote was registered for issue #%s:\n\nElection: %s (%s)\nIssue: %s (%s)\nVote cryptohash: %s\nVote UID: %s" % (issueID, basedata['title'], electionID, issuedata['title'], issueID, votehash, voteuid))
                             response.respond(200, {'message': 'Vote saved!'})
             else:
                 response.respond(404, {'message': 'Could not save vote: No such election or issue'})
