@@ -485,7 +485,41 @@ else:
                     response.respond(403, {'message': "You do not have karma to tally the votes here"})
             else:
                     response.respond(404, {'message': 'No such election or issue'})
-                    
+        # Vote backlog, including all recasts
+        elif action == "backlog" and electionID:
+            issue = l[2] if len(l) > 2 else None
+            if electionID and issue:
+                basedata = election.getBasedata(electionID, hideHash=True)
+                if karma >= 2 or ('owner' in basedata and basedata['owner'] == whoami):
+                    issuedata = election.getIssue(electionID, issue)
+                    votes = election.getVoteHistory(electionID, issue)
+                    jvotes = []
+                    for vote in votes:
+                        jvotes.append({
+                            'vote': vote['data']['vote'],
+                            'timestamp': vote['data']['timestamp'],
+                            'uid': hashlib.sha224(vote['key']).hexdigest()
+                        })
+                    if issuedata and votes:
+                        if election.validType(issuedata['type']):
+                            ehash, blergh = election.getHash(electionID)
+                            response.respond(200, {
+                                'issue': issuedata,
+                                'base': basedata,
+                                'history': jvotes,
+                                'hash': ehash
+                            })
+                        else:
+                            response.respond(500, {'message': "Unknown vote type"})
+                    elif issuedata and not votes:
+                        response.respond(404, {'message': "No votes found"})
+                    else:
+                        response.respond(404, {'message': "Issue not found"})
+                else:
+                    response.respond(403, {'message': "You do not have karma to tally the votes here"})
+            else:
+                    response.respond(404, {'message': 'No such election or issue'})
+                  
         else:
             response.respond(400, {'message': "No (or invalid) action supplied"})
     else:
