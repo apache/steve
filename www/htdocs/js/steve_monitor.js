@@ -54,6 +54,8 @@ var recasts = {}
 var recasters = {}
 var rigged = false
 var riggedIssues = {}
+var backlog = {}
+var oldbacklog = {}
 
 function saveData(election) {
     if (typeof(window.localStorage) !== "undefined" ) {
@@ -65,7 +67,9 @@ function saveData(election) {
             recasts: recasts,
             recasters: recasters,
             rigged: rigged,
-            riggedIssues: riggedIssues
+            riggedIssues: riggedIssues,
+            backlog: backlog,
+            oldbacklog: oldbacklog
         }
         window.localStorage.setItem("monitor_" + election, JSON.stringify(js))
     }
@@ -83,7 +87,9 @@ function fetchData(election) {
             recasts = js.recasts
             recasters = js.recasters
             rigged = js.rigged
-            riggedIssues = js.riggedIssues
+            riggedIssues = js.riggedIssues,
+            backlog = js.backlog,
+            oldbacklog = js.oldbacklog
         }
     }
 }
@@ -109,7 +115,22 @@ function updateVotes(code, response, issue) {
     if (code == 200) {
         recasters[issue] = recasters[issue] ? recasters[issue] : {}
         oldvotes[issue] = votes[issue] ? votes[issue] : {}
-        votes[issue] = response.votes
+        oldbacklog[issue] = backlog[issue]
+        backlog[issue] = response.history
+        votes[issue] = {}
+        var founduid = {}
+        recasts[issue] = 0
+        for (var i in backlog[issue]) {
+            var vote = backlog[issue][i]
+            if (founduid[vote.uid]) {
+                recasts[issue]++;
+            }
+            founduid[vote.uid] = true
+            votes[issue][vote.uid] = {
+                timestamp: vote.timestamp,
+                vote: vote.vote
+            }
+        }
         var is = {}
         for (i in issues) {
             if (issues[i].id == issue) {
@@ -126,33 +147,11 @@ function updateVotes(code, response, issue) {
         if (ehash != response.hash) {
             rigged = true
         }
-        recasts[issue] = recasts[issue] ? recasts[issue] : 0
+        
     } else if (response.message == "Issue not found") {
         var header = document.getElementById('issue_' + issue + "_header")
         header.innerHTML = "<font color='red'><b>Issue deleted?: " + response.message + "</b></font>"
     }
-}
-
-function calcChanges(issue, oldv, newv) {
-    sinceLast = 0;
-    
-    
-    // Find new votes cast since last update
-    if (!oldv || !newv) {
-        return [0,0]
-    }
-    for (i in newv) {
-        if (!oldv[i]) {
-            sinceLast++;
-        } else if (oldv[i].timestamp != undefined && newv[i].timestamp != undefined && oldv[i].timestamp != newv[i].timestamp) {
-            recasts[issue]++;
-            recasters[issue][i] = (recasters[issue][i] ? recasters[issue][i] : 0) + 1
-        }
-    }
-    var nrc = 0;
-    for (i in recasters[issue]) nrc++;
-    
-    return [sinceLast, nrc]
 }
 
 var timeouts = {}
@@ -167,7 +166,12 @@ function showDetails(issueid, update) {
         for (i in votes[issueid]) {
             var rawvote = votes[issueid][i]
             var vote = null
-            var nrc = recasters[issueid][i] ? recasters[issueid][i] : 0
+            var nrc = -1
+            for (var n in backlog[issueid]) {
+                if (backlog[issueid][n].uid == i) {
+                    nrc++
+                }
+            }
             var add = ""
             if (rawvote.timestamp) {
                 vote = rawvote.vote
@@ -222,8 +226,16 @@ function showChanges(issue) {
         if (numvotes > 0) {
             var v = votes[issue.id]
             var a = calcChanges(issue.id, oldvotes[issue.id], v)
-            sinceLast = a[0]
-            nrc = a[1]
+            sinceLast = (backlog[issue] || 0) - (oldbacklog[issue] || 0)
+            nrc = 0
+            var fuid = {}
+            for (var z in backlog[issue.id]) {
+                var v = backlog[issue.id][z]
+                fuid[v.uid] = true
+            }
+            for (var x in fuid) {
+                nrc++;
+            }
             header.innerHTML = ""
             if (riggedIssues[issue.id] && riggedIssues[issue.id].length > 0) {
                 header.innerHTML += "<a href='#' onclick=\"alert(riggedIssues['" + issue.id + "']);\"><font color='red'>ISSUE POSSIBLY RIGGED! </font></a><br/> "
@@ -236,7 +248,7 @@ function showChanges(issue) {
         }
     }
     saveData(eid)
-    getJSON("/steve/admin/monitor/" + eid + "/" + issue.id, issue.id, updateVotes)
+    getJSON("/steve/admin/backlog/" + eid + "/" + issue.id, issue.id, updateVotes)
     
 }
 
