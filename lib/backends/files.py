@@ -175,9 +175,11 @@ class FileBasedBackend:
                 vote_history = json.loads(f.read())
                 f.close()
         vote_history.append({
-            'uid': uid,
-            'vote': vote,
-            'timestamp': now
+            'key': uid,
+            'data': {
+                'vote': vote,
+                'timestamp': now
+            }
         })
         with open(issuepath + ".history", "w") as f:
             f.write(json.dumps(vote_history))
