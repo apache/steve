@@ -103,7 +103,7 @@ class ElasticSearchBackend:
     
     
     def votes_get_raw(self, electionID, issueID):
-        "Read votes and retunn raw format"
+        "Read votes and return raw format"
         res = self.es.search(index="steve", doc_type="votes", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999)
         results = len(res['hits']['hits'])
         if results > 0:
@@ -113,6 +113,16 @@ class ElasticSearchBackend:
             return votes
         return {}
     
+    def vote_history(self, electionID, issueID):
+        "Read vote history and return raw format"
+        res = self.es.search(index="steve", doc_type="vote_history", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999)
+        results = len(res['hits']['hits'])
+        if results > 0:
+            votes = []
+            for entry in res['hits']['hits']:
+                votes.append(entry['_source'])
+            return votes
+        return []
     
     def election_create(self,electionID, basedata):
         "Create a new election"

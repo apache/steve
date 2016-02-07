@@ -100,6 +100,14 @@ class FileBasedBackend:
                 return votes
         return {}
     
+    def vote_history(self, electionID, issueID):
+        issuepath = os.path.join(self.homedir, "issues", electionID, issueID) + ".json.history"
+        if os.path.isfile(issuepath):
+            with open(issuepath, "r") as f:
+                votes = json.loads(f.read())
+                f.close()
+                return votes
+        return []
     
     def election_create(self, eid, basedata):
         elpath = os.path.join(self.homedir, "issues", eid)
