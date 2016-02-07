@@ -88,8 +88,8 @@ function fetchData(election) {
             recasters = js.recasters
             rigged = js.rigged
             riggedIssues = js.riggedIssues,
-            backlog = js.backlog,
-            oldbacklog = js.oldbacklog
+            backlog = js.backlog || {},
+            oldbacklog = js.oldbacklog || {}
         }
     }
 }
