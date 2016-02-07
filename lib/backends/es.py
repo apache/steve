@@ -171,6 +171,18 @@ class ElasticSearchBackend:
                 }
             }
         );
+        # Backlog of changesets
+        self.es.index(index="steve", doc_type="vote_history", body =
+            {
+                'issue': issueID,
+                'election': electionID,
+                'key': uid,
+                'data': {
+                    'timestamp': time.time(),
+                    'vote': vote
+                }
+            }
+        );
         
         
     def issue_delete(self, electionID, issueID):
