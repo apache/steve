@@ -160,13 +160,14 @@ class ElasticSearchBackend:
     def vote(self,electionID, issueID, uid, vote):
         "Casts a vote on an issue"
         eid = hashlib.sha224(electionID + ":" + issueID + ":" + uid).hexdigest()
+        now = time.time()
         self.es.index(index="steve", doc_type="votes", id=eid, body =
             {
                 'issue': issueID,
                 'election': electionID,
                 'key': uid,
                 'data': {
-                    'timestamp': time.time(),
+                    'timestamp': now,
                     'vote': vote
                 }
             }
@@ -178,7 +179,7 @@ class ElasticSearchBackend:
                 'election': electionID,
                 'key': uid,
                 'data': {
-                    'timestamp': time.time(),
+                    'timestamp': now,
                     'vote': vote
                 }
             }
