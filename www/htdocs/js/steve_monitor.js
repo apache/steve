@@ -225,7 +225,6 @@ function showChanges(issue) {
         }
         if (numvotes > 0) {
             var v = votes[issue.id]
-            var a = calcChanges(issue.id, oldvotes[issue.id], v)
             sinceLast = (backlog[issue] || 0) - (oldbacklog[issue] || 0)
             nrc = 0
             var fuid = {}
