@@ -72,6 +72,9 @@ def getVotes(electionID, issueID):
 def getVotesRaw(electionID, issueID):
     return backend.votes_get_raw(electionID, issueID)
 
+def getVoteHistory(electionID, issueID):
+    return backend.vote_history(electionID, issueID)
+
 
 def createElection(eid, title, owner, monitors, starts, ends, isopen):
     basedata =  {
