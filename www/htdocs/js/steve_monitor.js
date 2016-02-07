@@ -239,7 +239,7 @@ function showChanges(issue) {
             if (riggedIssues[issue.id] && riggedIssues[issue.id].length > 0) {
                 header.innerHTML += "<a href='#' onclick=\"alert(riggedIssues['" + issue.id + "']);\"><font color='red'>ISSUE POSSIBLY RIGGED! </font></a><br/> "
             }
-            header.innerHTML += numvotes + " votes cast, " + sinceLast + " new votes cast since last update. " + recasts[issue.id] + " votes have been recast, split among " + nrc + " voters."
+            header.innerHTML += numvotes + " voters have cast, " + sinceLast + " new votes cast since last update. " + recasts[issue.id] + " votes have been recast, split among " + nrc + " voters."
             header.innerHTML += " <a href='javascript:void(showDetails(\"" + issue.id + "\"));'>Show details</a>"
             header.innerHTML += " &nbsp; <a href='/steve/admin/monitor/" + eid + "/" + issue.id + "' target='_blank'>Get JSON</a>"
         } else {
