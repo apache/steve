@@ -144,6 +144,7 @@ class FileBasedBackend:
     def vote(self, electionID, issueID, uid, vote):
         "Casts a vote on an issue"
         votes = {}
+        now = time.time()
         issuepath = os.path.join(self.homedir, "issues", electionID, issueID) + ".json"
         if os.path.isfile(issuepath + ".votes"):
             with open(issuepath + ".votes", "r") as f:
@@ -151,12 +152,28 @@ class FileBasedBackend:
                 f.close()
         votes[uid] = {
             'vote': vote,
-            'timestamp': time.time()
+            'timestamp': now
         }
+        
         with open(issuepath + ".votes", "w") as f:
             f.write(json.dumps(votes))
             f.close()
         
+        # history backlog
+        vote_history = []
+        issuepath = os.path.join(self.homedir, "issues", electionID, issueID) + ".json"
+        if os.path.isfile(issuepath + ".history"):
+            with open(issuepath + ".history", "r") as f:
+                vote_history = json.loads(f.read())
+                f.close()
+        vote_history.append({
+            'uid': uid,
+            'vote': vote,
+            'timestamp': now
+        })
+        with open(issuepath + ".history", "w") as f:
+            f.write(json.dumps(vote_history))
+            f.close()
     
     def issue_delete(self, electionID, issueID):
         "Deletes an issue if it exists"
