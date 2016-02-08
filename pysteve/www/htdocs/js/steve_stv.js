@@ -31,7 +31,7 @@ var candidates_copy = []
 var chars_copy = []
 
 var failover = null;
-
+var tb = ""
 
 
 // Set transfer data during drag'n'drop
@@ -237,12 +237,17 @@ function drawCandidates() {
 
 // Did we drop a vote on top of another?
 function dropCandidate(ev) {
-    ev.preventDefault();
+    if (ev.preventDefault) ev.preventDefault();
     if (ballotNames.length >= maxnum) {
         return; // MNTV lockout
     }
-    source = ev.dataTransfer.getData("Text");
+    source = ev.dataTransfer ? ev.dataTransfer.getData("Text") : tb;
+    source = source ? source : tb
     dest = ev.target.getAttribute("data")
+    dest = dest ? dest : "LOWER"
+    if (dest == source) { // touch fixes
+        dest = "LOWER"
+    }
     var z = 0;
     if (dest == "UPPER") { dest = ballotNames[0]; z = 0}
     if (dest == "LOWER") { dest = ballotNames[ballotNames.length -1]; z = 1;}
@@ -619,6 +624,7 @@ function displayIssueSTV(code, response, state) {
         
         var mbox = document.createElement('input')
         mbox.setAttribute("type", "text")
+        mbox.setAttribute("name", "mbox")
         mbox.setAttribute("id", "mbox")
         mbox.style.width = "350px"
         mbox.setAttribute("placeholder", "Tablet folks: enter the order here instead")
@@ -675,18 +681,14 @@ function touchHandler(event) {
     if (!touch.target || !touch.target.getAttribute || !touch.target.getAttribute("data")) {
         return
     }
-    var simEvent = document.createEvent("MouseEvent");
-        simEvent.initMouseEvent({
-        touchstart: "mousedown",
-        touchmove: "mousemove",
-        touchend: "mouseup",
-        touchcancel: "mouseup"
-    }[event.type], true, true, window, 1,
-        touch.screenX, touch.screenY,
-        touch.clientX, touch.clientY, false,
-        false, false, false, 0, touch.target);
-
-    touch.target.dispatchEvent(simEvent);
+    
+    if (event.type == 'touchstart') {
+        dragVote(touch)
+    }
+    if (event.type == 'touchend' || event.type == 'touchcancel') {
+        tb = touch.target.getAttribute('data')
+        dropCandidate(touch)
+    }
     event.preventDefault();
 }
 
