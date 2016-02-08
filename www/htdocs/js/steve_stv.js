@@ -609,8 +609,17 @@ function displayIssueSTV(code, response, state) {
         reset.setAttribute("value", "Reset")
         reset.setAttribute("onclick", "resetList();")
         
+        
         stvdiv.appendChild(vote)
         stvdiv.appendChild(reset)
+        
+        stvdiv.appendChild(document.createElement('br'))
+        
+        var mbox = document.createElement('input')
+        mbox.setAttribute("type", "text")
+        mbox.setAttribute("id", "mbox")
+        mbox.setAttribute("placeholder", "Or enter the list manually here")
+        stvdiv.appendChild(mbox)
         
         shuffleCandidates();
         drawCandidates();
@@ -627,9 +636,13 @@ function castVotes(args) {
     election = l[0];
     issue = l.length > 1 ? l[l.length-2] : "";
     uid = l.length > 2 ? l[l.length-1] : "";
+    var v = ballotChars.join("")
+    if (v.length == 0 && document.getElementById('mbox').value.length > 0) {
+        v = document.getElementById('mbox').value
+    }
     postREST("/steve/voter/vote/" + election + "/" + issue, {
         uid: uid,
-        vote: ballotChars.join("")
+        vote: v
         },
         undefined,
         castVotesCallback,
