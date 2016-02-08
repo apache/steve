@@ -1046,8 +1046,8 @@ function castVoteCallback(code, response, state) {
     if (code == 200) {
         if (state && state.issue) {
             var yna = document.getElementById('inner_yna_' + state.issue);
-            if (yna && !yna.innerHTML.match(/Vote registered/i)) {
-                yna.innerHTML += " (Vote registered!)"
+            if (yna && !yna.innerHTML.match(/vote received/i)) {
+                yna.innerHTML += " (vote received)"
             }
         }
     } else {
