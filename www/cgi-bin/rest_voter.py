@@ -135,6 +135,10 @@ if pathinfo:
                         else:
                             votehash = election.vote(electionID, issueID, voterID, vote)
                             voteuid = hashlib.sha224(voterID).hexdigest()
+                            # Catch proxy-emails
+                            m = re.match(r"^(.+@.*?[a-zA-Z])-.+$", email)
+                            if m:
+                                email = m.group(1)
                             voter.email(email, "Vote registered: %s (%s)" % (issueID, issuedata['title']), "This is a receipt that your vote was registered for issue #%s:\n\nElection: %s (%s)\nIssue: %s (%s)\nVote cryptohash: %s\nVote UID: %s" % (issueID, basedata['title'], electionID, issuedata['title'], issueID, votehash, voteuid))
                             response.respond(200, {'message': 'Vote saved!'})
             else:
