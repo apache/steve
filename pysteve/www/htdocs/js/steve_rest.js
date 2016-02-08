@@ -832,7 +832,7 @@ function renderElectionFrontpage(response, el) {
     
     var s = 0;
     var ynas = 0;
-    response.issues.sort(function(a,b) { return a.title < b.title } )
+    response.issues.sort(function(a,b) { return a.title > b.title } )
     for (i in response.issues) {
         var issue = response.issues[i]
         if (issue.type == "yna") {
@@ -856,7 +856,12 @@ function renderElectionFrontpage(response, el) {
         
         // Add issue
         var inner = document.createElement('span')
-        inner.innerHTML = issue.id + ": " + issue.title;
+        var a = issue.id
+        while (a.length < 8) {
+            a = ' ' + a
+        }
+        a = a.replace(/\s/g, "&nbsp;")
+        inner.innerHTML = a + issue.id + ": " + issue.title;
         outer.appendChild(no)
         outer.appendChild(inner)
         outer.setAttribute("onclick", "location.href='ballot_" + (issue.category ? issue.category : issue.type.match(/([a-z]+)/)[0]) + ".html?" + el[0] + "/" + issue.id + "/" + (el[1] ? el[1] : "") + "';")
