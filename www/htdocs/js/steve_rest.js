@@ -1039,7 +1039,7 @@ function castVote(election, issue, uid, vote) {
     },
     undefined,
     castVoteCallback,
-    issue)
+    {issue: issue})
 }
 
 function castVoteCallback(code, response, state) {
