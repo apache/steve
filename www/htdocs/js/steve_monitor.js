@@ -71,7 +71,11 @@ function saveData(election) {
             backlog: backlog,
             oldbacklog: oldbacklog
         }
-        window.localStorage.setItem("monitor_" + election, JSON.stringify(js))
+        try {
+            window.localStorage.setItem("monitor_" + election, JSON.stringify(js))
+        } catch(e) {
+            
+        }
     }
 }
 
