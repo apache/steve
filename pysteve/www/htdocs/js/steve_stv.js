@@ -667,7 +667,7 @@ function castVotesCallback(code, response, state) {
 function touchHandler(event) {
     var touch = event.changedTouches[0];
     if (!touch.target || !touch.target.getAttribute || !touch.target.getAttribute("data")) {
-        return
+        //return
     }
     var simEvent = document.createEvent("MouseEvent");
         simEvent.initMouseEvent({
