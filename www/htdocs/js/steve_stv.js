@@ -614,11 +614,13 @@ function displayIssueSTV(code, response, state) {
         stvdiv.appendChild(reset)
         
         stvdiv.appendChild(document.createElement('br'))
+        stvdiv.appendChild(document.createElement('br'))
         
         var mbox = document.createElement('input')
         mbox.setAttribute("type", "text")
         mbox.setAttribute("id", "mbox")
-        mbox.setAttribute("placeholder", "Or enter the list manually here")
+        mbox.style.width = "350px"
+        mbox.setAttribute("placeholder", "Tablet folks: enter the order here instead")
         stvdiv.appendChild(mbox)
         
         shuffleCandidates();
