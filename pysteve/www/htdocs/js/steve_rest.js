@@ -930,6 +930,7 @@ function renderElectionBulk(response, el) {
             
             // Add issue
             var inner = document.createElement('span')
+            inner.setAttribute("id", "inner_yna_" + issue.id)
             inner.innerHTML = issue.title;
             outer.appendChild(no)
             outer.appendChild(inner)
@@ -1033,16 +1034,22 @@ function castVote(election, issue, uid, vote) {
     }
     postREST("/steve/voter/vote/" + election + "/" + issue, {
         uid: uid,
-        vote: vote
+        vote: vote,
+        issue: issue
     },
     undefined,
     castVoteCallback,
     issue)
 }
 
-function castVoteCallback(code, response, issue) {
+function castVoteCallback(code, response, state) {
     if (code == 200) {
-        //code
+        if (state && state.issue) {
+            var yna = document.getElementById('inner_yna_' + state.issue);
+            if (yna && !yna.innerHTML.match(/Vote registered/i)) {
+                yna.innerHTML += " (Vote registered!)"
+            }
+        }
     } else {
         alert(response.message)
     }
