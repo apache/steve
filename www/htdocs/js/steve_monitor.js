@@ -259,4 +259,4 @@ function disableF5(e) {
     }
 }
 
-window.onkeydown = disableF5
+//window.onkeydown = disableF5
