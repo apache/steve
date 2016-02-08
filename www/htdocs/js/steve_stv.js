@@ -535,6 +535,7 @@ function loadIssue(election, issue, uid, callback) {
 }
 
 function displayIssueSTV(code, response, state) {
+    initTouch()
     chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']  // Corresponding STV letters, in same order as nominees
     election_data = response
     if (code != 200) {
@@ -662,3 +663,27 @@ function castVotesCallback(code, response, state) {
     }
 }
 
+
+function touchHandler(event) {
+    var touch = event.changedTouches[0];
+
+    var simEvent = document.createEvent("MouseEvent");
+        simEvent.initMouseEvent({
+        touchstart: "mousedown",
+        touchmove: "mousemove",
+        touchend: "mouseup"
+    }[event.type], true, true, window, 1,
+        touch.screenX, touch.screenY,
+        touch.clientX, touch.clientY, false,
+        false, false, false, 0, null);
+
+    touch.target.dispatchEvent(simEvent);
+    event.preventDefault();
+}
+
+function initTouch() {
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);
+}
