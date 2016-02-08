@@ -33,6 +33,7 @@ debug = []
 def validateSTV(vote, issue):
     "Tries to validate a vote, returns why if not valid, None otherwise"
     letters = [chr(i) for i in range(ord('a'), ord('a') + len(issue['candidates']))]
+    letters.push('-')
     for char in letters:
         if vote.count(char) > 1:
             return "Duplicate letters found"
@@ -326,7 +327,12 @@ def generate_random(count, votes):
 
 
 def tallySTV(votes, issue):
-    
+    rvotes = []
+    # Cut out abstained votes.
+    for vote in votes:
+        if vote.find("-") == -1:
+            rvotes.push(vote)
+    votes = rvotes
     m = re.match(r"stv(\d+)", issue['type'])
     if not m:
         raise Exception("Not an STV vote!")
