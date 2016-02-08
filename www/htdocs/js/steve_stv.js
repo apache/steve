@@ -160,6 +160,7 @@ function drawCandidates() {
             var statement = document.createElement('div')
             statement.setAttribute("class", "statement_marker")
             statement.setAttribute("title", "Click to read " + name + "'s statement")
+            statement.setAttribute("onclick", "location.hash='#statement_"+char+"';")
             statement.innerHTML = "<a href='#statement_"+char+"'>Statement</a>"
 
             outer.appendChild(statement)
