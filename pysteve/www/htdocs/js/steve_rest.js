@@ -861,7 +861,7 @@ function renderElectionFrontpage(response, el) {
             a = ' ' + a
         }
         a = a.replace(/\s/g, "&nbsp;")
-        inner.innerHTML = a + issue.id + ": " + issue.title;
+        inner.innerHTML = a + ": " + issue.title;
         outer.appendChild(no)
         outer.appendChild(inner)
         outer.setAttribute("onclick", "location.href='ballot_" + (issue.category ? issue.category : issue.type.match(/([a-z]+)/)[0]) + ".html?" + el[0] + "/" + issue.id + "/" + (el[1] ? el[1] : "") + "';")
