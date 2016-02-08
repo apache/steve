@@ -327,11 +327,11 @@ def generate_random(count, votes):
 
 
 def tallySTV(votes, issue):
-    rvotes = []
+    rvotes = {}
     # Cut out abstained votes.
     for vote in votes:
-        if vote.find("-") == -1:
-            rvotes.append(vote)
+        if votes[vote].find("-") == -1:
+            rvotes[vote] = votes[vote]
     votes = rvotes
     m = re.match(r"stv(\d+)", issue['type'])
     if not m:
