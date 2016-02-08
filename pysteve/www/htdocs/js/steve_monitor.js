@@ -234,10 +234,11 @@ function showChanges(issue) {
             var fuid = {}
             for (var z in backlog[issue.id]) {
                 var v = backlog[issue.id][z]
-                fuid[v.uid] = true
+                fuid[v.uid] = fuid[v.uid] ? fuid[v.uid] : 0
+                fuid[v.uid]++
             }
             for (var x in fuid) {
-                nrc++;
+                if (fuid[x] > 1) nrc++;
             }
             header.innerHTML = ""
             if (riggedIssues[issue.id] && riggedIssues[issue.id].length > 0) {
