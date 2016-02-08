@@ -642,6 +642,9 @@ function castVotes(args) {
     if (v.length == 0 && document.getElementById('mbox').value.length > 0) {
         v = document.getElementById('mbox').value
     }
+    if (v == "") {
+        v = "-"
+    }
     postREST("/steve/voter/vote/" + election + "/" + issue, {
         uid: uid,
         vote: v
