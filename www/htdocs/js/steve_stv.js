@@ -673,7 +673,8 @@ function touchHandler(event) {
         simEvent.initMouseEvent({
         touchstart: "mousedown",
         touchmove: "mousemove",
-        touchend: "mouseup"
+        touchend: "mouseup",
+        touchcancel: "mouseup"
     }[event.type], true, true, window, 1,
         touch.screenX, touch.screenY,
         touch.clientX, touch.clientY, false,
