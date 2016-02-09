@@ -426,12 +426,16 @@ else:
                     response.respond(404, {'message': 'No such election or issue'})
         # Close an election
         elif action == "close" and electionID:
-            reopen = form.getvalue('reopen')
+            ro = form.getvalue('reopen')
+            if ro and ro == "true":
+                ro = True
+            else:
+                ro = False
             if election.exists(electionID):
                 basedata = election.getBasedata(electionID)
                 if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
                     try:
-                        election.close(electionID, basedata, reopen=reopen)
+                        election.close(electionID, basedata, reopen=ro)
                         if reopen:
                             response.respond(200, {'message': "Election reopened"})
                         else:
