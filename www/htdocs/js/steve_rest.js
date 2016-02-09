@@ -875,7 +875,7 @@ function renderElectionFrontpage(response, el) {
         btn.setAttribute("type", "button")
         btn.setAttribute("class", "btn-green")
         btn.setAttribute("style", "margin: 30px;")
-        btn.setAttribute("value", "Bulk vote on YNA issues")
+        btn.setAttribute("value", "Bulk vote on Yes/No issues")
         btn.setAttribute("onclick", "location.href='/bulk_yna.html?" + el[0] + "/" + el[1] + "';")
         par.appendChild(btn)
         var p = document.createElement('p')
