@@ -69,7 +69,7 @@ class ElasticSearchBackend:
     
     def close(self, election, basedata, reopen = False):
         "Mark an election as closed"
-        if reopen:
+        if reopen == True:
             basedata['closed'] = False
         else:
             basedata['closed'] = True
