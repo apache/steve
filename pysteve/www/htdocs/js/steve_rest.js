@@ -1081,6 +1081,7 @@ function renderElectionBulk(response, el) {
         inner.appendChild(no)
         inner.appendChild(abstain)
         inner.appendChild(yes)
+        outer.appendChild(inner)
         outer.style.animation = "fadein " + (0.5 +  (s/6)) + "s"
         issueList.appendChild(outer)
     }
