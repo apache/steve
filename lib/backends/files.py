@@ -53,9 +53,9 @@ class FileBasedBackend:
                 return basedata
         return None
     
-    def close(self, election, basedata, reopen = False):
+    def close(self, election, reopen = False):
         "Mark an election as closed"
-    
+        basedata = self.get_basedata(election)
         elpath = os.path.join(self.homedir, "issues", election)
         if reopen:
             basedata['closed'] = False
