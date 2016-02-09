@@ -431,7 +431,7 @@ else:
                 basedata = election.getBasedata(electionID)
                 if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
                     try:
-                        election.close(electionID, reopen=reopen)
+                        election.close(electionID, basedata, reopen=reopen)
                         if reopen:
                             response.respond(200, {'message': "Election reopened"})
                         else:
