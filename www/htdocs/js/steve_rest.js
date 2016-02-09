@@ -1048,7 +1048,7 @@ function castVoteCallback(code, response, state) {
         if (state && state.issue) {
             var yna = document.getElementById('inner_yna_' + state.issue);
             if (yna && !yna.innerHTML.match(/vote received/i)) {
-                yna.innerHTML += " (vote received)"
+                //yna.innerHTML += " (vote received)"
             }
         }
     } else {
