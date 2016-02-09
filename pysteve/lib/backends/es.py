@@ -115,7 +115,7 @@ class ElasticSearchBackend:
     
     def vote_history(self, electionID, issueID):
         "Read vote history and return raw format"
-        res = self.es.search(index="steve", doc_type="vote_history", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999)
+        res = self.es.search(index="steve", doc_type="vote_history", sort = "data.timestamp", q = "election:%s AND issue:%s" % (electionID, issueID), size = 9999)
         results = len(res['hits']['hits'])
         if results > 0:
             votes = []
