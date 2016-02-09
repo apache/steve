@@ -1104,14 +1104,18 @@ function castSingleVote(vote) {
         },
         undefined,
         castSingleVoteCallback,
-        null)
+        {vote: vote})
 }
 
 function castSingleVoteCallback(code, response, state) {
     if (code != 200) {
         alert(response.message)
     } else {
-        document.getElementById('ynavote').innerHTML = "<h2>Your vote has been registered!</h2><p style='text-align:center;'><big>Should you reconsider, you can always reload this page and vote again.<br/><br/><a href=\"javascript:void(location.href='election.html'+document.location.search);\">Back to election front page</a></big></p>"
+        var v = ""
+        if (state && state.vote) {
+            v = "(" + state.vote.toUpperCase() + ")"
+        }
+        document.getElementById('ynavote').innerHTML = "<h2>Your vote " + v + " has been registered!</h2><p style='text-align:center;'><big>Should you reconsider, you can always reload this page and vote again.<br/><br/><a href=\"javascript:void(location.href='election.html'+document.location.search);\">Back to election front page</a></big></p>"
     }
 }
 
