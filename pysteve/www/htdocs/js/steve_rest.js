@@ -15,6 +15,9 @@
  limitations under the License.
 */
 
+// some bulk stuff
+var bulk_issues = []
+
 // Function for fetching JSON from the REST API
 function getJSON(theUrl, xstate, callback) {
     var xmlHttp = null;
@@ -916,10 +919,11 @@ function renderElectionBulk(response, el) {
     var s = 0;
     var ynas = 0;
     response.issues.sort(function(a,b) { return a.title > b.title } )
+    bulk_issues = []
     for (i in response.issues) {
         var issue = response.issues[i]
         if (issue.type == "yna") {
-                
+            bulk_issues.push(issue)
             s++;
             var outer = document.createElement('li');
             // Set style
@@ -1024,11 +1028,113 @@ function renderElectionBulk(response, el) {
             issueList.appendChild(outer)
         }
     }
+    
+    if (bulk_issues.length > 0) {
+        
+        var warning = document.createElement('div')
+        warning.setAttribute("id", "bulkvoter")
+        warning.innerHTML = "<h3>Danger zone: cast bulk vote on remaining issues</h3><p>The buttons below allows you to cast one giant vote on all the issues above that you have not voted on yet. Use with care!</p>"
+        
+        issueList.appendChild(warning)
+        
+        var outer = document.createElement('li');
+        // Set style
+        outer.setAttribute("class", "issueListItemWide")
+        
+        var no = document.createElement('div');
+        no.setAttribute("class", "issueNumber")
+        no.innerHTML = (s)
+        
+        // Add bulk txt
+        var inner = document.createElement('span')
+        inner.setAttribute("id", "inner_yna_bulk" )
+        inner.innerHTML = "Bulk vote on the rest:";
+        
+        var yes = document.createElement('input')
+        yes.setAttribute("type", "button")
+        yes.setAttribute("value", "Yes")
+        yes.setAttribute("class", "btn-green")
+        yes.setAttribute("style", "float: right;");
+        yes.setAttribute("onclick", "castBulkVote('" + el[0] + "', 'bulk', '" + el[1] + "', 'y');")
+        
+        var no = document.createElement('input')
+        no.setAttribute("type", "button")
+        no.setAttribute("value", "No")
+        no.setAttribute("class", "btn-red")
+        no.setAttribute("style", " float: right;");
+        no.setAttribute("onclick", "castBulkVote('" + el[0] + "', 'bulk', '" + el[1] + "', 'n');")
+        
+        var abstain = document.createElement('input')
+        abstain.setAttribute("type", "button")
+        abstain.setAttribute("value", "Abstain")
+        abstain.setAttribute("class", "btn-yellow")
+        abstain.setAttribute("style", "float: right;");
+        abstain.setAttribute("onclick", "castBulkVote('" + el[0] + "', 'bulk', '" + el[1] + "', 'a');")
+        
+        var mark = document.createElement('img');
+        mark.setAttribute("width", "26")
+        mark.setAttribute("height", "32")
+        mark.setAttribute("style", "float: right; margin-left: 10px;")
+        mark.setAttribute("id", "mark_bulk")
+        
+        inner.appendChild(mark)
+        inner.appendChild(no)
+        inner.appendChild(abstain)
+        inner.appendChild(yes)
+        outer.style.animation = "fadein " + (0.5 +  (s/6)) + "s"
+        issueList.appendChild(outer)
+    }
     par.appendChild(issueList)
 
 }
 
+function castBulkVote(election, garbage, uid, vote) {
+    if (bulk_issues && bulk_issues.length > 0 ) {
+        var nb = 0
+        for (var i in bulk_issues) {
+            if (bulk_issues[i].hasVoted == false) {
+                nb++;
+            }
+        }
+        document.getElementById("inner_yna_bulk").innerHTML = "Casting bulk vote, please wait..."
+        for (var i in bulk_issues) {
+            if (bulk_issues[i].hasVoted == false) {
+                var issue = bulk_issues[i].id
+                var mark = document.getElementById('mark_' + issue);
+                if (mark) {
+                    mark.setAttribute("src", "/images/vote_" + vote[0] + ".png")
+                }
+                postREST("/steve/voter/vote/" + election + "/" + issue, {
+                    uid: uid,
+                    vote: vote,
+                    issue: issue
+                },
+                undefined,
+                castVoteCallback,
+                {issue: issue})
+            }
+        }
+        document.getElementById("inner_yna_bulk").innerHTML = "Bulk vote cast on all remaining issues!"
+        var mark = document.getElementById('mark_bulk');
+        if (mark) {
+            mark.setAttribute("src", "/images/vote_" + vote[0] + ".png")
+        }
+    }
+    
+}
+
 function castVote(election, issue, uid, vote) {
+    // first, mark this as voted upon in bulk_issues
+    if (bulk_issues && bulk_issues.length > 0 ) {
+        for (var i in bulk_issues) {
+            if (bulk_issues[i].id == issue) {
+                bulk_issues[i].hasVoted = true
+                break
+            }
+        }
+    }
+    
+    
     var mark = document.getElementById('mark_' + issue);
     if (mark) {
         mark.setAttribute("src", "/images/vote_" + vote[0] + ".png")
