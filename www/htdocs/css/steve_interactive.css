@@ -441,8 +441,9 @@ body, html {
 }
 
 * {
-    -webkit-user-select: none; 
+    /*-webkit-user-select: none; */
 }
+
 
 #ballot {
   list-style: none;
