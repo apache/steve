@@ -987,7 +987,8 @@ function renderElectionBulk(response, el) {
             popupd.appendChild(popupb)
             popupd.appendChild(popupf)
             
-            document.getElementsByTagName('body')[0].appendChild(popup)
+            //document.getElementsByTagName('body')[0].appendChild(popup)
+            issueList.appendChild(popup)
             
             
             
