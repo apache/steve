@@ -21,8 +21,12 @@ import random
 import time
 from itertools import izip
 
-
-from __main__ import homedir, config
+try:
+    from __main__ import config
+except:
+    import ConfigParser as configparser
+    config = configparser.RawConfigParser()
+    config.read("%s/../../../steve.cfg" % (os.path.dirname(__file__)))
     
 import constants, voter
 from plugins import *

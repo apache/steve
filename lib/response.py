@@ -35,5 +35,10 @@ def respond(code, js):
     print("Status: %u %s\r\nContent-Type: application/json\r\nCache-Control: no-cache\r\nContent-Length: %u\r\n" % (code, c, len(out)))
     print(out)
     
-    
-    
+def wsgirespond(start_response, code, js):
+    c = responseCodes[code] if code in responseCodes else "Unknown Response Code(?)"
+    out = json.dumps(js, indent=4)
+    start_response("%u %s" % (code, c), [
+        ("Content-Type", "application/json"), ("Cache-Control", "no-cache"), ("Content-Length", "%u" % len(out))
+        ])
+    return out

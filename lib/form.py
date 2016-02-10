@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 import hashlib, json, random, os, sys, time
-from __main__ import homedir, config
 import cgi
 
 

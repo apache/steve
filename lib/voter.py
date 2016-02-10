@@ -15,7 +15,12 @@
 # limitations under the License.
 #
 import hashlib, json, random, os, sys, time
-from __main__ import homedir, config
+try:
+    from __main__ import config
+except:
+    import ConfigParser as configparser
+    config = configparser.RawConfigParser()
+    config.read("%s/../../../steve.cfg" % (os.path.dirname(__file__)))
 
 # SMTP Lib
 import smtplib
