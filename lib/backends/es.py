@@ -144,7 +144,7 @@ class ElasticSearchBackend:
         "List all issues in an election"
         issues = []
         try:
-            res = self.es.search(index="steve", doc_type="issues", sort = "id", q = "election:%s" % election, size = 999)
+            res = self.es.search(index="steve", doc_type="issues", sort = "id", q = "election:%s" % election, size = 999, _source_include = 'id')
             results = len(res['hits']['hits'])
             if results > 0:
                 for entry in res['hits']['hits']:
