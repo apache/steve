@@ -393,10 +393,8 @@ else:
                                 message = message.replace("$title", basedata['title'])
                                 subject = "Public electionIopen for votes: %s (%s)" % (electionID, basedata['title'])
                                 voter.email(email, subject, message)
-                            response.respond(200, {'message': "Vote link sent"})
                         except Exception as err:
-                            response.respond(500, {'message': 'Could not load base data: %s' % err})
-                        
+                            response.respond(500, {'message': 'Could not load base data: %s' % err})                        
                         response.respond(200, {'message': "Vote link sent to %s" % email})
                     else:
                         response.respond(404, {'message': 'No such election'})
