@@ -227,7 +227,7 @@ p {
   -webkit-transform: translate(0, 0);
   -ms-transform: translate(0, 0);
   transform: translate(0, 0);
-  top: 20%;
+  top: 10%;
 }
 .modal-dialog {
   background: #fefefe;
@@ -251,7 +251,7 @@ p {
 .modal-body {
   padding: 20px;
   word-wrap: break-word;
-  max-height: 450px;
+  max-height: 325px;
   overflow: auto;
 }
 pre {
