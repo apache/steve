@@ -171,9 +171,8 @@ if pathinfo:
                 response.respond(500, {'message': 'Could not create voter ID: %s' % err})
     elif action == "peek" and election:
         try:
-            elpath = os.path.join(homedir, "issues", election)
-            if os.path.isdir(elpath):
-                basedata = election.getBasedata(electionID, hideHash=True)
+            basedata = election.getBasedata(electionID, hideHash=True)
+            if basedata:
                 if 'closed' in basedata and basedata['closed'] == True:
                         raise Exception("This election has closed")
                 if 'open' in basedata and basedata['open'] == "true":
