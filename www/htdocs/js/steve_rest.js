@@ -182,10 +182,24 @@ function displayTally(code, response, issue) {
             }
             obj.innerHTML += "</ol>"
         } else if (response.yes != undefined) {
+            var largest = Math.max(response.yes, response.no, response.abstain);
+            
             obj.innerHTML = "<i>(" + response.votes + " votes cast)</i>\n\n"
-            obj.innerHTML += "<b>Yes:             </b>" + response.yes + "\n"
-            obj.innerHTML += "<b>No:              </b>" + response.no + "\n"
-            obj.innerHTML += "<b>Abstain:         </b>" + response.abstain + "\n"
+            if (largest == response.yes) {
+                obj.innerHTML += "<span color='#934;'><b>Yes:             </b>" + response.yes + "</span>\n"
+            } else {
+                obj.innerHTML += "<b>Yes:             </b>" + response.yes + "\n"
+            }
+            if (largest == response.no) {
+                obj.innerHTML += "<span color='#934;'><b>No:             </b>" + response.no + "</span>\n"
+            } else {
+                obj.innerHTML += "<b>No:             </b>" + response.no + "\n"
+            }
+            if (largest == response.abstain) {
+                obj.innerHTML += "<span color='#934;'><b>Abstain:             </b>" + response.abstain + "</span>\n"
+            } else {
+                obj.innerHTML += "<b>Abstain:             </b>" + response.abstain + "\n"
+            }
             if (response.binding_yes != undefined) {
                 obj.innerHTML += "<b>Binding Yes:     </b>" + response.binding_yes + "\n"
                 obj.innerHTML += "<b>Binding No:      </b>" + response.binding_no + "\n"
