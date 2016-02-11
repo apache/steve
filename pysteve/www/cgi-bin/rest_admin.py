@@ -436,10 +436,12 @@ else:
                 if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
                     try:
                         election.close(electionID, reopen=ro)
+                        ehash, debug = election.getHash(electionID)
                         if ro:
+                            for email in basedata['monitors']:
+                                voter.email(email, "Monitoring update for election #%s: Election reopened!" % electionID, debug)
                             response.respond(200, {'message': "Election reopened"})
                         else:
-                            ehash, debug = election.getHash(electionID)
                             murl =  "%s/admin/tally.html?%s" % (config.get("general", "rooturl"), electionID)
                             for email in basedata['monitors']:
                                 voter.email(email, "Monitoring update for election #%s: Election closed!" % electionID, "%s\n\nFinal tally available at: %s" % (debug, murl))
