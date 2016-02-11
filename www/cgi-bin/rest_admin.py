@@ -303,7 +303,7 @@ else:
                         response.respond(500, {'message': 'Could not load base data: %s' % err})
                     if 'hash' in basedata:
                         del basedata['hash']
-                    response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': "https://%s/steve/election.html?%s" % (config.get("general", "rooturl"), electionID)})
+                    response.respond(200, {'base_data': basedata, 'issues': js, 'baseurl': "%s/election.html?%s" % (config.get("general", "rooturl"), electionID)})
                 else:
                     response.respond(404, {'message': 'No such election: %s' % electionID})
             else:
@@ -405,7 +405,9 @@ else:
             issue = l[2] if len(l) > 2 else None
             if electionID and issue:
                 basedata = election.getBasedata(electionID)
-                if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
+                # Allow access at all times to owners/admins, monitors after closed
+                if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami) or \
+                (karma >= 2 and 'open' in basedata and basedata['open'] == False):
                     issuedata = election.getIssue(electionID, issue)
                     votes = election.getVotes(electionID, issue)
                     if issuedata and votes:
@@ -438,8 +440,9 @@ else:
                             response.respond(200, {'message': "Election reopened"})
                         else:
                             ehash, debug = election.getHash(electionID)
+                            murl =  "%s/admin/tally.html?%s" % (config.get("general", "rooturl"), electionID)
                             for email in basedata['monitors']:
-                                voter.email(email, "Monitoring update for election #%s: Election closed!" % electionID, debug)
+                                voter.email(email, "Monitoring update for election #%s: Election closed!" % electionID, "%s\n\nFinal tally available at: %s" % (debug, murl))
                             response.respond(200, {'message': "Election closed"})
                     except Exception as err:
                         response.respond(500, {'message': "Could not close election: %s" % err})
