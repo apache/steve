@@ -285,7 +285,7 @@ else:
             else:
                 response.respond(403, {'message': 'You do not have enough karma for this'})
         
-        elif action == "view" and karma >= 3:
+        elif action == "view" and karma >= 2:
             # View a list of issues for an election
             if electionID:
                 js = []
