@@ -222,7 +222,8 @@ function readTally(code, response, election) {
     obj.setAttribute("id", "contents")
     obj.innerHTML = ""
     if (code == 200) {
-            for (i in response.issues) {
+        response.issues.sort(function(a,b) { return a.title > b.title } )
+        for (i in response.issues) {
             var issue = response.issues[i]
             obj.innerHTML += "<h3>" + issue.title + ":</h3>"
             obj.innerHTML += "<pre id='tally_" + issue.id + "'>Loading results...</pre>"
