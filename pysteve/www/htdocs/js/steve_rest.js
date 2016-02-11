@@ -186,7 +186,7 @@ function displayTally(code, response, issue) {
             
             obj.innerHTML = "<i>(" + response.votes + " votes cast)</i>\n\n"
             if (largest == response.yes) {
-                obj.innerHTML += "<span style='color: #934;'><b>Yes:             </b>" + response.yes + "</span>\n"
+                obj.innerHTML += "<span style='color: #394;'><b>Yes:             </b>" + response.yes + "</span>\n"
             } else {
                 obj.innerHTML += "<b>Yes:             </b>" + response.yes + "\n"
             }
@@ -196,7 +196,7 @@ function displayTally(code, response, issue) {
                 obj.innerHTML += "<b>No:              </b>" + response.no + "\n"
             }
             if (largest == response.abstain) {
-                obj.innerHTML += "<span style='color: #934;'><b>Abstain:         </b>" + response.abstain + "</span>\n"
+                obj.innerHTML += "<span style='color: #994;'><b>Abstain:         </b>" + response.abstain + "</span>\n"
             } else {
                 obj.innerHTML += "<b>Abstain:         </b>" + response.abstain + "\n"
             }
