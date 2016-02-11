@@ -212,7 +212,7 @@ function displayTally(code, response, issue) {
             pre.innerHTML = response.debug.join("\n")
             pre.setAttribute("id", "debug_" + issue)
             pre.setAttribute("style", "display: none; border: 1px dotted #666; background: #FFE;")
-            obj.innerHTML += "<a href=\"javascript:void(document.getElementById('debug_" + issue + "').style.display = 'block');\">Show debug</a>"
+            obj.innerHTML += "<a href=\"javascript:void(document.getElementById('debug_" + issue + "').style.display = (document.getElementById('debug_" + issue + "').style.display == 'block') ? 'none' : 'block');\">Show debug</a>"
             obj.appendChild(pre)
         }
     }
