@@ -540,9 +540,22 @@ function loadIssue(election, issue, uid, callback) {
     }
 }
 
+function makeLetter(num) {
+    var x = String.charCodeAt('A')
+    while (num > 25) {
+        x += 1
+        num -= 25
+    }
+    var letter = String.fromCharCode(x) + String.fromCharCode(String.charCodeAt('A') + num)
+    return letter
+}
+
 function displayIssueSTV(code, response, state) {
     initTouch()
-    chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']  // Corresponding STV letters, in same order as nominees
+    chars = []  // Corresponding STV letters, in same order as nominees
+    for (var z = 0; z <= 100; z++) {
+        chars.push(makeLetter(z))
+    }
     election_data = response
     if (code != 200) {
         document.getElementById('preloaderWrapper').innerHTML = "<h1>Could not load issue:</h1><h2>" + response.message + "</h2>";
@@ -623,20 +636,13 @@ function displayIssueSTV(code, response, state) {
         stvdiv.appendChild(document.createElement('br'))
         stvdiv.appendChild(document.createElement('br'))
         
-        var mbox = document.createElement('input')
-        mbox.setAttribute("type", "text")
-        mbox.setAttribute("name", "mbox")
-        mbox.setAttribute("id", "mbox")
-        mbox.style.width = "350px"
-        mbox.setAttribute("placeholder", "Tablet folks: enter the order here instead")
-        stvdiv.appendChild(mbox)
         
         shuffleCandidates();
         drawCandidates();
         
         document.getElementById('title').innerHTML = response.issue.title
         document.title = response.issue.title + " - Apache STeVe"
-        
+
     }
     
 }
@@ -646,7 +652,7 @@ function castVotes(args) {
     election = l[0];
     issue = l.length > 1 ? l[l.length-2] : "";
     uid = l.length > 2 ? l[l.length-1] : "";
-    var v = ballotChars.join("")
+    var v = ballotChars.join(" ")
     if (v.length == 0 && document.getElementById('mbox').value.length > 0) {
         v = document.getElementById('mbox').value
     }
