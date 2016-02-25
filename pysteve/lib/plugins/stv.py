@@ -30,14 +30,24 @@ from lib import constants
 
 debug = []
 
+def makeLetter(num):
+    x = ord('A')
+    while num > 25:
+        x += 1
+        num -= 25
+    letter = chr(x) + chr(ord('A') + num)
+    return letter
+
 def validateSTV(vote, issue):
     "Tries to validate a vote, returns why if not valid, None otherwise"
-    letters = [chr(i) for i in range(ord('a'), ord('a') + len(issue['candidates']))]
+    # aa, ab, ac, ad.... az, ba, bb, bc, bd...bz, ca, cb, cc, cd...
+    letters = [makeLetter(x) for x in range(1,100)]
     letters.append('-')
+    seats = vote.split(" ")
     for char in letters:
-        if vote.count(char) > 1:
+        if seats.count(char) > 1:
             return "Duplicate letters found"
-    for char in vote:
+    for char in seats:
         if char not in letters:
             return "Invalid characters in vote. Accepted are: %s" % ", ".join(letters)
     return None
@@ -50,6 +60,7 @@ def run_vote(names, votes, num_seats):
   remap = dict((c.name, c) for c in candidates.l)
 
   # Turn VOTES into a list of ordered-lists of Candidate objects
+  letter = []
   votes = [[remap[n] for n in choices] for choices in votes.values()]
 
   if candidates.count(ELECTED + HOPEFUL) <= num_seats:
@@ -331,7 +342,7 @@ def tallySTV(votes, issue):
     # Cut out abstained votes.
     for vote in votes:
         if votes[vote].find("-") == -1:
-            rvotes[vote] = votes[vote]
+            rvotes[vote] = votes[vote].split(" ")
     votes = rvotes
     m = re.match(r"stv(\d+)", issue['type'])
     if not m:
@@ -341,7 +352,7 @@ def tallySTV(votes, issue):
     candidates = {}
     z = 0
     for c in issue['candidates']:
-        candidates[chr(ord('a') + z)] = c['name']
+        candidates[makeLetter(z)] = c['name']
         z += 1
 
     # run the stv calc
@@ -353,7 +364,7 @@ def tallySTV(votes, issue):
 
     # Return the data
     return {
-        'votes': len(votes),
+        'votes': len(rvotes),
         'winners': winners,
         'winnernames': winnernames,
         'debug': debug
