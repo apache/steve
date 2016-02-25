@@ -234,6 +234,7 @@ function drawCandidates() {
         box.appendChild(outer)
         
     }
+    document.getElementById('ballotbox').style.height = box.offsetHeight + "px"
 }
 
 // Did we drop a vote on top of another?
