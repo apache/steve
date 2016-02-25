@@ -342,7 +342,7 @@ def tallySTV(votes, issue):
     # Cut out abstained votes.
     for vote in votes:
         if votes[vote].find("-") == -1:
-            rvotes[vote] = votes[vote].split(" ")
+            rvotes[vote] = re.split(r"[\s,]", votes[vote])
     votes = rvotes
     m = re.match(r"stv(\d+)", issue['type'])
     if not m:
