@@ -100,7 +100,7 @@ _html do
        .not-elected {background: #F00}
        .none {background: yellow}
     }
-    _script src: 'jquery.min.js'
+    _script src: 'assets/jquery.min.js'
   end
 
   _body? do
@@ -134,7 +134,8 @@ _html do
 
       _label_ for: 'seats' do
         _span 'seats:'
-        _input name: 'seats', id: 'seats', value: @seats, size: 2
+        _input name: 'seats', id: 'seats', value: @seats, size: 2,
+          type: 'number', min: 1, max: nominees.length-1
       end
 
       _input type: 'submit', value: 'submit', name: 'submit'
@@ -170,17 +171,8 @@ _html do
       // If JS is enabled, we don't need a submit button
       $('input[type=submit]').hide();
 
-      // Add up and down arrows and refresh on change
-      var seats = $('#seats');
-      seats.keyup(function() {return refresh()});
-      seats.before($('<button>&#x21D3;</button>').click(function() {
-        if (seats.val()>1) {seats.val(seats.val()-1);}
-        return refresh();
-      }));
-      seats.after($('<button>&#x21D1;</button>').click(function() {
-        if (seats.val()<1) {seats.val(seats.val()-0+1);}
-        return refresh();
-      }));
+      // Refresh on change in number of seats
+      $('#seats').on('input', function() {return refresh()});
     }
   end
 end
