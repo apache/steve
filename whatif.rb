@@ -25,14 +25,14 @@
 #   * Python 2.6.x
 #   * Ruby 1.9.x
 #   * wunderbar gem ([sudo] gem install wunderbar)
-#   * (optional) jQuery http://code.jquery.com/jquery.min.js
+#   * (optional) jQuery http://code.jquery.com/jquery-min.js
 #
 # Installation instructions:
 #
 #    ruby whatif.rb --install=/var/www
 #
 #    1) Specify a path that supports cgi, like public-html or Sites.
-#    2) (optional, but highly recommended) download jquery.min.js into
+#    2) (optional, but highly recommended) download jquery-min.js into
 #       your installation directory.
 #
 # Execution instructions:
@@ -100,7 +100,7 @@ _html do
        .not-elected {background: #F00}
        .none {background: yellow}
     }
-    _script src: 'assets/jquery.min.js'
+    _script src: 'assets/jquery-min.js'
   end
 
   _body? do
