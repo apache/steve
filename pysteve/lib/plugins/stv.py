@@ -363,6 +363,7 @@ def tallySTV(votes, issue, version = 2):
 
     # run the stv calc
     # Try version 2 first, fall back to version 1 if it breaks
+    winners = []
     if version == 2:
         try:
             winners = run_vote(candidates, votes, numseats)
