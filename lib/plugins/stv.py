@@ -372,7 +372,10 @@ def tallySTV(votes, issue, version = 2):
         try:
             winners = run_vote(candidates, votes, numseats)
         except:
-            return tallySTV(ovotes, issue, version = 1)
+            return tallySTV(ovotes, issue, 1)
+    else:
+        winners = run_vote(candidates, votes, numseats)
+        
     winnernames = []
     
     for c in winners:
@@ -383,7 +386,8 @@ def tallySTV(votes, issue, version = 2):
         'votes': len(rvotes),
         'winners': winners,
         'winnernames': winnernames,
-        'debug': debug
+        'debug': debug,
+        'version': version
     }, """
 Winners:
  - %s
