@@ -30,13 +30,17 @@ from lib import constants
 
 debug = []
 
-def makeLetter(num):
-    x = ord('A')
-    while num > 25:
-        x += 1
-        num -= 25
-    letter = chr(x) + chr(ord('A') + num)
-    return letter
+def makeLetter(num, version = 2):
+    if version == 1:
+        return ord('A' + num)
+    else:
+        x = ord('A')
+        while num > 25:
+            x += 1
+            num -= 25
+        letter = chr(x) + chr(ord('A') + num)
+        return letter
+
 
 def validateSTV(vote, issue):
     "Tries to validate a vote, returns why if not valid, None otherwise"
@@ -358,7 +362,7 @@ def tallySTV(votes, issue, version = 2):
     candidates = {}
     z = 0
     for c in issue['candidates']:
-        candidates[makeLetter(z)] = c['name']
+        candidates[makeLetter(z, version)] = c['name']
         z += 1
 
     # run the stv calc
