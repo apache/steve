@@ -32,7 +32,7 @@ debug = []
 
 def makeLetter(num, version = 2):
     if version == 1:
-        return chr(ord('A')+num)
+        return chr(ord('a')+num)
     else:
         x = ord('A')
         while num > 25:
