@@ -336,13 +336,19 @@ def generate_random(count, votes):
       # The loop finished without breaking out
       return values
 
-
-def tallySTV(votes, issue):
+# STV Tally:
+# Version 1 == old style abcdefg...
+# Version 2 == new style AA,AB,AC,AD...
+def tallySTV(votes, issue, version = 2):
     rvotes = {}
+    ovotes = votes
     # Cut out abstained votes.
     for vote in votes:
         if votes[vote].find("-") == -1:
-            rvotes[vote] = re.split(r"[\s,]", votes[vote])
+            if version == 1:
+                rvotes[vote] = votes[vote]
+            else:
+                rvotes[vote] = re.split(r"[\s,]", votes[vote])
     votes = rvotes
     m = re.match(r"stv(\d+)", issue['type'])
     if not m:
@@ -356,7 +362,12 @@ def tallySTV(votes, issue):
         z += 1
 
     # run the stv calc
-    winners = run_vote(candidates, votes, numseats)
+    # Try version 2 first, fall back to version 1 if it breaks
+    if version == 2:
+        try:
+            winners = run_vote(candidates, votes, numseats)
+        except:
+            return tallySTV(ovotes, issue, version = 1)
     winnernames = []
     
     for c in winners:
