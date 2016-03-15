@@ -547,7 +547,7 @@ function makeLetter(num) {
         x += 1
         num -= 25
     }
-    var letter = String.fromCharCode(x) + String.fromCharCode(String.charCodeAt('A') + num)
+    var letter = String.fromCharCode(x) + String.fromCharCode("A".charCodeAt(0) + num)
     return letter
 }
 
