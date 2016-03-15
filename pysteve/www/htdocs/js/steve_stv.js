@@ -542,7 +542,7 @@ function loadIssue(election, issue, uid, callback) {
 }
 
 function makeLetter(num) {
-    var x = String.charCodeAt('A')
+    var x = "A".charCodeAt(0)
     while (num > 25) {
         x += 1
         num -= 25
