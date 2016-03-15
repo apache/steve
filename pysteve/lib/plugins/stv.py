@@ -45,7 +45,7 @@ def makeLetter(num, version = 2):
 def validateSTV(vote, issue):
     "Tries to validate a vote, returns why if not valid, None otherwise"
     # aa, ab, ac, ad.... az, ba, bb, bc, bd...bz, ca, cb, cc, cd...
-    letters = [makeLetter(x) for x in range(1,100)]
+    letters = [makeLetter(x) for x in range(0,100)]
     letters.append('-')
     seats = vote.split(" ")
     for char in letters:
