@@ -205,7 +205,7 @@ function displayTally(code, response, issue) {
                 obj.innerHTML += "<b>Binding No:      </b>" + response.binding_no + "\n"
             }
         } else {
-            obj.innerHTML = "Unknonwn vote type or no votes cast yet"
+            obj.innerHTML = "Unknown vote type or no votes cast yet"
         }
         if (response.debug) {
             var pre = document.createElement('pre')
