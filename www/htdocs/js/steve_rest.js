@@ -859,7 +859,7 @@ function renderElectionFrontpage(response, el) {
         s++;
         var outer = document.createElement('li');
         // Set style
-        outer.setAttribute("class", "issueListItem")
+        outer.setAttribute("class", "issueListItemWide")
         
         var no = document.createElement('div');
         no.setAttribute("class", "issueNumber")
