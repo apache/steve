@@ -10,7 +10,7 @@
     var ecount = 0;
     function seedInvite(type) {
         if (type == "closed") {
-            document.getElementById('msgtemplate').value = "A private election for \"$title\" has been called\n\nTo vote, please visit: $votelink\nThis is a private vote URL for your eyes only."
+            document.getElementById('msgtemplate').value = "A private election for \"$title\" has been called\n\nTo vote, please visit: $votelink\nThis is a private vote URL. Do not share it with anyone else, or they will be able to vote for you."
         } else {
             document.getElementById('msgtemplate').value = "A public election for \"$title\" has been called\n\nTo vote, please register for a vote at: $votelink\nAnyone can register to vote."
         }
