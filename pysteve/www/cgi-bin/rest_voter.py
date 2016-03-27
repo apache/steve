@@ -112,7 +112,9 @@ if pathinfo:
         else:
             response.respond(404, {'message': 'No election ID supplied'})
             
-            
+    elif action == "ballots":
+        # We defer to the gateway to provide us with UID here
+        response.respond(200, voter.ballots())
             
     elif action == "vote" and electionID and issueID and voterID:
         try:
