@@ -26,7 +26,7 @@ else:
 
 def getvalue(key):
     try:
-        val = str("".join(xform.get(key)))
+        val = str("".join(xform.get(key, "")))
         if val == "":
             val = None
     except:
