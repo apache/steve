@@ -17,11 +17,20 @@
 import hashlib, json, random, os, sys, time
 import cgi
 
+ctype, pdict = cgi.parse_header(os.environ['CONTENT_TYPE'] if 'CONTENT_TYPE' in os.environ else "")
+if ctype == 'multipart/form-data':
+    xform = cgi.parse_multipart(sys.stdin, pdict)
+else:
+    xform = cgi.FieldStorage();
 
-xform = cgi.FieldStorage();
 
 def getvalue(key):
-    val = xform.getvalue(key)
+    try:
+        val = str("".join(xform.get(key)))
+        if val == "":
+            val = None
+    except:
+        val = xform.getvalue(key)
     if val:
         return val.replace("<", "&lt;")
     else:
