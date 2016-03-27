@@ -12,7 +12,7 @@
     <meta name="generator" content="Apache STeVe">
 </head>
 <body onload="
-       document.getElementById('iid').value = parseInt(Math.random()*987654321).toString(16).toLowerCase();
+       document.getElementById('iid').value = generateID();
        getJSON('/steve/admin/types', null, setVoteTypes);
        ">
        <p style="text-align: center;">
