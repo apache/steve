@@ -254,7 +254,10 @@ class ElasticSearchBackend:
             for entry in res['hits']['hits']:
                 election  = entry['_source']
                 # Mark election open or closed
-                elections[election['id']] = False if election['closed'] else True
+                elections[election['id']] = {
+                    'title': election['title'],
+                    'open': False if election['closed'] else True
+                }
                 
         # Then, get all ballots and note whether they still apply or not
         ballots = {}
@@ -265,7 +268,7 @@ class ElasticSearchBackend:
                 ballot = entry['_source']
                 ballots[ballot['election']] = {
                     'ballot': entry['_id'],
-                    'open': elections[ballot['election']]
+                    'metadata': elections[ballot['election']]
                 }
         return ballots
         
