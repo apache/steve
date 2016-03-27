@@ -137,6 +137,7 @@ function renderEditElection(code, response, election) {
         if (response.issues && response.issues.length > 0) {
             obj.innerHTML = "";
         }
+        response.issues.sort(function(a,b) { return (a.title > b.title)? 1 : -1 } )
         for (i in response.issues) {
             var issue = response.issues[i]
             s++;
@@ -933,7 +934,7 @@ function renderElectionBulk(response, el) {
     
     var s = 0;
     var ynas = 0;
-    response.issues.sort(function(a,b) { return a.title > b.title } )
+    response.issues.sort(function(a,b) { return (a.title > b.title)? 1 : -1 } )
     bulk_issues = []
     for (i in response.issues) {
         var issue = response.issues[i]
