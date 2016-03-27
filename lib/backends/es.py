@@ -261,7 +261,11 @@ class ElasticSearchBackend:
                 
         # Then, get all ballots and note whether they still apply or not
         ballots = {}
-        res = self.es.search(index="steve", doc_type="voters", q = "uid:\"%s\"" % UID, size = 999)
+        res = self.es.search(index="steve", doc_type="voters", body = {
+            "match": {
+                "uid": UID
+            }
+        }, size = 999)
         results = len(res['hits']['hits'])
         if results > 0:
             for entry in res['hits']['hits']:
