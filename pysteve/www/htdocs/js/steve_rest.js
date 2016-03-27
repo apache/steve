@@ -38,7 +38,7 @@ function getJSON(theUrl, xstate, callback) {
 }
 
 function generateID() {
-    return parseInt(1000000000 + (Math.random()*3200000000)).toString(16).toLowerCase()
+    return parseInt(300000000 + (Math.random()*3800000000)).toString(16).toLowerCase()
 }
 
 // Posting to the REST API, returns http code + JSON response
