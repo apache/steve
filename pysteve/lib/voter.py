@@ -63,12 +63,17 @@ def regenerate(election, basedata, xhash):
     try:
         from lib import gateway
         uid = gateway.uid()
-        backend.ballot_scrub(election, xhash)
-        ballot, xhash = add(election, basedata, uid)
-        return {
-            'election': election,
-            'ballot': ballot
-        }
+        valid = backend.ballot_scrub(election, xhash)
+        if valid:
+            ballot, xhash = add(election, basedata, uid)
+            return {
+                'election': election,
+                'ballot': ballot
+            }
+        else:
+            return {
+                'error': "Not a valid ballot!"
+            }
     except:
         return {'error': "No suitable gateway mechanism found"}
     
