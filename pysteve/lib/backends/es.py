@@ -229,6 +229,24 @@ class ElasticSearchBackend:
             }
         )
         
+    def ballot_scrub(self,election, xhash, uid = None):
+        "Scrub a ballot"
+        if uid:
+            xhash = hashlib.sha224(election + ":" + uid).hexdigest()
+            
+        # Find ballots and votes matching
+        res = self.es.search(index="steve", doc_type="votes", body = {
+            "query": {
+                "match": {
+                    "key": xhash
+                }
+            }
+        }, size = 999)
+        results = len(res['hits']['hits'])
+        if results > 0:
+            for entry in res['hits']['hits']:
+                self.es.delete(index="steve", doc_type="votes", id=entry['_id']);
+        
     def voter_remove(self,election, UID):
         "Remove the voter with the given UID"
         votehash = hashlib.sha224(election + ":" + UID).hexdigest()
