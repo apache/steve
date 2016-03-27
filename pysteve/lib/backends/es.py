@@ -256,7 +256,8 @@ class ElasticSearchBackend:
         if results > 0:
             for entry in res['hits']['hits']:
                 self.es.delete(index="steve", doc_type="votes", id=entry['_id']);
-        
+        return True
+    
     def voter_remove(self,election, UID):
         "Remove the voter with the given UID"
         votehash = hashlib.sha224(election + ":" + UID).hexdigest()
