@@ -122,7 +122,7 @@ def vote(electionID, issueID, voterID, vote):
     basedata = getBasedata(electionID)
     issueData = getIssue(electionID, issueID)
     if basedata and issueData:
-        xhash = hashlib.sha224(election + ":" + voterID).hexdigest()
+        xhash = hashlib.sha224(electionID + ":" + voterID).hexdigest()
         vhash = hashlib.sha224(xhash + issueID).hexdigest()
         votehash = hashlib.sha224(basedata['hash'] + issueID + voterID + vote).hexdigest()
         
