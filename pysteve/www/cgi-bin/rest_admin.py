@@ -391,7 +391,7 @@ else:
                             else:
                                 message = msgtemplate.replace("$votelink", "%s/request_link.html?%s" % (config.get("general", "rooturl"), electionID))
                                 message = message.replace("$title", basedata['title'])
-                                subject = "Public electionIopen for votes: %s (%s)" % (electionID, basedata['title'])
+                                subject = "Public election open for votes: %s (%s)" % (electionID, basedata['title'])
                                 voter.email(email, subject, message)
                         except Exception as err:
                             response.respond(500, {'message': 'Could not load base data: %s' % err})                        
