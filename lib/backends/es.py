@@ -267,5 +267,6 @@ class ElasticSearchBackend:
                     'ballot': entry['_id'],
                     'open': elections[ballot['election']]
                 }
+        return ballots
         
 constants.appendBackend("elasticsearch", ElasticSearchBackend)
