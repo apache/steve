@@ -37,6 +37,9 @@ function getJSON(theUrl, xstate, callback) {
     }
 }
 
+function generateID() {
+    return parseInt(1000000000 + (Math.random()*3200000000)).toString(16).toLowerCase()
+}
 
 // Posting to the REST API, returns http code + JSON response
 function postREST(url, json, oform, callback, xstate) {
@@ -91,7 +94,7 @@ function createElection() {
     
     // Validate data
     if (!eid || eid.length == 0) {
-        eid = parseInt(Math.random()*987654321).toString(16).toLowerCase()
+        eid = generateID()
     }
     if (starts && starts.length == 0 | parseInt(starts) == 0) starts = null;
     if (ends && ends.length == 0 | parseInt(ends) == 0) ends = null;
@@ -755,7 +758,7 @@ function createIssueCallback(code, response, state) {
     if (code == 201) {
         // If create & continue button pressed, just reset most fields instead of redirecting
         if (state.cont) {
-            document.getElementById('iid').value = parseInt(Math.random()*987654321).toString(16).toLowerCase();
+            document.getElementById('iid').value = generateID();
             document.getElementById('ititle').value = ''
             document.getElementById('description').value = ''
             document.getElementById('seconds').value = ''
@@ -781,7 +784,7 @@ function createIssue(election, cont) {
     var candidates = document.getElementById('candidates').value
     
     if (!iid || iid.length == 0) {
-        iid = parseInt(Math.random()*987654321).toString(16).toLowerCase()
+        iid = generateID()
     }
     
     postREST("/steve/admin/create/" + election + "/" + iid, {
