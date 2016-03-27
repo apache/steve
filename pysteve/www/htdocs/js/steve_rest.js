@@ -851,7 +851,7 @@ function renderElectionFrontpage(response, el) {
     
     var s = 0;
     var ynas = 0;
-    response.issues.sort(function(a,b) { return a.title > b.title } )
+    response.issues.sort(function(a,b) { return (a.title > b.title)? 1 : -1 } )
     for (i in response.issues) {
         var issue = response.issues[i]
         if (issue.type == "yna") {
