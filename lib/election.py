@@ -122,6 +122,8 @@ def vote(electionID, issueID, voterID, vote):
     basedata = getBasedata(electionID)
     issueData = getIssue(electionID, issueID)
     if basedata and issueData:
+        xhash = hashlib.sha224(election + ":" + voterID).hexdigest()
+        vhash = hashlib.sha224(xhash + issueID).hexdigest()
         votehash = hashlib.sha224(basedata['hash'] + issueID + voterID + vote).hexdigest()
         
         # Vote verification
@@ -131,7 +133,7 @@ def vote(electionID, issueID, voterID, vote):
             uid = voter.get(electionID, basedata, voterID)
             voteType['vote_func'](basedata, issueID, voterID, vote, uid)
             
-        backend.vote(electionID, issueID, voterID, vote)
+        backend.vote(electionID, issueID, voterID, vote, vhash = vhash)
         
         # LURK on who voted :O :O :O
        # if config.has_option("general", "lurk") and config.get("general", "lurk") == "yes":

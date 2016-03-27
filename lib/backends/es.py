@@ -167,10 +167,12 @@ class ElasticSearchBackend:
             pass # THIS IS OKAY! On initial setup, this WILL fail until an election has been created
         return elections
     
-    def vote(self,electionID, issueID, uid, vote):
+    def vote(self,electionID, issueID, uid, vote, vhash = None):
         "Casts a vote on an issue"
         eid = hashlib.sha224(electionID + ":" + issueID + ":" + uid).hexdigest()
         now = time.time()
+        if vhash:
+            eid = vhash
         self.es.index(index="steve", doc_type="votes", id=eid, body =
             {
                 'issue': issueID,
@@ -248,17 +250,13 @@ class ElasticSearchBackend:
         bid = self.voter_get_uid(election, xhash)
         if not bid:
             return None
-        res = self.es.search(index="steve", doc_type="votes", body = {
-            "query": {
-                "match": {
-                    "key": xhash
-                }
-            }
-        }, size = 999)
-        results = len(res['hits']['hits'])
-        if results > 0:
-            for entry in res['hits']['hits']:
-                self.es.delete(index="steve", doc_type="votes", id=entry['_id']);
+        issues = self.issue_list(election)
+        for issue in issues:
+            vhash = hashlib.sha224(xhash + issue).hexdigest()
+            try:
+                self.es.delete(index="steve", doc_type="votes", id=vhash);
+            except:
+                pass
         return True
     
     def voter_remove(self,election, UID):
