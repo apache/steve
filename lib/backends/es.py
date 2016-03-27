@@ -208,6 +208,13 @@ class ElasticSearchBackend:
     
     def voter_get_uid(self, electionID, votekey):
         "Get the UID/email for a voter given the vote key hash"
+        
+        # First, try the raw hash as an ID
+        res = self.es.get(index="steve", doc_type="voters", id=votekey)
+        if res:
+            return res['_source']['uid']
+        
+        # Now, look for it as hash inside the doc
         try:
             res = self.es.search(index="steve", doc_type="voters", q = "election:%s" % electionID, size = 9999)
             results = len(res['hits']['hits'])
