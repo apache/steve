@@ -235,6 +235,9 @@ class ElasticSearchBackend:
             xhash = hashlib.sha224(election + ":" + uid).hexdigest()
             
         # Find ballots and votes matching
+        bid = self.voter_get_uid(election, xhash)
+        if not bid:
+            return None
         res = self.es.search(index="steve", doc_type="votes", body = {
             "query": {
                 "match": {
