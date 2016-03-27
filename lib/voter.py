@@ -64,7 +64,7 @@ def regenerate(election, basedata, xhash):
         from lib import gateway
         uid = gateway.uid()
         backend.ballot_scrub(election, xhash)
-        ballot = add(election, basedata, uid)
+        ballot, xhash = add(election, basedata, uid)
         return {
             'election': election,
             'ballot': ballot
