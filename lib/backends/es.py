@@ -242,4 +242,30 @@ class ElasticSearchBackend:
         except:
             return False
 
+    def voter_ballots(self, UID):
+        """Find all elections (and ballots) this user has participated in"""
+        
+        # First, get all elections
+        elections = {}
+        
+        res = self.es.search(index="steve", doc_type="elections", sort = "id", q = "*", size = 9999)
+        results = len(res['hits']['hits'])
+        if results > 0:
+            for entry in res['hits']['hits']:
+                election  = entry['_source']
+                # Mark election open or closed
+                elections[election['id']] = False if election['closed'] else True
+                
+        # Then, get all ballots and note whether they still apply or not
+        ballots = {}
+        res = self.es.search(index="steve", doc_type="voters", q = "uid:\"%s\"" % UID, size = 999)
+        results = len(res['hits']['hits'])
+        if results > 0:
+            for entry in res['hits']['hits']:
+                ballot = entry['_source']
+                ballots[ballot['election']] = {
+                    'ballot': entry['_id'],
+                    'open': elections[ballot['election']]
+                }
+        
 constants.appendBackend("elasticsearch", ElasticSearchBackend)

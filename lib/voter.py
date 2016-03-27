@@ -51,6 +51,13 @@ def hasVoted(election, issue, uid):
     issue = issue.strip(".json")
     return backend.voter_has_voted(election, issue, uid)
 
+def ballots():
+    try:
+        from lib import gateway
+        uid = gateway.uid()
+        return backend.voter_ballots(uid) if uid else {}
+    except:
+        return {}
 
 def email(rcpt, subject, message):
     sender = config.get("email", "sender")
