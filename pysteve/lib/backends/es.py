@@ -262,8 +262,10 @@ class ElasticSearchBackend:
         # Then, get all ballots and note whether they still apply or not
         ballots = {}
         res = self.es.search(index="steve", doc_type="voters", body = {
-            "match": {
-                "uid": UID
+            "query": {
+                "match": {
+                    "uid": UID
+                }
             }
         }, size = 999)
         results = len(res['hits']['hits'])
