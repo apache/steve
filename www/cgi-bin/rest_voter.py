@@ -115,6 +115,15 @@ if pathinfo:
     elif action == "ballots":
         # We defer to the gateway to provide us with UID here
         response.respond(200, voter.ballots())
+        
+    elif action == "regenerate" and electionID and issueID:
+        # Regenerate a ballot, scrub all votes.
+        xhash = issueID
+        basedata = election.getBasedata(electionID)
+        if basedata:
+            response.respond(200, voter.regenerate(electionID, basedata, xhash))
+        else:
+            response.respond(404, {'message': "No such election"})
             
     elif action == "vote" and electionID and issueID and voterID:
         try:

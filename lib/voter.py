@@ -59,6 +59,19 @@ def ballots():
     except:
         return {}
 
+def regenerate(election, basedata, xhash):
+    try:
+        from lib import gateway
+        uid = gateway.uid()
+        backend.ballot_scrub(election, xhash)
+        ballot = add(election, basedata, uid)
+        return {
+            'election': election,
+            'ballot': ballot
+        }
+    except:
+        return {'error': "No suitable gateway mechanism found"}
+    
 def email(rcpt, subject, message):
     sender = config.get("email", "sender")
     signature = config.get("email", "signature")
