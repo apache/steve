@@ -70,10 +70,10 @@ def run_vote(names, votes, num_seats):
   if candidates.count(ELECTED + HOPEFUL) <= num_seats:
     debug.append('All candidates elected')
     candidates.change_state(HOPEFUL, ELECTED)
-    return
+    return candidates.retval()
   if num_seats <= 0:
     candidates.change_state(HOPEFUL, ELIMINATED)
-    return
+    return candidates.retval()
 
   quota = None  # not used on first pass
   iteration = 1
