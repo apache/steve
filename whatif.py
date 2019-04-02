@@ -90,5 +90,6 @@ if __name__ == '__main__':
     if votes[hashid] == []: del votes[hashid]
 
   # run the vote
-  stv_tool.run_vote(names, votes, seats)
+  candidates = stv_tool.run_vote(names, votes, seats)
+  candidates.print_results()
   print 'Done!'

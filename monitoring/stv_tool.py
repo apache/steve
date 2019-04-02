@@ -116,10 +116,10 @@ def run_vote(names, votes, num_seats):
   if candidates.count(ELECTED + HOPEFUL) <= num_seats:
     dbg('All candidates elected')
     candidates.change_state(HOPEFUL, ELECTED)
-    return
+    return candidates
   if num_seats <= 0:
     candidates.change_state(HOPEFUL, ELIMINATED)
-    return
+    return candidates
 
   quota = None  # not used on first pass
   iteration = 1
@@ -131,6 +131,7 @@ def run_vote(names, votes, num_seats):
 
   dbg('All seats full')
   candidates.change_state(HOPEFUL, ELIMINATED)
+  return candidates
 
   candidates.print_results()
 
@@ -404,5 +405,6 @@ if __name__ == '__main__':
 
   names, votes = load_votes(votefile)
 
-  run_vote(names, votes, num_seats)
+  candidates = run_vote(names, votes, num_seats)
+  candidates.print_results()
   print 'Done!'
