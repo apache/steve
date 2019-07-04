@@ -36,7 +36,7 @@ def get(election, basedata, uid):
     xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
     return backend.voter_get_uid(election, xhash)
     
-        
+    
 def add(election, basedata, PID):
     uid = hashlib.sha224("%s%s%s%s" % (PID, basedata['hash'], time.time(), random.randint(1,99999999))).hexdigest()
     xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
@@ -81,7 +81,10 @@ def email(rcpt, subject, message):
     sender = config.get("email", "sender")
     signature = config.get("email", "signature")
     receivers = [rcpt]
-    msg = """From: %s
+    # py 2 vs 3 conversion
+    if type(message) is bytes:
+        message = message.decode('utf-8', errors='replace')
+    msg = u"""From: %s
 To: %s
 Subject: %s
 
@@ -92,7 +95,7 @@ With regards,
 --
 Powered by Apache STeVe - https://steve.apache.org
 """ % (sender, rcpt, subject, message, signature)
-    
+    msg = msg.encode('utf-8', errors='replace')
     try:
        smtpObj = smtplib.SMTP(config.get("email", "mta"))
        smtpObj.sendmail(sender, receivers, msg)         
