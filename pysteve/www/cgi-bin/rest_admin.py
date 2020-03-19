@@ -153,7 +153,7 @@ else:
                                         except:
                                             c = form.getvalue('candidates').split("\n")
                                         z = 0
-                                        for entry in c:
+                                        for entry in [x for x in c if x and x.strip()]: # Skip blank entries
                                             candidates.append({'name': entry.strip(), 'statement': s[z] if len(s) > z else ""})
                                             z += 1
                                     # HACK: If candidate parsing is outsourced, let's do that instead (primarily for COP)
