@@ -142,7 +142,7 @@ _html do
     end
 
     _p_ do
-      _a 'Member's Meeting Information',
+      _a "Member's Meeting Information",
         href: 'https://whimsy.apache.org/members/meeting'
     end
 
