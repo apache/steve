@@ -142,7 +142,8 @@ _html do
     end
 
     _p_ do
-      _a 'Background Info', href: 'http://wiki.apache.org/general/BoardVoting'
+      _a 'Member's Meeting Information',
+        href: 'https://whimsy.apache.org/members/meeting'
     end
 
     _script %{
