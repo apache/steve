@@ -78,18 +78,21 @@ if __name__ == '__main__':
     for name in sys.argv: names.remove(alias[name.lstrip('-').lower()])
   else:
     # only include specified candidates
+    # NOTE: order is important, so sort the names for repeatability
     names = list(map(lambda name: alias[name.lower()], set(sys.argv)))
+    ### not yet.
+    #names = [ alias[n.lower()] for n in sorted(sys.argv) ]
 
-  # limit votes only to candidates
-  for vote in votes.values():
-    for i in range(len(vote)-1,-1,-1):
-      if names.count(vote[i]) == 0: vote.pop(i)
-
-  # remove empty votes
-  for hashid in list(votes.keys()):
-    if votes[hashid] == []: del votes[hashid]
+  # Trim the raw votes based on cmdline params. Eliminate votes that
+  # are not for one of the allowed names. Do not include voters who
+  # did not vote for anybody [post-trimming].
+  trimmed = { }
+  for hashid, voteseq in votes.items():
+    newseq = [ v for v in voteseq if v in names ]
+    if newseq:
+      trimmed[hashid] = newseq
 
   # run the vote
-  candidates = stv_tool.run_vote(names, votes, seats)
+  candidates = stv_tool.run_vote(names, trimmed, seats)
   candidates.print_results()
   print('Done!')
