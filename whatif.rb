@@ -71,14 +71,14 @@ def filtered_election(votes, seats, candidates)
   output = `#{WHATIF} #{votes} #{seats} #{list}`
   output.scan(/.*elected$/).inject(Hash.new('none')) do |results, line|
     name, status = line.scan(/^(.*?)\s+(n?o?t?\s?elected)$/).flatten
-    results.merge({name.gsub(/\W/,'') => status.gsub(/\s/, '-')})
+    results.merge({name.gsub(/[^[[:alnum:]]]/,'') => status.gsub(/\s/, '-')})
   end
 end
 
 # XMLHttpRequest (AJAX)
 _json do
   nominees = File.read(ini(raw_votes(@date))).scan(/^\w:\s*(.*)/).flatten
-  candidates = params.keys & nominees.map {|name| name.gsub(/\W/,'')}
+  candidates = params.keys & nominees.map {|name| name.gsub(/[^[[:alnum:]]]/,'')}
   _! filtered_election(raw_votes(@date), @seats, candidates)
 end
 
@@ -107,7 +107,7 @@ _html do
     _h1_ 'STV Explorer'
 
     nominees = Hash[File.read(ini(raw_votes(@date))).scan(/^\w:\s*(.*)/).
-      flatten.map {|name| [name.gsub(/\W/,''), name]}]
+      flatten.map {|name| [name.gsub(/[^[[:alnum:]]]/,''), name]}]
     candidates = params.keys & nominees.keys
     candidates = nominees.keys if candidates.empty? or @reset
 
