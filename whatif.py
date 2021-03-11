@@ -78,7 +78,7 @@ if __name__ == '__main__':
     for name in sys.argv: names.remove(alias[name.lstrip('-').lower()])
   else:
     # only include specified candidates
-    names = map(lambda name: alias[name.lower()], set(sys.argv))
+    names = list(map(lambda name: alias[name.lower()], set(sys.argv)))
 
   # limit votes only to candidates
   for vote in votes.values():
@@ -86,7 +86,7 @@ if __name__ == '__main__':
       if names.count(vote[i]) == 0: vote.pop(i)
 
   # remove empty votes
-  for hashid in votes.keys():
+  for hashid in list(votes.keys()):
     if votes[hashid] == []: del votes[hashid]
 
   # run the vote
