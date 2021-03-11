@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -31,8 +31,9 @@ import sys
 import os.path
 import random
 import argparse
-import ConfigParser
+import configparser
 import re
+import functools
 
 ELECTED = 1
 HOPEFUL = 2
@@ -91,16 +92,16 @@ def read_nominees(votefile):
 
   # Use the below try instead to catch this??
   if not os.path.exists(ini_fname):
-    print >> sys.stderr, "Error: board_nominations.ini could not be found at " + ini_fname
+    print("Error: board_nominations.ini could not be found at " + ini_fname, file=sys.stderr)
     sys.exit(2)
 
-  config = ConfigParser.ConfigParser()
+  config = configparser.ConfigParser()
   config.read(ini_fname)
   try:
     return dict(config.items('nominees'))
   except:
-    print >> sys.stderr, "Error processing input file: " + ini_fname
-    print >> sys.stderr, " Goodbye!"
+    print("Error processing input file: " + ini_fname, file=sys.stderr)
+    print(" Goodbye!", file=sys.stderr)
     sys.exit(2)
 
 
@@ -178,7 +179,7 @@ class CandidateList(object):
 
   def print_results(self):
     for c in self.l:
-      print '%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not ')
+      print('%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not '))
 
   def dbg_display_tables(self, excess):
     total = excess
@@ -188,6 +189,15 @@ class CandidateList(object):
     dbg('%-20s %15s %15.9f', 'Non-transferable', ' ', excess)
     dbg('%-20s %15s %15.9f', 'Total', ' ', total)
 
+  def sorted(self):
+    def compare(c1, c2):
+      if c1.ahead < c2.ahead:
+        return -1
+      if c1.ahead == c2.ahead:
+        ### expression for removed cmp() function
+        return (c1.vote > c2.vote) - (c1.vote < c2.vote)
+      return 1
+    return sorted(self.l, key=functools.cmp_to_key(compare))
 
 class Candidate(object):
   def __init__(self, name, rand, ahead):
@@ -210,14 +220,6 @@ class Candidate(object):
   def adjust_weight(self, quota):
     assert quota is not None
     self.weight = (self.weight * quota) / self.vote
-
-  def __cmp__(self, other):
-    if self.ahead < other.ahead:
-      return -1
-    if self.ahead == other.ahead:
-      return cmp(self.vote, other.vote)
-    return 1
-
 
 def iterate_one(quota, votes, candidates, num_seats):
   # assume that: count(ELECTED) < num_seats
@@ -268,7 +270,7 @@ def calc_totals(votes, candidates):
 
 
 def calc_aheads(candidates):
-  c_sorted = sorted(candidates.l)
+  c_sorted = candidates.sorted()
   last = 0
   for i in range(1, len(c_sorted)+1):
     if i == len(c_sorted) or c_sorted[last] != c_sorted[i]:
@@ -324,7 +326,7 @@ def try_remove_lowest(surplus, candidates):
       lowest1 = c.vote
       which = c
   for c in candidates.l:
-    if c != which and c.status != ELIMINATED and c.vote < lowest2:
+    if c.status != ELIMINATED and c.vote > lowest1 and c.vote < lowest2:
       lowest2 = c.vote
 
   diff = lowest2 - lowest1
@@ -381,7 +383,7 @@ def generate_random(count):
 
 def dbg(fmt, *args):
   if VERBOSE:
-    print fmt % args
+    print(fmt % args)
 
 
 if __name__ == '__main__':
@@ -407,4 +409,4 @@ if __name__ == '__main__':
 
   candidates = run_vote(names, votes, num_seats)
   candidates.print_results()
-  print 'Done!'
+  print('Done!')

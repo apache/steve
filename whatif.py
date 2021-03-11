@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #
 #####
 # Licensed to the Apache Software Foundation (ASF) under one or more
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     names = map(lambda name: alias[name.lower()], set(sys.argv))
 
   # limit votes only to candidates
-  for vote in votes.itervalues():
+  for vote in votes.values():
     for i in range(len(vote)-1,-1,-1):
       if names.count(vote[i]) == 0: vote.pop(i)
 
