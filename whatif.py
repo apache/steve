@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 #####
 # Licensed to the Apache Software Foundation (ASF) under one or more
@@ -35,7 +35,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'monitoring'))
 import stv_tool
 
 def usage():
-  print 'Usage: %s [-v] RAW_VOTES_FILE [seats] [-]name...' % scriptname
+  print('Usage: %s [-v] RAW_VOTES_FILE [seats] [-]name...' % scriptname)
   sys.exit(1)
 
 if __name__ == '__main__':
@@ -92,4 +92,4 @@ if __name__ == '__main__':
   # run the vote
   candidates = stv_tool.run_vote(names, votes, seats)
   candidates.print_results()
-  print 'Done!'
+  print('Done!')
