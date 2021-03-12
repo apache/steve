@@ -79,9 +79,7 @@ if __name__ == '__main__':
   else:
     # only include specified candidates
     # NOTE: order is important, so sort the names for repeatability
-    names = list(map(lambda name: alias[name.lower()], set(sys.argv)))
-    ### not yet.
-    #names = [ alias[n.lower()] for n in sorted(sys.argv) ]
+    names = [ alias[n.lower()] for n in sorted(sys.argv) ]
 
   # Trim the raw votes based on cmdline params. Eliminate votes that
   # are not for one of the allowed names. Do not include voters who
