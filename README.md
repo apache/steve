@@ -1,6 +1,5 @@
 ![Logo](www/htdocs/images/steve_large.png)
 
-=============================================================
  Welcome to Apache STeVe <https://steve.apache.org/>
 =============================================================
 
