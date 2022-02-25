@@ -137,7 +137,7 @@ class CandidateList(object):
 
   def print_results(self):
     for c in self.l:
-      print '%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not ')
+      print('%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not '))
 
   def dbg_display_tables(self, excess):
     total = excess
