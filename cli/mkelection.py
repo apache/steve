@@ -32,7 +32,7 @@ config.read('../steve.cfg')
 
 homedir = config.get("general", "homedir")
 
-from lib import election, voter, constants
+from lib import election
 import argparse
 
 parser = argparse.ArgumentParser(description='Command line options.')
