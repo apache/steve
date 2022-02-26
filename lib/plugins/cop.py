@@ -18,9 +18,9 @@
 Candidate or Party Voting Plugin
 Currrently supports an arbitrary number of candidates from up to 26 parties
 """
-import re, json, random
+import re
 
-from lib import constants, form
+from lib import constants
 
 def validateCOP(vote, issue):
     "Tries to validate a vote, returns why if not valid, None otherwise"

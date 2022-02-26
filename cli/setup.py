@@ -15,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os, sys, random, time
-
+import os, sys
 path = os.path.abspath(os.getcwd() + "/..")
 sys.path.append(path)
 
@@ -32,8 +31,6 @@ config = configparser.RawConfigParser()
 config.read('../steve.cfg')
 
 homedir = config.get("general", "homedir")
-
-from lib import election, voter, constants
 
 print("Attempting to set up STeVe directories...")
 

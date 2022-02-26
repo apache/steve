@@ -15,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #####
-import os, sys, json, re, time, base64, cgi, subprocess, hashlib, re
-from os import listdir
+import os, sys, re, hashlib
 version = 2
 if sys.hexversion < 0x03000000:
     import ConfigParser as configparser

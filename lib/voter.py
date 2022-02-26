@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import hashlib, json, random, os, sys, time
+import hashlib, random, os, time
 try:
     from __main__ import config
 except:
@@ -24,8 +24,6 @@ except:
 
 # SMTP Lib
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from smtplib import SMTPException
 
 from lib import constants, election

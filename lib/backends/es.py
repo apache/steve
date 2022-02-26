@@ -16,8 +16,6 @@
 #
 import hashlib
 import json
-import os
-import random
 import time
 from lib import constants
 import elasticsearch

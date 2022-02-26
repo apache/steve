@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 """ FPP (First Past the Post) Based Voting Plugin """
-import re, json
 
 from lib import constants
 

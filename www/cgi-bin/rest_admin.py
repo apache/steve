@@ -15,15 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #####
-import os, sys, json, re, time, base64, cgi, subprocess, hashlib
+import os, sys, json, re, hashlib
 version = 2
 if sys.hexversion < 0x03000000:
     import ConfigParser as configparser
 else:
     import configparser
     version = 3
-from os import listdir
-from os.path import isdir, isfile
 path = os.path.abspath(os.getcwd())
 
 sys.path.append(path)
