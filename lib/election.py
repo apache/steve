@@ -19,7 +19,6 @@ import json
 import os
 import random
 import time
-from itertools import izip
 
 try:
     from __main__ import config
