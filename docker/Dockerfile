@@ -29,7 +29,7 @@ MAINTAINER Daniel Gruno
 RUN apt-get update
 
 # Install base packages
-RUN apt-get install -y apache2 subversion python3-pip wget
+RUN apt-get install -y apache2 subversion pip wget
 RUN pip install elasticsearch
 
 
@@ -55,6 +55,9 @@ RUN service elasticsearch start && sleep 30 && service elasticsearch status
 
 # Enable mod_cgi
 RUN a2enmod cgi
+
+# Ensure default Python is defined
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Expose port for httpd
 EXPOSE 80
