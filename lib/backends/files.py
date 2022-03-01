@@ -39,7 +39,7 @@ class FileBasedBackend:
             return os.path.isdir(elpath)
     
     
-    def get_basedata(self, election):
+    def get_basedata(self, election, hideHash=False):
         "Get base data from an election"
         elpath = os.path.join(self.homedir, "issues", election)
         if os.path.isdir(elpath):
