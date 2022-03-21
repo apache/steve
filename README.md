@@ -1,6 +1,4 @@
-=============================================================
- Welcome to Apache Steve <http://steve.apache.org/>
-=============================================================
+# Welcome to Apache Steve <http://steve.apache.org/>
 
 Apache Steve is software to conduct a vote using the STV (Single
 Transferrable Vote) and other voting algorithms. The tool grew out of the voting
@@ -10,41 +8,21 @@ Directors.
 Read more about STV at
 http://en.wikipedia.org/wiki/Single_transferable_vote
 
-Getting Started
-===============
+## Getting Started
+
 Getting Started documentation can be found at: http://steve.apache.org/demo.html
-Otherwise, come to the #apache-steve channel on the Freenode IRC network, 
+Otherwise, come to the #steve channel on the Slack workspace at the-asf.slack.com, 
 and we'd be glad to help you.
 
 
-License (see also LICENSE.txt)
-==============================
-Collective work: Copyright 2012-2013 The Apache Software Foundation.
+## Documentation
 
-Licensed to the Apache Software Foundation (ASF) under one or more
-contributor license agreements.  See the NOTICE file distributed with
-this work for additional information regarding copyright ownership.
-The ASF licenses this file to You under the Apache License, Version 2.0
-(the "License"); you may not use this file except in compliance with
-the License.  You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-
-Documentation
-=============
 Documentation may be found at http://steve.apache.org/documentation.html
 
 Contributions to the documentation are very welcome.
 
-Mailing Lists
-=============
+## Mailing Lists
+
 Discussion about Steve takes place on the following mailing lists:
 
     dev@steve.apache.org    - About using Steve and developing Steve
@@ -64,15 +42,13 @@ message to <LIST>-help@steve.apache.org.
 Additional mailing list details may be found at
 http://steve.apache.org/support.html
 
-Issue Tracker
-=============
+## Issue Tracker
+
 If you encounter errors in Steve or want to suggest an improvement or a new
 feature, please visit the Steve issue tracker at
 https://issues.apache.org/jira/browse/STEVE
 
-Implemented changes
-===================
+## Implemented changes
+
 Implemented changes can be found at:
-    https://svn.apache.org/viewvc/steve/
-
-
+    https://github.apache.org/apache/steve/
