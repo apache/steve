@@ -1,7 +1,7 @@
 # set some values on github.com/apache/steve
 github:
   description: "Apache STeVe -- a set of voting tools"
-  homepage: https://steve.apache.org/
+  homepage: https://steve.apache.org
 
 
 # We will publish our site using Pelican, via the asf-site branch
