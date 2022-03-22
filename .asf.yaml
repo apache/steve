@@ -1,4 +1,5 @@
 # Pelican pushes generated content to this branch.
 # Then, publish to steve.apache.org
-publish:
-  whoami: asf-site
+### don't publish just yet. verify Pelican output first.
+#publish:
+#  whoami: asf-site
