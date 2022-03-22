@@ -2,11 +2,10 @@
 github:
   description: "Apache STeVe -- a set of voting tools"
   homepage: https://steve.apache.org
-
-labels:
-  - python
-  - voting
-  - stv
+  labels:
+    - python
+    - voting
+    - stv
 
 # We will publish our site using Pelican, via the asf-site branch
 pelican:
