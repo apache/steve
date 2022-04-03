@@ -1,3 +1,7 @@
 staging:
   profile: ~
   whoami:  asf-staging
+
+pelican:
+  whoami: asf-site-build
+  target: asf-staging
