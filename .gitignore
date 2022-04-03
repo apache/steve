@@ -52,5 +52,4 @@ pip-log.txt
 .idea
 # all target dirs
 target/
-output/
 .DS_Store
