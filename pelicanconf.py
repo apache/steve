@@ -20,8 +20,6 @@ PATH_METADATA= '.*?(pages/)?(?P<path_no_ext>.*?)\.[a-z]*$'
 PAGE_SAVE_AS= './{slug}.html'
 PAGE_URL= './{slug}.html'
 
-# Make .htaccess static
-STATIC_PATHS = ['pages/.htaccess']
 
 # Sort news by date, descending, latest article first
 ARTICLE_ORDER_BY = 'reversed-date'
@@ -35,7 +33,7 @@ AUTHOR_FEED_RSS = None
 
 # TOC Generator
 PLUGIN_PATHS = ['./theme/plugins']
-PLUGINS = ['toc', 'pelican-gfm', 'spu']
+PLUGINS = ['toc', 'pelican-gfm',]
 TOC_HEADERS = r"h[1-6]"
 
 # Blogroll
