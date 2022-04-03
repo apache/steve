@@ -8,7 +8,6 @@ html, body {
 
 #main_splash {
     width: 1200px;
-    min-height: 100%;
     background-image: url(../images/front-splash.png);
     background-position-y: 48px;
     background-repeat: no-repeat;
