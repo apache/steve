@@ -1,0 +1,64 @@
+html, body {
+    margin: 0;
+    background-color: #F4F4F4;
+    font-family: sans-serif;
+    height: 100%;
+    min-height: 100%;
+}
+#main {
+    width: 1200px;
+    min-height: 100%;
+    background-image: url(../images/front-splash.png);
+    background-position-y: 48px;
+    background-repeat: no-repeat;
+    margin: 0 auto;
+    background-color: #FFF;
+    box-shadow: 0px 0px 3px #0006;
+    position: relative;
+}
+
+#main nav {
+    text-align: right;
+    width: calc(100% - 20px);
+    margin-right: 20px;
+    background-image: url(../images/logo-bright.png);
+    background-size: 100px;
+    background-repeat: no-repeat;
+    background-position: 5px 5px;
+}
+
+#main nav > ul {
+    list-style: none;
+    display: inline-block;
+}
+#main nav > ul > li {
+    display: inline-block;
+    color: #444;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 24px;
+    font-size: 0.8rem;
+}
+
+#main nav > ul > li > a {
+    color: #444;
+    font-width: bold;
+    text-decoration: none;
+}
+
+#main nav > ul > li > a:hover {
+    color: #222;
+    font-width: bold;
+    text-decoration: underline;
+}
+
+#contents {
+    margin-top: 700px;
+    padding: 12px;
+}
+footer {
+    border-top: 1px solid #3336;
+    font-size: 0.75rem;
+    text-align: left;
+    padding: 16px;
+}
