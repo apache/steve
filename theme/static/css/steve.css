@@ -5,33 +5,46 @@ html, body {
     height: 100%;
     min-height: 100%;
 }
-#main {
+
+#main_splash {
     width: 1200px;
     min-height: 100%;
-    background-image: url(/theme/images/front-splash.png);
+    background-image: url(../images/front-splash.png);
     background-position-y: 48px;
     background-repeat: no-repeat;
     margin: 0 auto;
     background-color: #FFF;
     box-shadow: 0px 0px 3px #0006;
     position: relative;
+    padding-top: 700px;
 }
 
-#main nav {
+#main {
+    width: 1200px;
+    min-height: 100%;
+    margin: 0 auto;
+    background-color: #FFF;
+    box-shadow: 0px 0px 3px #0006;
+    position: relative;
+}
+
+nav {
+    position: absolute;
+    top: 0px;
     text-align: right;
     width: calc(100% - 20px);
     margin-right: 20px;
-    background-image: url(/theme/images/logo-bright.png);
+    background-image: url(../images/logo-bright.png);
     background-size: 100px;
     background-repeat: no-repeat;
     background-position: 5px 5px;
 }
 
-#main nav > ul {
+nav > ul {
     list-style: none;
     display: inline-block;
 }
-#main nav > ul > li {
+nav > ul > li {
     display: inline-block;
     color: #444;
     font-weight: bold;
@@ -40,22 +53,26 @@ html, body {
     font-size: 0.8rem;
 }
 
-#main nav > ul > li > a {
+nav > ul > li > a {
     color: #444;
     font-width: bold;
     text-decoration: none;
 }
 
-#main nav > ul > li > a:hover {
+nav > ul > li > a:hover {
     color: #222;
     font-width: bold;
     text-decoration: underline;
 }
 
 #contents {
-    margin-top: 700px;
-    padding: 12px;
+    padding: 20px;
 }
+
+#main > #contents {
+    padding-top: 80px;
+}
+
 footer {
     border-top: 1px solid #3336;
     font-size: 0.75rem;
