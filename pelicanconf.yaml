@@ -8,6 +8,9 @@ site:
 
 theme: theme
 
-setup:
-  ignore:
-    - none-yet
+content:
+  pages: pages
+  static_dirs:
+    - css
+    - images
+    - js

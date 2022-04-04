@@ -20,4 +20,4 @@ cd "$SITE_DIR"
 # export BUILDSITE=~/src/asf/infra-pelican/bin/buildsite.py
 # export LIBCMARKDIR=~/src/asf/infra/tools/bintray/cmark-gfm.0.28.3.gfm.12-libs
 
-$BUILDSITE dir --output=/tmp/steve-site.$$
+$BUILDSITE dir --output=/tmp/steve-site.$$ "--yaml-dir=$ROOT_DIR" "--content-dir=$SITE_DIR"
