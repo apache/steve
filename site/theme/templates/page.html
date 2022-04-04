@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/steve.css">
+    <title>{{ page.title }} - {{SITENAME}}</title>
+</head>
+<body>
+    <div id="main">
+        <nav>
+            <ul>
+                <li><a href=".">Home</a></li>
+                <li><a href="community.html">Community and Support</a></li>
+                <li><a href="develop.html">Developer Information</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+                <li><a href="downloads.html">Downloads</a></li>
+                <li><a href="asf.html">About Apache</a></li>
+            </ul>
+        </nav>
+        <div id="contents">
+            <h1>
+                {% if article %}
+                {{ article.title }}
+                {% else %}
+                {{ page.title }}
+                {% endif %}
+            </h1>
+            {% if article %}
+            {{ article.content }}
+            {% else %}
+            {{ page.content }}
+            {% endif %}
+        </div>
+        <footer>
+            Copyright&copy; 2013-2022 the Apache Software Foundation. Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a> | <a href="https://privacy.apache.org/policies/privacy-policy-public.html">Privacy Policy</a><br>
+            Apache STeVe, Apache, the Apache feather logo, and the Apache STeVe project logo are trademarks of The Apache Software Foundation.
+            All other marks mentioned may be trademarks or registered trademarks of their respective owners.
+        </footer>
+    </div>
+</body>
+</html>

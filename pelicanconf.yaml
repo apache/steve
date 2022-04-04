@@ -1,0 +1,13 @@
+site:
+  name: Apache STeVe
+  description: Apache STeVe
+  domain: steve.apache.org
+  logo: images/logo.png
+  repository: https://github.com/apache/steve/blob/trunk/site
+  trademarks: Apache, the Apache feather logo, and "Project" are trademarks or registered trademarks
+
+theme: theme
+
+setup:
+  ignore:
+    - none-yet
