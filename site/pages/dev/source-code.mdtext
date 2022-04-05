@@ -1,0 +1,46 @@
+Title: Source Code
+
+## pySTeVe
+PySTeVe can be browsed via the [web interface](https://svn.apache.org/viewvc/steve/trunk/pysteve/).
+
+You can check out the source code at: [https://svn.apache.org/repos/asf/steve/trunk/pysteve/](https://svn.apache.org/repos/asf/steve/trunk/pysteve/):
+
+
+      $svn co https://svn.apache.org/repos/asf/steve/trunk/pysteve/
+
+
+PySTeVe requires no building/compiling, but does require a setup, as explained on the [try it out](/demo.html) page.
+
+
+
+
+## Older sources
+You can browse the source code via the [web interface](http://svn.apache.org/viewvc/steve/trunk/)
+.
+
+You can download (aka checkout) the sources of Apache STeVe with
+Subversion client using the following URL [http://svn.apache.org/repos/asf/steve/trunk](http://svn.apache.org/repos/asf/steve/trunk)
+.
+
+Performing the checkout from the command line using the subversion client
+is as easy as executing the following command:
+> $ svn co [http://svn.apache.org/repos/asf/steve/trunk](http://svn.apache.org/repos/asf/steve/trunk)
+
+If you are experiencing problems with errors like "400 Bad Request
+(http://svn.apache.org)", try using:
+> $ svn co [https://svn.apache.org/repos/asf/steve/trunk](https://svn.apache.org/repos/asf/steve/trunk)
+
+<a name="SourceCode-Continuousintegration"></a>
+# Continuous integration
+
+Apache STeVe continuous integration relies on [Apache Buildbot](http://ci.apache.org/).
+All builders are available [from the page](http://ci.apache.org/builders).
+
+* [Apache STeVe under Ubuntu](http://ci.apache.org/builders/steve-trunk-ubuntu)
+* [Apache STeVe under Windows](http://ci.apache.org/builders/steve-trunk-win)
+
+<a name="SourceCode-Building"></a>
+# Building
+
+*TODO fill in*
+

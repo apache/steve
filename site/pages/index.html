@@ -1,0 +1,34 @@
+{% extends "skeleton.html" %}
+
+{% block title %}Apache STeVe{% endblock %}
+{% block content %}
+    <div class="jumbotron">
+		<p style="text-align: center; margin-bottom: 20px;">
+			<img src="/images/steve.png"/>
+		</p>
+        <p>Apache STeVe is Apache's Python based voting system that the Foundation uses to handle things like <a href="https://wiki.apache.org/general/BoardVoting">voting in our new Board of Directors</a>.</p>
+	</div>
+	<div class="row">
+		<p>Apache STeVe supports many types of voting, including (but not limited to):
+			<ul class="list-group">
+				<li class="list-group-item"><a href="vote_types.html#stv">Single Transferable Votes</a></li>
+				<li class="list-group-item"><a href="vote_types.html#yna">Single-motion voting (Yes/No/Abstain)</a></li>
+				<li class="list-group-item"><a href="vote_types.html#dh">D'Hondt (Jefferson) style voting</a></li>
+				<li class="list-group-item"><a href="vote_types.html#mntv">Multiple Non-Transferable Votes</a></li>
+				<li class="list-group-item"><a href="vote_types.html#fpp">First Past the Post (presidential elections)</a></li>
+				<li class="list-group-item"><a href="vote_types.html#cop">Candidate or Party voting with preferential trickle-down</a></li>
+				<li class="list-group-item"><a href="vote_types.html#fic">First in Class (N-x-points based voting)</a></li>
+				<li class="list-group-item"><a href="vote_types.html#ap">Apache-style Single-motion Voting</a></li>
+			</ul>
+		</p>
+		<p>
+			It also supports multiple database backends:
+			<ul class="list-group">
+				<li class="list-group-item">File-based</li>
+				<li class="list-group-item">ElasticSearch</li>
+				<li class="list-group-item">More to come...</li>
+			</ul>
+		</p>
+		
+    </div>
+{% endblock %}

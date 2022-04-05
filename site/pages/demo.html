@@ -1,0 +1,42 @@
+{% extends "skeleton.html" %}
+
+{% block title %}Apache STeVe{% endblock %}
+{% block content %}
+
+	<h1>Apache STeVe quickstart guide</h1>
+
+	<h2>pySTeVe</h2>
+
+	<h3>Quickstart Guide</h3>
+	<ul style="font-family: monospace;">
+		<li>svn co https://svn.apache.org/repos/asf/steve/trunk/pysteve/</li>
+		<li>Edit steve.cfg to suit your needs (karma, DB backend etc)<br/>
+			IF you choose ElasticSearch as backend, install the python module (pip install elasticsearch)<br/>
+			OR IF you choose files as your backend, run setup.py in the CLI directory.
+		</li>
+		<li>Edit httpd.conf, add it to your existing httpd configuration</li>
+		<li>Set up authorization using htpasswd for admins, monitors etc</li>
+		<li>Go to http://steve.yourdomain.foo/admin and set up an election</li>
+		<li>Start voting!</li>
+	</ul>
+<h3>Building a Docker image</h3>
+  <p>
+	  You can also build pySTeVe as a Docker image using the Dockerfile locate in the <kbd>docker</kbd> directory:
+	  <ul>
+		  <li><kbd>svn co https://svn.apache.org/repos/asf/steve/trunk/pysteve/</kbd></li>
+		  <li><kbd>docker build -t pysteve docker/</kbd></li>
+		  <li><kbd>docker run -i -p 127.0.0.1:80:80 pysteve</kbd></li>
+		  <li>Navigate to http://localhost/admin to set up stuff, using the default credentials (admin/admin1234)</li>
+	  </ul>
+</p>
+	<!--
+	<h3>Online demonstration</h3>
+	<p>
+		If you'd rather try out STeVe before you install it, we have a free-to-try demo online.
+		Simple hop on over to <a href="http://demo.stv.website/">http://demo.stv.website/</a>
+		and mangle it to your hearts content. All data in the demo is wiped once a week.
+		Use the username <kbd>admin</kbd> and password <kbd>demo</kbd> to access the admin area.
+	</p>
+	-->
+
+{% endblock %}
