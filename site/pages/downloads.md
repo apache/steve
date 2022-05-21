@@ -1,3 +1,3 @@
 title: Downloads
 
-Apache STeVe does not have any releases yet...
+Apache STeVe has not produced any releases yet. Please ask on our dev@ list.
