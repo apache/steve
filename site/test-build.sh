@@ -9,6 +9,9 @@
 #
 # ### DOCCO on using infra-pel/bin/build-cmark.sh for the lib/
 #
+# ALSO NEEDED
+#   $ pip3 install ezt pelican
+#
 
 THIS_SCRIPT=`realpath "$0"`
 SITE_DIR=`dirname "$THIS_SCRIPT"`
