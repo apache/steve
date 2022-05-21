@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/steve.css">
+    <title>Quickstart Guide - Apache STeVe</title>
+</head>
+<body>
+    <div id="main">
+        <nav>
+            <ul>
+                <li><a href=".">Home</a></li>
+                <li><a href="community.html">Community and Support</a></li>
+                <li><a href="develop.html">Developer Information</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+                <li><a href="downloads.html">Downloads</a></li>
+                <li><a href="asf.html">About Apache</a></li>
+            </ul>
+        </nav>
+        <div id="contents">
+            <h1>
+                Quickstart Guide
+            </h1>
+            <h2>pySTeVe</h2>
+<h3>Quickstart Guide</h3>
+<ul>
+<li><code>svn co https://svn.apache.org/repos/asf/steve/trunk/pysteve/</code></li>
+<li>Edit <code>steve.cfg</code> to suit your needs (karma, DB backend etc)
+<ul>
+<li>IF you choose ElasticSearch as backend, install the python module (pip install elasticsearch)</li>
+<li>OR IF you choose files as your backend, run setup.py in the CLI directory.</li>
+</ul>
+</li>
+<li>Edit <code>httpd.conf</code>, add it to your existing httpd configuration</li>
+<li>Set up authorization using htpasswd for admins, monitors etc</li>
+<li>Go to <code>http://steve.example.org/admin</code> and set up an election</li>
+<li>Start voting!</li>
+</ul>
+<h3>Building a Docker image</h3>
+<p>You can also build pySTeVe as a Docker image using the Dockerfile locate in the <code>docker</code> directory:</p>
+<ul>
+<li><code>svn co https://svn.apache.org/repos/asf/steve/trunk/pysteve/</code></li>
+<li><code>docker build -t pysteve docker/</code></li>
+<li><code>docker run -i -p 127.0.0.1:80:80 pysteve</code></li>
+<li>Navigate to <code>http://localhost/admin</code> to set up stuff, using the default credentials (admin/demo)</li>
+</ul>
+
+        </div>
+        <footer>
+            Copyright&copy; 2013-2022 the Apache Software Foundation. Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a> | <a href="https://privacy.apache.org/policies/privacy-policy-public.html">Privacy Policy</a><br>
+            Apache STeVe, Apache, the Apache feather logo, and the Apache STeVe project logo are trademarks of The Apache Software Foundation.
+            All other marks mentioned may be trademarks or registered trademarks of their respective owners.
+        </footer>
+    </div>
+</body>
+</html>

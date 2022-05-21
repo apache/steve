@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/steve.css">
+    <title>Vote Types - Apache STeVe</title>
+</head>
+<body>
+    <div id="main">
+        <nav>
+            <ul>
+                <li><a href=".">Home</a></li>
+                <li><a href="community.html">Community and Support</a></li>
+                <li><a href="develop.html">Developer Information</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+                <li><a href="downloads.html">Downloads</a></li>
+                <li><a href="asf.html">About Apache</a></li>
+            </ul>
+        </nav>
+        <div id="contents">
+            <h1>
+                Vote Types
+            </h1>
+            <h2 id="yna">Single motion voting (Yes/No/Abstain)</h2>
+<p>This is a simple tally vote. Voters can vote either Yes or No on an
+issue, or they can abstain.  Votes are tallied, and the result is
+presented. It is up to the election committee to interpret the result.</p>
+<hr />
+<h2 id="ap">Apache-style Single motion voting (Yes/No/Abstain with binding votes)</h2>
+<p>This is a simple tally vote. Voters can vote either Yes or No on an
+issue, or they can abstain, however certain people (committee members,
+for instance) may cast binding votes whereas others may only cast
+non-binding votes.  Votes are tallied, and the result is presented. It
+is up to the election committee to interpret the result.</p>
+<hr />
+<h2 id="fpp">First Past the Post (presidential election style)</h2>
+<p>FPP is a voting system with multiple candidates. The candidate with
+the most votes will win, regardless of whether they received more than
+half the votes or not.</p>
+<hr />
+<h2 id="stv">Single Transferable Vote</h2>
+<p>The single transferable vote (STV) system is designed to achieve
+proportional representation through ranked voting in multi-seat
+elections. It does so by allowing every voter one vote, that is
+transferable to other candidates based on necessity of votes and the
+preference of the voter. Thus, if a candidate in an election is voted
+in (or in case of a tie), excess votes are allocated to candidates
+according to the preference of the voter. STV is designed to minimize
+the 'wasted votes' in an election by reallocating votes (and thus the
+wishes of the voters) proportionally to their previous priority.</p>
+<p>Please see the
+<a href="https://en.wikipedia.org/wiki/Single_transferable_vote#Voting">Wikipedia article on STV voting</a>
+for more insight into how STV works.</p>
+<p>For calculating result, we use Meek's Method with a quota derived from
+the Droop Quota but with implementation changes such as those
+proposed by New Zealand. See
+<a href="http://svn.apache.org/repos/asf/steve/trunk/stv_background/meekm.pdf">this paper</a>
+for details.</p>
+<hr />
+<h2 id="dh">D'Hondt (Jefferson) Voting</h2>
+<p>The D'Hondt method, also known as the Jefferson method, is a <em>highest
+average</em> method for calculating proportional representation of parties
+at an election.  In essence, this is done by calculating a quotient
+per party for each number of seats available and finding the highest
+values. The quotient is determined as <code>V/(s+1)</code> where <code>V</code> is the
+number of votes received and <code>s</code> is the number of seats won. Thus, for
+each party, the quotient is calculated for the number of seats
+available:</p>
+<h4>Example result for election with 4 seats:</h4>
+<table>
+<thead>
+<tr>
+<th>Party</th>
+<th>Votes</th>
+<th>1 seat</th>
+<th>2 seats</th>
+<th>3 seats</th>
+<th>4 seats</th>
+<th>seats won</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gnomes</td>
+<td>25,000</td>
+<td>25,000/(0+1) = <b style='color:#396;'>25,000</b></td>
+<td>25,000/(1+1) = <b style='color:#396;'>12,500</b></td>
+<td>25,000/(2+1) = 8,333</td>
+<td>25,000/(3+1) = 6,250</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Elves</td>
+<td>15,000</td>
+<td>15,000/(0+1) = <b style='color:#396;'>15,000</b></td>
+<td>15,000/(1+1) = 7,500</td>
+<td>15,000/(2+1) = 5,000</td>
+<td>15,000/(3+1) = 3,750</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Dwarves</td>
+<td>10,000</td>
+<td>10,000/(0+1) = <b style='color:#396;'>10,000</b></td>
+<td>10,000/(1+1) = 5,000</td>
+<td>10,000/(2+1) = 3,333</td>
+<td>10,000/(3+1) = 2,500</td>
+<td>1</td>
+</tr></tbody></table>
+<p>For more information on the D'Hondt Method, see
+<a href="https://en.wikipedia.org/wiki/D&#x27;Hondt_method">this Wikipedia article</a></p>
+
+        </div>
+        <footer>
+            Copyright&copy; 2013-2022 the Apache Software Foundation. Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a> | <a href="https://privacy.apache.org/policies/privacy-policy-public.html">Privacy Policy</a><br>
+            Apache STeVe, Apache, the Apache feather logo, and the Apache STeVe project logo are trademarks of The Apache Software Foundation.
+            All other marks mentioned may be trademarks or registered trademarks of their respective owners.
+        </footer>
+    </div>
+</body>
+</html>
