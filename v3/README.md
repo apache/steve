@@ -102,9 +102,10 @@ When an **Election** is Opened for voting, the `OpenedKey` is calculated, stored
 and used for further work. The `OpenedKey` is primarily used to resist tampering
 with the ballot definition.
 
-The size of **Salt(xx)** is TBD. The salt values should never be transmitted.
+The size of **Salt(xx)** is 16 bytes, which is the default used by the Argon2
+implementation. The salt values should never be transmitted.
 
-The `Hash()` function is likely to be **Argon2**. Note that `Hash()` is
+The `Hash()` function will be **Argon2**. Note that `Hash()` is
 computationally/memory intensive, in order to make "unmasking" of votes
 somewhat costly for **root**. Yet it needs to be reasonable to decrypt
 the votestrings for final tallying (eg. after ballot-close, **several hours**
@@ -119,6 +120,22 @@ by storing the result. Any attacker must perform the work. During normal
 operation of the voting system, each call of the `Hash()` function should be
 within human-reasonable time limits (but unreasonable to perform in bulk).
 
+Note that `VoteToken` is stored as part of each vote, but is only emailed
+as the shared secret. It is not stored outside of votes, and is not
+obviously tied in any way to VoterID.
+
 If `VoteToken` is not emailed, but (instead) LDAP authentication is used,
 then it is possible to omit storage of `VoteToken` and to simply compute it
 from the authenticated credentials.
+
+### (Re)Tally Process
+
+  1. For each issue on the ballot, the `IssueToken` is computed and
+     entered into a Map<IssueToken, IssueID>
+  1. For each vote in the election:
+    1. Compute the `VoteKey`
+    1. Decrypt the `votestring`
+    1. Look up the IssueID, and apply votestring to that issue
+
+Notes: be wary of repeats; collect STV votestrings, for passing in-bulk
+to the STV algorithm.
