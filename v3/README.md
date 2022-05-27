@@ -86,16 +86,16 @@ IssueID := [-a-zA-Z0-9]+
 Election-data := TBD
 Issue-data := TBD
 BLOCK := Election-data + sorted(Issue-Data)
-OpenedKey := Hash(BLOCK)
+OpenedKey := Hash(BLOCK, Salt(each-election))
 
 Voters := Map<VoterID, Salt(each-voter)>
-VoterToken := Hash(OpenedKey + VoterID + Salt(each-voter))
+VoterToken := Hash(OpenedKey + VoterID, Salt(each-voter))
 
 Issues := Map<IssueID, Salt(each-issue)>
-IssueToken := Hash(OpenedKey + IssueID + Salt(each-issue))
+IssueToken := Hash(OpenedKey + IssueID, Salt(each-issue))
 
 votestring = TBD; padding TBD
-VoteKey := Hash(VoterToken + IssueToken + Salt(each-vote))
+VoteKey := Hash(VoterToken + IssueToken, Salt(each-vote))
 Vote := Tuple[ VoterToken, IssueToken, Salt(each-vote), Encrypt(VoteKey, votestring) ]
 ```
 
