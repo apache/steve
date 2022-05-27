@@ -131,11 +131,11 @@ from the authenticated credentials.
 ### (Re)Tally Process
 
   1. For each issue on the ballot, the `IssueToken` is computed and
-     entered into a Map<IssueToken, IssueID>
+     entered into a `Map<IssueToken, IssueID>`
   1. For each vote in the election:
-    1. Compute the `VoteKey`
-    1. Decrypt the `votestring`
-    1. Look up the IssueID, and apply votestring to that issue
+     1. Compute the `VoteKey`
+     1. Decrypt the `votestring`
+     1. Look up the IssueID, and apply votestring to that issue
 
 Notes: be wary of repeats; collect STV votestrings, for passing in-bulk
 to the STV algorithm.
