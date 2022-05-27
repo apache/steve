@@ -118,19 +118,31 @@ be implemented using the `Fernet` system[^fernet] in the `cryptography` Python
 package. Note that Argon2 produces 32 byte hash values, which matches
 the 32 bytes needed for a Fernet key.
 
-**IMPORTANT**: the `IssueToken` and `VoteKey` should never be stored.
+### Storage and Transmission
+
+**IMPORTANT**: the `VoterToken` and `IssueToken` should never be
+stored in a way that ties them to the VoterID and IssueID.  The
+`VoteKey` should never be stored. Instead, the `Salt(xx)` values
+are stored, and the tokens/key are computed when needed.
+
 In general, the expense of the `Hash()` function should not be short-circuited
 by storing the result. Any attacker must perform the work. During normal
 operation of the voting system, each call of the `Hash()` function should be
 within human-reasonable time limits (but unreasonable to perform in bulk).
 
-Note that `VoteToken` is stored as part of each vote, but is only emailed
-as the shared secret. It is not stored outside of votes, and is not
-obviously tied in any way to `VoterID`.
+Note that `VoterToken` and `IssueToken` are stored as part of each `Vote`,
+but those tokens provide no easy mapping back to a voter or issue.
 
-If `VoteToken` is not emailed, but (instead) LDAP authentication is used,
-then it is possible to omit storage of `VoteToken` and to simply compute it
-from the authenticated credentials.
+The `VoterToken` is normally emailed to the Participant. If it is not
+emailed, then LDAP authentication would be used, and the server will
+compute it from the authenticated credentials.
+
+Since `VoterToken` *may* be used by the Participant, via URL, to perform
+their voting, it must be "URL safe". If LDAP authn mode is used, then
+the `VoterToken` will never be encoded for humans.
+
+The `ElectionID` is also visible to Participants, and will be encoded
+as eight (8) hex digits, just like STeVe v2.
 
 ### (Re)Tally Process
 
@@ -143,5 +155,9 @@ from the authenticated credentials.
 
 Notes: be wary of repeats; collect STV votestrings, for passing in-bulk
 to the STV algorithm.
+
+Note that the tally process does not require unmasking the Participant.
+
+
 
 [^fernet]: https://cryptography.io/en/latest/fernet/
