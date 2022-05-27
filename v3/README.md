@@ -114,7 +114,7 @@ to decrypt all the votes and perform the tally).
 
 `Encrypt()` and `Decrypt()` are a **symmetric** encryption algorithm,
 so that votestrings can be recovered. This will
-be implemented using the `Fernet` system[^1] in the `cryptography` Python
+be implemented using the `Fernet` system[^fernet] in the `cryptography` Python
 package. Note that Argon2 produces 32 byte hash values, which matches
 the 32 bytes needed for a Fernet key.
 
@@ -144,4 +144,4 @@ from the authenticated credentials.
 Notes: be wary of repeats; collect STV votestrings, for passing in-bulk
 to the STV algorithm.
 
-[^1] https://cryptography.io/en/latest/fernet/
+[^fernet]: https://cryptography.io/en/latest/fernet/
