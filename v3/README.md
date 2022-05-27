@@ -94,6 +94,7 @@ VoterToken := Hash(OpenedKey + VoterID + Salt(each-voter))
 Issues := Map<IssueID, Salt(each-issue)>
 IssueToken := Hash(OpenedKey + IssueID + Salt(each-issue))
 
+votestring = TBD; padding TBD
 VoteKey := Hash(VoterToken + IssueToken + Salt(each-vote))
 Vote := Tuple[ VoterToken, IssueToken, Salt(each-vote), Encrypt(VoteKey, votestring) ]
 ```
@@ -111,8 +112,11 @@ somewhat costly for **root**. Yet it needs to be reasonable to decrypt
 the votestrings for final tallying (eg. after ballot-close, **several hours**
 to decrypt all the votes and perform the tally).
 
-`Encrypt()` and `Decrypt()` are a **symmetric** encryption algorithm
-(eg. block-based XOR), so that votestrings can be recovered. TBD.
+`Encrypt()` and `Decrypt()` are a **symmetric** encryption algorithm,
+so that votestrings can be recovered. This will
+be implemented using the `Fernet` system[^1] in the `cryptography` Python
+package. Note that Argon2 produces 32 byte hash values, which matches
+the 32 bytes needed for a Fernet key.
 
 **IMPORTANT**: the `IssueToken` and `VoteKey` should never be stored.
 In general, the expense of the `Hash()` function should not be short-circuited
@@ -122,7 +126,7 @@ within human-reasonable time limits (but unreasonable to perform in bulk).
 
 Note that `VoteToken` is stored as part of each vote, but is only emailed
 as the shared secret. It is not stored outside of votes, and is not
-obviously tied in any way to VoterID.
+obviously tied in any way to `VoterID`.
 
 If `VoteToken` is not emailed, but (instead) LDAP authentication is used,
 then it is possible to omit storage of `VoteToken` and to simply compute it
@@ -135,7 +139,9 @@ from the authenticated credentials.
   1. For each vote in the election:
      1. Compute the `VoteKey`
      1. Decrypt the `votestring`
-     1. Look up the IssueID, and apply votestring to that issue
+     1. Look up the `IssueID`, and apply `votestring` to that issue
 
 Notes: be wary of repeats; collect STV votestrings, for passing in-bulk
 to the STV algorithm.
+
+[^1] https://cryptography.io/en/latest/fernet/
