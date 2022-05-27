@@ -106,7 +106,7 @@ with the ballot definition.
 The size of **Salt(xx)** is 16 bytes, which is the default used by the Argon2
 implementation. The salt values should never be transmitted.
 
-The `Hash()` function will be **Argon2**. Note that `Hash()` is
+The `Hash()` function will be **Argon2**[^argon2]. Note that `Hash()` is
 computationally/memory intensive, in order to make "unmasking" of votes
 somewhat costly for **root**. Yet it needs to be reasonable to decrypt
 the votestrings for final tallying (eg. after ballot-close, **several hours**
@@ -161,3 +161,4 @@ Note that the tally process does not require unmasking the Participant.
 
 
 [^fernet]: https://cryptography.io/en/latest/fernet/
+[^argon2]: https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html
