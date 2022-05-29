@@ -36,23 +36,21 @@ def gen_salt() -> bytes:
 
 
 ### fix the types of the election metadata and issue data
-### fix return type
+### fix return type, to be a tuple
 def gen_opened_key(election: bytes, issues: bytes) -> bytes:
     "Generate the OpenedKey for this election."
     salt = gen_salt()
     ### TBD: map ELECTION and ISSUES parameters to bytes
     opened_key = _hash(election + issues, salt)
-    return opened_key, salt
+    return salt, opened_key
 
 
-### fix return type
-def gen_token(opened_key: bytes, value: bytes) -> bytes:
+def gen_token(opened_key: bytes, value: bytes, salt: bytes) -> bytes:
     "Generate a voter or issue token."
-    salt = gen_salt()
-    return _hash(opened_key + value, salt), salt
+    return _hash(opened_key + value, salt)
 
 
-### fix return type
+### fix return type, to be a tuple
 def create_vote(voter_token: bytes,
                 issue_token: bytes,
                 votestring: bytes) -> bytes:
@@ -61,7 +59,7 @@ def create_vote(voter_token: bytes,
     key = _hash(voter_token + issue_token, salt)
     b64key = base64.urlsafe_b64encode(key)
     f = cryptography.fernet.Fernet(b64key)
-    return voter_token, issue_token, salt, f.encrypt(votestring)
+    return salt, f.encrypt(votestring)
 
 
 def decrypt_votestring(voter_token: bytes,
