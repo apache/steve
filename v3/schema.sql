@@ -36,7 +36,6 @@ CREATE TABLE METADATA (
     /* Title of this election.  */
     title  TEXT NOT NULL,
 
-    /* ### should we include a start/stop time?  */
     /* ### if we have monitors, they go here.  */
     /* ### maybe add an owner?  */
 
@@ -47,7 +46,12 @@ CREATE TABLE METADATA (
     /* If this Election has been opened for voting, then we store
        the OpenedKey here to avoid recomputing. 32 bytes.
        This will be NULL until the Election is opened.  */
-    opened_key  BLOB
+    opened_key  BLOB,
+
+    /* Has this election been closed? NULL or 0 for not-closed (see
+       SALT and OPENED_KEY to determine if the election has been
+       opened). 1 for closed (implies it was opened).  */
+    closed  INTEGER
 
     ) STRICT;
 
