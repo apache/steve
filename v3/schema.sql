@@ -110,7 +110,8 @@ CREATE TABLE VOTES (
 
     /* The key is auto-incrementing to provide a record of insert-order,
        so that we have an ordering to find the "most recent" when
-       re-voting on an issue.  */
+       re-voting on an issue.
+       Note: an integer primary key is an alias for _ROWID_.  */
     vid  INTEGER PRIMARY KEY AUTOINCREMENT,
 
     /* A hashed token representing a single Participant.  32 bytes.  */
