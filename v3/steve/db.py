@@ -39,8 +39,8 @@ class DB:
     def __init__(self, fname):
 
         def row_factory(cursor, row):
-            "Apply namedtuple() to the returned row."
-            return self.factories[cursor](*row)
+            "Possibly apply namedtuple() to the returned row."
+            return self.factories.get(cursor, lambda *row: row)(*row)
 
         self.conn = sqlite3.connect(fname, isolation_level=None)
         self.conn.row_factory = row_factory
@@ -51,11 +51,9 @@ class DB:
         # CURSOR : FACTORY
         self.factories = { }
 
-    def _cursor_for(self, statement, factory):
-        cursor = self.conn.cursor(functools.partial(NamedTupleCursor,
-                                                    statement))
-        self.factories[cursor] = factory
-        return cursor
+    def _cursor_for(self, statement):
+        return self.conn.cursor(functools.partial(NamedTupleCursor,
+                                                  statement))
 
     def add_query(self, table, query):
         "Return a cursor to use for this QUERY against TABLE."
@@ -72,15 +70,18 @@ class DB:
                                          names, rename=True,
                                          module=DB.__module__)
 
-        return self._cursor_for(query, factory)
+        # Register the row-wrapper factory for this cursor.
+        cursor = self._cursor_for(query)
+        self.factories[cursor] = factory
+        return cursor
 
     def add_statement(self, statement):
         "Return a cursor for use with a DML SQL statement."
 
-        # Note: rows should not be returned for these statements, and
-        # (thus) the row_factory should not be called. If it does, just
-        # return the original row.
-        return self._cursor_for(statement, (lambda *cols: cols))
+        # Note: rows should not be returned for this statement, and
+        # (thus) the row_factory should not be called. If called, the
+        # original row will be returned.
+        return self._cursor_for(statement)
 
 
 class NamedTupleCursor(sqlite3.Cursor):
