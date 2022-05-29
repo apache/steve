@@ -65,3 +65,13 @@ class Election:
 
         for_table('issues', self.c_salt_issue)
         for_table('record', self.c_salt_record)
+
+
+def new_eid():
+    "Create a new ElectionID."
+
+    # Use 4 bytes of a salt, for 32 bits.
+    b = crypto.gen_salt()[:4]
+
+    # Format into 8 hex characters.
+    return f'{b[0]:02x}{b[1]:02x}{b[2]:02x}{b[3]:02x}'
