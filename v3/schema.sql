@@ -31,7 +31,7 @@ CREATE TABLE METADATA (
     /* The Election ID. This value might be replicated in the
        filesystem holding this database. To remain independent of
        application file choices, the ID is stored here.  */
-    id  TEXT PRIMARY KEY NOT NULL,
+    eid  TEXT PRIMARY KEY NOT NULL,
 
     /* Title of this election.  */
     title  TEXT NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE METADATA (
 CREATE TABLE ISSUES (
 
     /* The Issue ID, matching [-a-zA-Z0-9]+  */
-    id  TEXT PRIMARY KEY NOT NULL,
+    iid  TEXT PRIMARY KEY NOT NULL,
 
     /* Simple one-line title for this issue.  */
     title  TEXT NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE ISSUES (
 CREATE TABLE RECORD (
 
     /* An id assigned to the user (eg. an LDAP username).  */
-    id  TEXT PRIMARY KEY NOT NULL,
+    rid  TEXT PRIMARY KEY NOT NULL,
 
     /* Optional human-readable name for this user.  */
     name  TEXT,
@@ -111,7 +111,7 @@ CREATE TABLE VOTES (
     /* The key is auto-incrementing to provide a record of insert-order,
        so that we have an ordering to find the "most recent" when
        re-voting on an issue.  */
-    id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    vid  INTEGER PRIMARY KEY AUTOINCREMENT,
 
     /* A hashed token representing a single Participant.  32 bytes.  */
     voter_token  BLOB NOT NULL,
