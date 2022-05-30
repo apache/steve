@@ -35,7 +35,7 @@
         DEFINITION: salt and opened_key are NULL. closed is n/a.
 
      2. Open. The election is now open for voting.
-        DEFINITION: salt and opened_key are NOT NULL. closed is n/a.
+        DEFINITION: salt and opened_key are NOT NULL. closed is NULL or 0.
 
      3. Closed. The election is closed.
         DEFINITION: salt and opened_key are NOT NULL. closed is 1.
