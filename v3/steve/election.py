@@ -37,6 +37,8 @@ class Election:
             '''UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?''')
         self.c_salt_record = self.db.add_statement(
             '''UPDATE RECORD SET salt = ? WHERE _ROWID_ = ?''')
+        self.c_open = self.db.add_statement(
+            'UPDATE METADATA SET salt = ?, opened_key = ?')
         self.c_close = self.db.add_statement(
             'UPDATE METADATA SET closed = 1')
 
@@ -49,7 +51,18 @@ class Election:
             'SELECT * FROM RECORD ORDER BY rid')
 
     def open(self):
-        print('EDATA:', self.gather_election_data())
+        # Double-check that the election is not already open.
+        md = self.q_metadata.first_row()
+        assert md.salt is None and md.opened_key is None
+
+        edata = self.gather_election_data()
+        print('EDATA:', edata)
+        salt = crypto.gen_salt()
+        opened_key = crypto.gen_opened_key(edata, salt)
+
+        print('SALT:', salt)
+        print('KEY:', opened_key)
+        self.c_open.perform((salt, opened_key))
 
     def gather_election_data(self):
         "Gather a definition of this election for keying and anti-tamper."
@@ -101,6 +114,23 @@ class Election:
 
         for_table('issues', self.c_salt_issue)
         for_table('record', self.c_salt_record)
+
+    def is_tampered(self):
+
+        # The election should be open.
+        md = self.q_metadata.first_row()
+        assert md.salt is not None and md.opened_key is not None
+
+        # Compute an opened_key based on the current data.
+        edata = self.gather_election_data()
+        opened_key = crypto.gen_opened_key(edata, md.salt)
+
+        print('EDATA:', edata)
+        print('SALT:', md.salt)
+        print('KEY:', opened_key)
+
+        # The computed key should be unchanged.
+        return opened_key != md.opened_key
 
 
 def new_eid():
