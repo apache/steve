@@ -42,6 +42,7 @@ class DB:
             "Possibly apply namedtuple() to the returned row."
             return self.factories.get(cursor, lambda *row: row)(*row)
 
+        # Note: isolation_level=None means autocommit mode.
         self.conn = sqlite3.connect(fname, isolation_level=None)
         self.conn.row_factory = row_factory
 
