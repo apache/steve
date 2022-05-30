@@ -192,7 +192,9 @@ class Election:
     def is_tampered(self):
 
         # The Election should be open.
-        assert self.is_opened()
+        assert self.is_open()
+
+        md = self.q_metadata.first_row()
 
         # Compute an opened_key based on the current data.
         edata = self.gather_election_data()
