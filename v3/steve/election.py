@@ -52,8 +52,12 @@ class Election:
 
     def open(self):
 
-        # Double-check the election is in the editing state.
+        # Double-check the Election is in the editing state.
         assert self.is_editable()
+
+        # Add salts first. If this is gonna fail, then make sure it
+        # happens before we move to the "opened" state.
+        self.add_salts()
 
         edata = self.gather_election_data()
         print('EDATA:', edata)
@@ -90,11 +94,17 @@ class Election:
     def close(self):
         "Close an election."
 
-        # Simple tweak of the metadata.
+        # The Election should be open.
+        assert self.is_open()
+
+        # Simple tweak of the metadata to close the Election.
         self.c_close.perform()
 
     def add_salts(self):
         "Set the SALT column in the ISSUES and RECORD tables."
+
+        # The Election should be editable.
+        assert self.is_editable()
 
         cur = self.db.conn.cursor()
 
@@ -117,9 +127,8 @@ class Election:
 
     def is_tampered(self):
 
-        # The election should be open.
-        md = self.q_metadata.first_row()
-        assert md.salt is not None and md.opened_key is not None
+        # The Election should be open.
+        assert self.is_opened()
 
         # Compute an opened_key based on the current data.
         edata = self.gather_election_data()
@@ -133,19 +142,19 @@ class Election:
         return opened_key != md.opened_key
 
     def is_editable(self):
-        "Can this election be edited?"
+        "Can this Election be edited?"
         md = self.q_metadata.first_row()
         return md.salt is None and md.opened_key is None
 
     def is_open(self):
-        "Is this election open for voting?"
+        "Is this Election open for voting?"
         md = self.q_metadata.first_row()
         return (md.salt is not None
                 and md.opened_key is not None
                 and md.closed in (None, 0))
 
     def is_closed(self):
-        "Has this election been closed?"
+        "Has this Election been closed?"
         md = self.q_metadata.first_row()
         return (md.salt is None
                 and md.opened_key is None
@@ -156,7 +165,7 @@ def new_eid():
     "Create a new ElectionID."
 
     # Use 4 bytes of a salt, for 32 bits.
-    b = crypto.gen_salt()[:4]
+    b = crypto.gen_salt()
 
     # Format into 8 hex characters.
     return f'{b[0]:02x}{b[1]:02x}{b[2]:02x}{b[3]:02x}'
