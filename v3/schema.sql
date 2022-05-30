@@ -25,7 +25,21 @@
 /* --------------------------------------------------------------------- */
 
 /* Various metadata about the Election contained in this database.
-   Only one row will exist.  */
+   Only one row will exist.
+
+   An Election has three states:
+
+     1. Editable. The election is being set up. Issues and voters of
+        record can be added, edited, and deleted. The Election's title
+        may be changed (EID is fixed, however).
+        DEFINITION: salt and opened_key are NULL. closed is n/a.
+
+     2. Open. The election is now open for voting.
+        DEFINITION: salt and opened_key are NOT NULL. closed is n/a.
+
+     3. Closed. The election is closed.
+        DEFINITION: salt and opened_key are NOT NULL. closed is 1.
+*/
 CREATE TABLE METADATA (
 
     /* The Election ID. This value might be replicated in the

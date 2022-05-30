@@ -51,9 +51,9 @@ class Election:
             'SELECT * FROM RECORD ORDER BY rid')
 
     def open(self):
-        # Double-check that the election is not already open.
-        md = self.q_metadata.first_row()
-        assert md.salt is None and md.opened_key is None
+
+        # Double-check the election is in the editing state.
+        assert self.is_editable()
 
         edata = self.gather_election_data()
         print('EDATA:', edata)
@@ -131,6 +131,11 @@ class Election:
 
         # The computed key should be unchanged.
         return opened_key != md.opened_key
+
+    def is_editable(self):
+        "Can this election be edited?"
+        md = self.q_metadata.first_row()
+        return md.salt is None and md.opened_key is None
 
 
 def new_eid():
