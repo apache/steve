@@ -137,6 +137,20 @@ class Election:
         md = self.q_metadata.first_row()
         return md.salt is None and md.opened_key is None
 
+    def is_open(self):
+        "Is this election open for voting?"
+        md = self.q_metadata.first_row()
+        return (md.salt is not None
+                and md.opened_key is not None
+                and md.closed in (None, 0))
+
+    def is_closed(self):
+        "Has this election been closed?"
+        md = self.q_metadata.first_row()
+        return (md.salt is None
+                and md.opened_key is None
+                and md.closed == 1)
+
 
 def new_eid():
     "Create a new ElectionID."
