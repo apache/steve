@@ -41,6 +41,20 @@ class Election:
             'UPDATE METADATA SET salt = ?, opened_key = ?')
         self.c_close = self.db.add_statement(
             'UPDATE METADATA SET closed = 1')
+        self.c_add_issue = self.db.add_statement(
+            '''INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?)
+               ON CONFLICT DO UPDATE SET
+                 title=excluded.title,
+                 description=excluded.description,
+                 type=excluded.type,
+                 kv=excluded.kv
+            ''')
+        self.c_add_record = self.db.add_statement(
+            '''INSERT INTO RECORD VALUES (?, ?, ?, ?)
+               ON CONFLICT DO UPDATE SET
+                 name=excluded.name,
+                 email=excluded.email
+            ''')
 
         # Cursors for running queries.
         self.q_metadata = self.db.add_query('metadata',
@@ -136,12 +150,28 @@ class Election:
         issue = self.q_get_issue.first_row((iid,))
         return issue.title, issue.description, issue.type, issue.kv
 
+    def add_issue(self, iid, title, description, type, kv):
+        "Add or update an issue designated by IID."
+        assert self.is_editable()
+
+        # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
+        # be touched (it should be NULL).
+        self.c_add_issue.perform((iid, title, description, type, kv, None))
+
     def get_participant(self, rid):
         "Return NAME, EMAIL for Participant on record RID."
 
         # NEVER return record.salt
         record = self.q_get_record.first_row((rid,))
         return record.name, record.email
+
+    def add_participant(self, rid, name, email):
+        "Add or update a Participant (voter of record) designated by RID."
+        assert self.is_editable()
+
+        # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
+        # be touched (it should be NULL).
+        self.c_add_record.perform((rid, name, email, None))
 
     def is_tampered(self):
 
