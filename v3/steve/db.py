@@ -65,6 +65,7 @@ class DB:
         # Get all column names for TABLE.
         self.name_cursor.execute(f'select * from {table} limit 1')
         names = [ info[0] for info in self.name_cursor.description ]
+        self.name_cursor.close()  # we don't need the results
 
         # Create a factory for turning rows into namedtuples.
         factory = collections.namedtuple(f'row_factory_{len(self.factories)}',
