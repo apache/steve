@@ -55,6 +55,10 @@ class Election:
                  name=excluded.name,
                  email=excluded.email
             ''')
+        self.c_delete_issue = self.db.add_statement(
+            'DELETE FROM ISSUES WHERE iid = ?')
+        self.c_delete_record = self.db.add_statement(
+            'DELETE FROM RECORD WHERE rid = ?')
 
         # Cursors for running queries.
         self.q_metadata = self.db.add_query('metadata',
@@ -158,6 +162,12 @@ class Election:
         # be touched (it should be NULL).
         self.c_add_issue.perform((iid, title, description, type, kv, None))
 
+    def delete_issue(self, iid):
+        "Delete the Issue designated by IID."
+        assert self.is_editable()
+
+        self.c_delete_issue.perform((iid,))
+
     def get_participant(self, rid):
         "Return NAME, EMAIL for Participant on record RID."
 
@@ -172,6 +182,12 @@ class Election:
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
         self.c_add_record.perform((rid, name, email, None))
+
+    def delete_participant(self, rid):
+        "Delete the Participant designated by RID."
+        assert self.is_editable()
+
+        self.c_delete_record.perform((rid,))
 
     def is_tampered(self):
 
