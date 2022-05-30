@@ -49,6 +49,10 @@ class Election:
             'SELECT * FROM ISSUES ORDER BY iid')
         self.q_record = self.db.add_query('record',
             'SELECT * FROM RECORD ORDER BY rid')
+        self.q_get_issue = self.db.add_query('issues',
+            'SELECT * FROM ISSUES WHERE iid = ?')
+        self.q_get_record = self.db.add_query('record',
+            'SELECT * FROM RECORD WHERE rid = ?')
 
     def open(self):
 
@@ -124,6 +128,20 @@ class Election:
 
         for_table('issues', self.c_salt_issue)
         for_table('record', self.c_salt_record)
+
+    def get_issue(self, iid):
+        "Return TITLE, DESCRIPTION, TYPE, and KV for issue IID."
+
+        # NEVER return issue.salt
+        issue = self.q_get_issue.first_row((iid,))
+        return issue.title, issue.description, issue.type, issue.kv
+
+    def get_participant(self, rid):
+        "Return NAME, EMAIL for Participant on record RID."
+
+        # NEVER return record.salt
+        record = self.q_get_record.first_row((rid,))
+        return record.name, record.email
 
     def is_tampered(self):
 
