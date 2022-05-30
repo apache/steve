@@ -35,14 +35,9 @@ def gen_salt() -> bytes:
     return passlib.utils.getrandbytes(passlib.utils.rng, SALT_LEN)
 
 
-### fix the types of the election metadata and issue data
-### fix return type, to be a tuple
-def gen_opened_key(election: bytes, issues: bytes) -> bytes:
+def gen_opened_key(edata: bytes, salt: bytes) -> bytes:
     "Generate the OpenedKey for this election."
-    salt = gen_salt()
-    ### TBD: map ELECTION and ISSUES parameters to bytes
-    opened_key = _hash(election + issues, salt)
-    return salt, opened_key
+    return _hash(edata, salt)
 
 
 def gen_token(opened_key: bytes, value: bytes, salt: bytes) -> bytes:
