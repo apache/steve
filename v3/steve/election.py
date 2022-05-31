@@ -177,6 +177,11 @@ class Election:
 
         self.c_delete_issue.perform((iid,))
 
+    def list_issues(self):
+        "Return ordered (IID, TITLE, DESCRIPTION, TYPE, KV) for all ISSUES."
+        self.q_issues.perform()
+        return [ row[:5] for row in self.q_issues.fetchall() ]
+
     def get_participant(self, rid):
         "Return NAME, EMAIL for Participant on record RID."
 
@@ -197,6 +202,11 @@ class Election:
         assert self.is_editable()
 
         self.c_delete_record.perform((rid,))
+
+    def list_participants(self):
+        "Return ordered (RID, NAME, EMAIL) for each Participant in RECORD."
+        self.q_record.perform()
+        return [ row[:3] for row in self.q_record.fetchall() ]
 
     def add_vote(self, rid, iid, votestring):
         "Add VOTESTRING as the (latest) vote by RID for IID."
