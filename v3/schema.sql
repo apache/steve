@@ -142,7 +142,7 @@ CREATE TABLE VOTES (
     salt  BLOB NOT NULL,
 
     /* An encrypted form of the vote.  */
-    token  TEXT NOT NULL
+    token  BLOB NOT NULL
 
     ) STRICT;
 
