@@ -59,6 +59,8 @@ class Election:
             'DELETE FROM ISSUES WHERE iid = ?')
         self.c_delete_record = self.db.add_statement(
             'DELETE FROM RECORD WHERE rid = ?')
+        self.c_add_vote = self.db.add_statement(
+            'INSERT INTO VOTES VALUES (NULL, ?, ?, ?, ?)')
 
         # Cursors for running queries.
         self.q_metadata = self.db.add_query('metadata',
@@ -188,6 +190,23 @@ class Election:
         assert self.is_editable()
 
         self.c_delete_record.perform((rid,))
+
+    def add_vote(self, rid, iid, votestring):
+        "Add VOTESTRING as the (latest) vote by RID for IID."
+
+        md = self.q_metadata.first_row()
+        record = self.q_get_record.first_row((rid,))
+        issue = self.q_get_issue.first_row((iid,))
+
+        voter_token = crypto.gen_token(md.opened_key, rid, record.salt)
+        #print('VOTER:', rid, record.salt, voter_token)
+        issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
+        #print('ISSUE:', iid, issue.salt, issue_token)
+
+        salt, token = crypto.create_vote(voter_token, issue_token, votestring)
+        #print('SALT:', salt)
+        #print('TOKEN:', token)
+        self.c_add_vote.perform((voter_token, issue_token, salt, token))
 
     def is_tampered(self):
 
