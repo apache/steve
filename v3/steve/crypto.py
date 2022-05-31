@@ -49,24 +49,24 @@ def gen_token(opened_key: bytes, value: str, salt: bytes) -> bytes:
 ### fix return type, to be a tuple
 def create_vote(voter_token: bytes,
                 issue_token: bytes,
-                votestring: bytes) -> bytes:
+                votestring: str) -> bytes:
     "Create a vote tuple, to record the VOTESTRING."
     salt = gen_salt()
     key = _hash(voter_token + issue_token, salt)
     b64key = base64.urlsafe_b64encode(key)
     f = cryptography.fernet.Fernet(b64key)
-    return salt, f.encrypt(votestring)
+    return salt, f.encrypt(votestring.encode())
 
 
 def decrypt_votestring(voter_token: bytes,
                        issue_token: bytes,
                        salt: bytes,
-                       token: bytes) -> bytes:
+                       token: bytes) -> str:
     "Decrypt TOKEN into a VOTESTRING."
     key = _hash(voter_token + issue_token, salt)
     b64key = base64.urlsafe_b64encode(key)
     f = cryptography.fernet.Fernet(b64key)
-    return f.decrypt(token)
+    return f.decrypt(token).decode()
 
 
 def _hash(data: bytes, salt: bytes) -> bytes:
