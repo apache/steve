@@ -18,3 +18,26 @@
 #
 # ### TBD: DOCCO
 #
+
+# The votestring will be lower-cased. What is the result?
+YES = { 'y', 'yes', '1', 'true', }
+NO = { 'n', 'no', '0', 'false', }
+# "abstain" is any other (non-affirmative) value.
+
+
+def tally(votestrings, kv):
+    y = n = a = 0
+    for v in votestrings:
+        if v in YES:
+            y += 1
+        elif v in NO:
+            n += 1
+        else:
+            a += 1
+
+    human = f'''\
+Yes:     {y:#4}
+No:      {n:#4}
+Abstain: {a:#4}'''
+
+    return human, {'y': y, 'n': n, 'a': a,}
