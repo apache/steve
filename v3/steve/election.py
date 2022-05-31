@@ -61,6 +61,11 @@ class Election:
             'DELETE FROM RECORD WHERE rid = ?')
         self.c_add_vote = self.db.add_statement(
             'INSERT INTO VOTES VALUES (NULL, ?, ?, ?, ?)')
+        self.c_has_voted = self.db.add_statement(
+            '''SELECT 1 FROM VOTES
+               WHERE voter_token = ? AND issue_token = ?
+               LIMIT 1
+            ''')
 
         # Cursors for running queries.
         self.q_metadata = self.db.add_query('metadata',
@@ -228,6 +233,31 @@ class Election:
         votes = list(dedup.values())
         crypto.shuffle(votes)  # in-place
         return votes
+
+    def has_voted_upon(self, rid):
+        "Return {ISSUE-ID: BOOL} stating what has been voted upon."
+
+        md = self.q_metadata.first_row()
+        record = self.q_get_record.first_row((rid,))
+        voter_token = crypto.gen_token(md.opened_key, rid, record.salt)
+
+        voted_upon = { }
+
+        self.q_issues.perform()
+        for issue in self.q_issues.fetchall():
+            issue_token = crypto.gen_token(md.opened_key,
+                                           issue.iid,
+                                           issue.salt)
+
+            # Is any vote present?
+            self.c_has_voted.perform((voter_token, issue_token))
+            row = self.c_has_voted.fetchone()
+            _ = self.c_has_voted.fetchall()  # should be empty (LIMIT 1)
+
+            #print('HAS-VOTED:', row, '||', voter_token, issue_token)
+            voted_upon[issue.iid] = row is not None
+
+        return voted_upon
 
     def is_tampered(self):
 
