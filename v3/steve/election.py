@@ -317,9 +317,7 @@ class Election:
     def is_closed(self):
         "Has this Election been closed?"
         md = self.q_metadata.first_row()
-        return (md.salt is None
-                and md.opened_key is None
-                and md.closed == 1)
+        return md.closed == 1
 
 
 def new_eid():
