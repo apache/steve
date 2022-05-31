@@ -167,6 +167,8 @@ class Election:
         "Add or update an issue designated by IID."
         assert self.is_editable()
 
+        ### validate TYPE
+
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
         self.c_add_issue.perform((iid, title, description, type, kv, None))
@@ -217,6 +219,8 @@ class Election:
         md = self.q_metadata.first_row()
         record = self.q_get_record.first_row((rid,))
         issue = self.q_get_issue.first_row((iid,))
+
+        ### validate VOTESTRING for ISSUE.TYPE voting
 
         voter_token = crypto.gen_token(md.opened_key, rid, record.salt)
         #print('VOTER:', rid, record.salt, voter_token)
