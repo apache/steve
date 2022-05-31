@@ -18,3 +18,22 @@
 #
 # ### TBD: DOCCO
 #
+
+import os.path
+import importlib
+
+# Where can we find the stv_tool module?
+STV_RELPATH = '../../../monitoring/stv_tool.py'
+
+
+def load_stv():
+    pathname = os.path.join(os.path.dirname(__file__), STV_RELPATH)
+    spec = importlib.util.spec_from_file_location('stv_tool', pathname)
+    stv_tool = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(stv_tool)
+
+    return stv_tool
+
+
+def tally(votestrings, kv):
+    pass
