@@ -40,9 +40,9 @@ def gen_opened_key(edata: bytes, salt: bytes) -> bytes:
     return _hash(edata, salt)
 
 
-def gen_token(opened_key: bytes, value: bytes, salt: bytes) -> bytes:
+def gen_token(opened_key: bytes, value: str, salt: bytes) -> bytes:
     "Generate a voter or issue token."
-    return _hash(opened_key + value, salt)
+    return _hash(opened_key + value.encode(), salt)
 
 
 ### fix return type, to be a tuple
