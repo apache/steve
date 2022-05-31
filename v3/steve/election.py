@@ -201,6 +201,9 @@ class Election:
     def add_vote(self, rid, iid, votestring):
         "Add VOTESTRING as the (latest) vote by RID for IID."
 
+        # The Election should be open.
+        assert self.is_open()
+
         md = self.q_metadata.first_row()
         record = self.q_get_record.first_row((rid,))
         issue = self.q_get_issue.first_row((iid,))
@@ -216,6 +219,11 @@ class Election:
         self.c_add_vote.perform((voter_token, issue_token, salt, token))
 
     def gather_issue_votes(self, iid):
+        "Return a list of votestrings for a given ISSUE-ID."
+
+        # The Election should be closed.
+        assert self.is_closed()
+
         md = self.q_metadata.first_row()
         issue = self.q_get_issue.first_row((iid,))
         issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
@@ -236,6 +244,9 @@ class Election:
 
     def has_voted_upon(self, rid):
         "Return {ISSUE-ID: BOOL} stating what has been voted upon."
+
+        # The Election should be open.
+        assert self.is_open()
 
         md = self.q_metadata.first_row()
         record = self.q_get_record.first_row((rid,))
