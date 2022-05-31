@@ -74,7 +74,7 @@ class Election:
         self.q_get_record = self.db.add_query('record',
             'SELECT * FROM RECORD WHERE rid = ?')
         self.q_by_issue = self.db.add_query('votes',
-            'SELECT * FROM VOTES WHERE issue_token = ?')
+            'SELECT * FROM VOTES WHERE issue_token = ? ORDER BY _ROWID_')
 
     def open(self):
 
