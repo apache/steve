@@ -46,9 +46,6 @@ class DB:
         self.conn = sqlite3.connect(fname, isolation_level=None)
         self.conn.row_factory = row_factory
 
-        # For fetching column names.
-        self.name_cursor = self.conn.cursor()
-
         # CURSOR : FACTORY
         self.factories = { }
 
@@ -63,9 +60,13 @@ class DB:
         assert query[:9].lower() == 'select * '
 
         # Get all column names for TABLE.
-        self.name_cursor.execute(f'select * from {table} limit 1')
-        names = [ info[0] for info in self.name_cursor.description ]
-        self.name_cursor.close()  # we don't need the results
+        cur = self.conn.execute(f'select * from {table} limit 1')
+        names = [ info[0] for info in cur.description ]
+
+        # We don't need the results, but cannot leave the cursor hanging,
+        # as it establishes a lock on this table. This likely closes as
+        # this method exits, but let's not rely upon that.
+        cur.close()
 
         # Create a factory for turning rows into namedtuples.
         factory = collections.namedtuple(f'row_factory_{len(self.factories)}',
@@ -102,4 +103,6 @@ class NamedTupleCursor(sqlite3.Cursor):
     def first_row(self, params=()):
         "Helper method to fetch the first row of a query."
         self.perform(params)
-        return self.fetchone()
+        row = self.fetchone()
+        _ = self.fetchall()  # run the cursor to completion; should be empty
+        return row
