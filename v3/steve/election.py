@@ -73,6 +73,8 @@ class Election:
             'SELECT * FROM ISSUES WHERE iid = ?')
         self.q_get_record = self.db.add_query('record',
             'SELECT * FROM RECORD WHERE rid = ?')
+        self.q_by_issue = self.db.add_query('votes',
+            'SELECT * FROM VOTES WHERE issue_token = ?')
 
     def open(self):
 
@@ -207,6 +209,25 @@ class Election:
         #print('SALT:', salt)
         #print('TOKEN:', token)
         self.c_add_vote.perform((voter_token, issue_token, salt, token))
+
+    def gather_issue_votes(self, iid):
+        md = self.q_metadata.first_row()
+        issue = self.q_get_issue.first_row((iid,))
+        issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
+
+        # Use this dict to retain "most recent" votes.
+        dedup = { }  # (VOTER_TOKEN, ISSUE_TOKEN) : VOTESTRING
+
+        self.q_by_issue.perform((issue_token,))
+        for row in self.q_by_issue.fetchall():
+            votestring = crypto.decrypt_votestring(
+                row.voter_token, issue_token, row.salt, row.token)
+            dedup[row.voter_token, row.issue_token] = votestring
+
+        # Make sure the votes are not in database-order.
+        votes = list(dedup.values())
+        crypto.shuffle(votes)  # in-place
+        return votes
 
     def is_tampered(self):
 
