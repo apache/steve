@@ -19,6 +19,7 @@
 #
 
 import base64
+import random
 
 import passlib.hash  # note that .argon2 is proxy in this pkg
 import passlib.utils  # for the RNG, to create Salt values
@@ -73,3 +74,8 @@ def _hash(data: bytes, salt: bytes) -> bytes:
     ph = passlib.hash.argon2.using(type='d', salt=salt)
     h = ph.hash(data)
     return base64.standard_b64decode(h.split('$')[-1] + '==')
+
+
+def shuffle(x):
+    "Ensure we use the strongest RNG available for shuffling."
+    return random.shuffle(x, passlib.utils.rng.random)
