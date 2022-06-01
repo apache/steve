@@ -386,7 +386,7 @@ def dbg(fmt, *args):
     print(fmt % args)
 
 
-if __name__ == '__main__':
+def main(argv):
   parser = argparse.ArgumentParser(description="Calculate a winner for a vote")
   parser.add_argument('raw_file')
   parser.add_argument("-s", "--seats", dest="seats", type=int,
@@ -395,9 +395,11 @@ if __name__ == '__main__':
   parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
                       help="Enable verbose logging", default=False)
 
-  args = parser.parse_args()
+  args = parser.parse_args(argv)
 
+  global VERBOSE
   VERBOSE = args.verbose
+
   votefile = args.raw_file
   num_seats = args.seats
 
@@ -410,3 +412,7 @@ if __name__ == '__main__':
   candidates = run_vote(names, votes, num_seats)
   candidates.print_results()
   print('Done!')
+
+
+if __name__ == '__main__':
+  main(sys.argv[1:])
