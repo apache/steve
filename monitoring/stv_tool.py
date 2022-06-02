@@ -224,6 +224,26 @@ class CandidateList(object):
           c.ahead = (i - 1) + last
         last = i
 
+  def apply_votes(self, votes):
+    for c in self.l:
+      c.vote = 0.0
+    excess = 0.0
+    for choices in votes:
+      vote = 1.0
+      for c in choices:
+        if c.status == HOPEFUL:
+          c.vote += vote
+          vote = 0.0
+          break
+        if c.status != ELIMINATED:
+          wv = c.weight * vote  # weighted vote
+          c.vote += wv
+          vote -= wv
+          if vote == 0.0:  # nothing left to distribute
+            break
+      excess += vote
+    return excess
+
 
 class Candidate(object):
   def __init__(self, name, rand, ahead):
@@ -279,25 +299,9 @@ def recalc(votes, candidates, num_seats):
   return any_changed, quota, surplus
 
 
+#@deprecated
 def calc_totals(votes, candidates):
-  for c in candidates.l:
-    c.vote = 0.0
-  excess = 0.0
-  for choices in votes:
-    vote = 1.0
-    for c in choices:
-      if c.status == HOPEFUL:
-        c.vote += vote
-        vote = 0.0
-        break
-      if c.status != ELIMINATED:
-        wv = c.weight * vote  # weighted vote
-        c.vote += wv
-        vote -= wv
-        if vote == 0.0:  # nothing left to distribute
-          break
-    excess += vote
-  return excess
+  return candidates.apply_votes(votes)
 
 
 #@deprecated
