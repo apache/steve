@@ -211,11 +211,15 @@ class CandidateList(object):
         return (c1.vote > c2.vote) - (c1.vote < c2.vote)
       return 1
 
+    ### the algorithm below seems very obtuse, to produce very little
+    ### change. It alters .ahead on the first iteration, then does
+    ### minor tweaks afterwards. And it seems to only work pair-wise.
+    ### It feels this could be simplified.
+    ### refer to STV.java::calcAheads()
     c_sorted = sorted(self.l, key=functools.cmp_to_key(compare))
     last = 0
     for i in range(1, len(c_sorted)+1):
-      ### STV.java:L233 ... This may need .vote on the latter compare
-      if i == len(c_sorted) or c_sorted[last] != c_sorted[i]:
+      if i == len(c_sorted) or c_sorted[last].vote != c_sorted[i].vote:
         for c in c_sorted[last:i]:
           c.ahead = (i - 1) + last
         last = i
