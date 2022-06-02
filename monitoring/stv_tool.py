@@ -121,21 +121,39 @@ def read_labelmap(fname):
     sys.exit(2)
 
 
+#@deprecated
 def run_vote(names, votes, num_seats):
+
+  # List of votestrings, each as a list of ordered name choices.
+  ordered_votes = votes.values()
+
+  return run_stv(names, ordered_votes, num_seats)
+
+
+def run_stv(names: list, ordered_votes: list, num_seats: int):
+
+  # NOTE: NAMES must be a list for repeatability purposes. It does not
+  # need to obey any particular ordering rules, but when re-running
+  # tallies, NAMES must be presented with the same ordering.
+
+  assert len(set(names)) == len(names), "duplicates present!"
+  assert num_seats > 0
+
   candidates = CandidateList(names)
 
   # name -> Candidate
   remap = dict((c.name, c) for c in candidates.l)
 
-  # Turn VOTES into a list of ordered-lists of Candidate objects
-  votes = [[remap[n] for n in choices] for choices in votes.values()]
+  # We can test that ordering of voters has no bearing. Perform runs
+  # and alter the .seed() value.
+  #ordered_votes = list(ordered_votes); random.seed(1); random.shuffle(ordered_votes); print('VOTE:', ordered_votes[0])
+
+  # VOTES is a list of ordered-lists of Candidate objects
+  votes = [[remap[n] for n in choices] for choices in ordered_votes]
 
   if candidates.count(ELECTED + HOPEFUL) <= num_seats:
     dbg('All candidates elected')
     candidates.change_state(HOPEFUL, ELECTED)
-    return candidates
-  if num_seats <= 0:
-    candidates.change_state(HOPEFUL, ELIMINATED)
     return candidates
 
   quota = None  # not used on first pass
