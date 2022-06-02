@@ -165,11 +165,7 @@ class CandidateList(object):
       self.l.append(c)
 
   def count(self, state):
-    count = 0
-    for c in self.l:
-      if (c.status & state) != 0:
-        count += 1
-    return count
+    return sum(int((c.status & state) != 0) for c in self.l)
 
   def change_state(self, from_state, to_state):
     any_changed = False
@@ -216,6 +212,7 @@ class CandidateList(object):
       return 1
     return sorted(self.l, key=functools.cmp_to_key(compare))
 
+
 class Candidate(object):
   def __init__(self, name, rand, ahead):
     self.name = name
@@ -237,6 +234,7 @@ class Candidate(object):
   def adjust_weight(self, quota):
     assert quota is not None
     self.weight = (self.weight * quota) / self.vote
+
 
 def iterate_one(quota, votes, candidates, num_seats):
   # assume that: count(ELECTED) < num_seats
@@ -326,10 +324,7 @@ def elect(quota, candidates, num_seats):
 
 
 def calc_surplus(quota, candidates):
-  surplus = 0.0
-  for c in candidates.l:
-    if c.status == ELECTED:
-      surplus += c.vote - quota
+  surplus = sum(c.vote - quota for c in candidates.l if c.status == ELECTED)
   dbg('Total Surplus = %.9f', surplus)
   return surplus
 
