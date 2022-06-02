@@ -202,7 +202,7 @@ class CandidateList(object):
     dbg('%-20s %15s %15.9f', 'Non-transferable', ' ', excess)
     dbg('%-20s %15s %15.9f', 'Total', ' ', total)
 
-  def sorted(self):
+  def calc_aheads(self):
     def compare(c1, c2):
       if c1.ahead < c2.ahead:
         return -1
@@ -210,7 +210,15 @@ class CandidateList(object):
         ### expression for removed cmp() function
         return (c1.vote > c2.vote) - (c1.vote < c2.vote)
       return 1
-    return sorted(self.l, key=functools.cmp_to_key(compare))
+
+    c_sorted = sorted(self.l, key=functools.cmp_to_key(compare))
+    last = 0
+    for i in range(1, len(c_sorted)+1):
+      ### STV.java:L233 ... This may need .vote on the latter compare
+      if i == len(c_sorted) or c_sorted[last] != c_sorted[i]:
+        for c in c_sorted[last:i]:
+          c.ahead = (i - 1) + last
+        last = i
 
 
 class Candidate(object):
@@ -254,7 +262,11 @@ def iterate_one(quota, votes, candidates, num_seats):
 
 def recalc(votes, candidates, num_seats):
   excess = calc_totals(votes, candidates)
-  calc_aheads(candidates)
+  a1 = [c.ahead for c in candidates.l]
+  candidates.calc_aheads()
+  a2 = [c.ahead for c in candidates.l]
+  if a1 != a2:
+    pass #print(f'CHANGE:\n  {a1}\n  {a2}')
   candidates.dbg_display_tables(excess)
   quota = calc_quota(len(votes), excess, num_seats)
   any_changed = elect(quota, candidates, num_seats)
@@ -284,14 +296,9 @@ def calc_totals(votes, candidates):
   return excess
 
 
+#@deprecated
 def calc_aheads(candidates):
-  c_sorted = candidates.sorted()
-  last = 0
-  for i in range(1, len(c_sorted)+1):
-    if i == len(c_sorted) or c_sorted[last] != c_sorted[i]:
-      for c in c_sorted[last:i]:
-        c.ahead = (i - 1) + last
-      last = i
+  candidates.calc_aheads()
 
 
 def calc_quota(num_voters, excess, num_seats):
