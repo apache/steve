@@ -379,23 +379,17 @@ def try_remove_lowest(surplus, candidates):
 
 
 def exclude_lowest(candidates):
-  ### use: ahead = len(candidates) ??
-  ahead = 1000000000.  # greater than any possible candidate.ahead
-  rand = 1.1  # greater than any possible candidate.rand
   which = None
   used_rand = False
 
   for c in candidates:
     if c.status == HOPEFUL or c.status == ALMOST:
-      if c.ahead < ahead:
-        ahead = c.ahead
-        rand = c.rand
+      if which is None or c.ahead < which.ahead:
         which = c
         use_rand = False
-      elif c.ahead == ahead:
+      elif c.ahead == which.ahead:
         use_rand = True
-        if c.rand < rand:
-          rand = c.rand
+        if c.rand < which.rand:
           which = c
 
   if use_rand:
