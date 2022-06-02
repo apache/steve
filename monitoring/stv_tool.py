@@ -157,6 +157,7 @@ class CandidateList(object):
   def __init__(self, names):
     num_cand = len(names)
     randset = generate_random(num_cand)
+    #dbg('RANDSET: %s', randset)
 
     self.l = [ ]
     for n, r in zip(names, randset):
@@ -386,14 +387,11 @@ def generate_random(count):
   random.seed(0)  ### choose a seed based on input? for now: repeatable.
   while True:
     # Generate COUNT values in [0.0, 1.0)
+    # NOTE: use a list (not a set or dict) for repeatable ordering.
     values = [random.random() for x in range(count)]
 
-    # Ensure there are no duplicates
-    for value in values:
-      if values.count(value) > 1:
-        break
-    else:
-      # The loop finished without breaking out
+    # Use a set() to check for dups. If no dups, then return the values.
+    if len(set(values)) == count:
       return values
 
 
