@@ -380,7 +380,7 @@ def try_remove_lowest(surplus, candidates):
 
 def exclude_lowest(candidates):
   which = None
-  used_rand = False
+  use_rand = False
 
   for c in candidates:
     if c.status == HOPEFUL or c.status == ALMOST:
