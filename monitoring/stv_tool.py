@@ -225,11 +225,19 @@ class CandidateList(object):
         last = i
 
   def apply_votes(self, votes):
+    # Reset each candidates vote 0.0
     for c in self.l:
       c.vote = 0.0
+
+    # Each voter has 1 vote. Due to candidate weighting, it might not
+    # get fully-assigned to candidates. We need to remember this excess.
     excess = 0.0
+
+    # Now, process that 1 vote.
     for choices in votes:
       vote = 1.0
+
+      # Distribute the vote, according to their ordered wishes.
       for c in choices:
         if c.status == HOPEFUL:
           c.vote += vote
@@ -239,9 +247,13 @@ class CandidateList(object):
           wv = c.weight * vote  # weighted vote
           c.vote += wv
           vote -= wv
+          # Note: should probably test for floating point margins, but
+          # it's fine to just let this spill into the EXCESS value.
           if vote == 0.0:  # nothing left to distribute
             break
       excess += vote
+
+    # Done. Tell caller what we could not distribute.
     return excess
 
 
