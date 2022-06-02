@@ -51,9 +51,12 @@ RE_VOTE = re.compile(r'\[.{19}\]\s+'
 VERBOSE = False
 
 
+#@deprecated
 def load_votes(fname):
-  lines = open(fname).readlines()
-  if lines[0].strip() == 'rank order':
+  line = open(fname).readline()
+  if line.strip() == 'rank order':
+    lines = open(fname).readlines()
+
     # The input file was processed by nstv-rank.py, or somehow otherwise
     # converted to the standard input for VoteMain.jar
     names = [s.strip() for s in lines[1].strip().split(',')][1:]
@@ -67,41 +70,54 @@ def load_votes(fname):
       votes[parts[0]] = [remap[l] for l in parts[1:]]
     return names, votes
 
-  # Let's assume we're looking at a raw_board_votes.txt file, and a
-  # companion board_nominations.ini file.
-  nominees = read_nominees(fname)
+  ini_fname = os.path.join(os.path.dirname(fname),
+                           'board_nominations.ini')
+  labelmap = read_labelmap(ini_fname)
 
-  votes = { }
-  for line in lines:
-    match = RE_VOTE.match(line)
-    if match:
-      # For a given voter hashcode, record their latest set of votes,
-      # mapped from (character) labels to the nominee's name.
-      votes[match.group('voterhash')] = [nominees[label]
-                                         for label in match.group('votes')]
+  # Construct a label-sorted list of names from the labelmap.
+  names = [name for _, name in sorted(labelmap.items())]
 
-  # Map the nominee dictionary into a label-sorted list of names
-  names = [nominees[label] for label in sorted(nominees)]
+  # Load the raw votes that were recorded.
+  votes_by_label = read_votefile(fname)
+
+  # Remap all labels to names in the votes.
+  # NOTE: v represents the voter hash. (### why return this?)
+  votes = dict((v, [labelmap[l] for l in vote])
+               for v, vote in votes_by_label.items())
 
   return names, votes
 
 
+def read_votefile(fname):
+  votes = { }
+  for line in open(fname).readlines():
+    match = RE_VOTE.match(line)
+    if match:
+      # For a given voter hashcode, record their latest set of votes.
+      votes[match.group('voterhash')] = match.group('votes')
+
+  ### we should discard voterhash, and just return .values()
+  return votes
+
+
+#@deprecated
 def read_nominees(votefile):
   ini_fname = os.path.join(os.path.dirname(votefile),
                            'board_nominations.ini')
+  return read_labelmap(ini_fname)
 
-  # Use the below try instead to catch this??
-  if not os.path.exists(ini_fname):
-    print("Error: board_nominations.ini could not be found at " + ini_fname, file=sys.stderr)
+
+def read_labelmap(fname):
+  if not os.path.exists(fname):
+    print(f'ERROR: "{fname}" could not be found.', file=sys.stderr)
     sys.exit(2)
 
   config = configparser.ConfigParser()
-  config.read(ini_fname)
+  config.read(fname)
   try:
     return dict(config.items('nominees'))
   except:
-    print("Error processing input file: " + ini_fname, file=sys.stderr)
-    print(" Goodbye!", file=sys.stderr)
+    print(f'ERROR: could not process input file, "{fname}".', file=sys.stderr)
     sys.exit(2)
 
 
