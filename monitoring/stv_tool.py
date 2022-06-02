@@ -168,8 +168,6 @@ def run_stv(names: list, ordered_votes: list, num_seats: int):
   candidates.change_state(HOPEFUL, ELIMINATED)
   return candidates
 
-  candidates.print_results()
-
 
 class CandidateList(object):
   def __init__(self, names):
