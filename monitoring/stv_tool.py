@@ -285,7 +285,7 @@ def iterate_one(quota, votes, candidates, num_seats):
 
 
 def recalc(votes, candidates, num_seats):
-  excess = calc_totals(votes, candidates)
+  excess = candidates.apply_votes(votes)
   a1 = [c.ahead for c in candidates.l]
   candidates.calc_aheads()
   a2 = [c.ahead for c in candidates.l]
