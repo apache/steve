@@ -440,22 +440,26 @@ def main(argv):
                       default=9)
   parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
                       help="Enable verbose logging", default=False)
-
   args = parser.parse_args(argv)
 
   global VERBOSE
   VERBOSE = args.verbose
 
-  votefile = args.raw_file
-  num_seats = args.seats
-
-  if not os.path.exists(votefile):
+  if not os.path.exists(args.raw_file):
     parser.print_help()
     sys.exit(1)
 
-  names, votes = load_votes(votefile)
+  ini_fname = os.path.join(os.path.dirname(args.raw_file),
+                           'board_nominations.ini')
+  labelmap = read_labelmap(ini_fname)
+  # Construct a label-sorted list of names from the labelmap.
+  names = [name for _, name in sorted(labelmap.items())]
 
-  candidates = run_vote(names, votes, num_seats)
+  # Turn votes using labels into by-name.
+  votes_by_label = read_votefile(args.raw_file).values()
+  votes = [[labelmap[l] for l in vote] for vote in votes_by_label]
+
+  candidates = run_stv(names, votes, args.seats)
   candidates.print_results()
   print('Done!')
 
