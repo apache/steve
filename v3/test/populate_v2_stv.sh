@@ -30,11 +30,15 @@ MEETINGS_DIR="$1"
 REFERENCE_DIR="v2-stv-ref"
 mkdir "$REFERENCE_DIR" || /bin/true
 
+V3_DIR="v3-stv"
+mkdir "$V3_DIR" || /bin/true
+
 THIS_FILE=`realpath $0`
 THIS_DIR=`dirname "$THIS_file"`
 #echo $THIS_FILE
 STV_TOOL=`realpath "$THIS_DIR/../../monitoring/stv_tool.py"`
 echo $STV_TOOL
+V3_TOOL="${THIS_DIR}/run_stv.py"
 
 #echo "ls $MEETINGS_DIR/*/raw_board_votes.txt"
 
@@ -43,4 +47,8 @@ for v in `ls $MEETINGS_DIR/*/raw_board_votes.txt`; do
     DATE=`echo $v | sed -n 's#.*/\([0-9]*\)/.*#\1#p'`
     echo $DATE
     "$STV_TOOL" -v "$v" > "$REFERENCE_DIR/$DATE"
+
+    MTG_DIR=`dirname "$v"`
+    #echo $MTG_DIR
+    "$V3_TOOL" "${MTG_DIR}" > "${V3_DIR}/$DATE"
 done
