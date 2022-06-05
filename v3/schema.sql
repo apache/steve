@@ -19,7 +19,16 @@
 
 /* ### TBD DOCCO.  */
 
-/* ### $ sqlite3 testing.db < schema.sql  */
+/* ### $ sqlite3 testing.db < schema.sql
+   ###
+   ### OR:
+   ### >>> import sqlite3
+   ### >>> conn = sqlite3.connect('testing.db')
+   ### >>> conn.executescript('schema.sql')
+   ###
+   ### ? maybe: conn.commit() and/or conn.close() ... the DML statements
+   ### don't seem to require full closure of connection.
+   */
 
 
 /* --------------------------------------------------------------------- */
