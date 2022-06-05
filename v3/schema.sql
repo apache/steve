@@ -24,7 +24,7 @@
    ### OR:
    ### >>> import sqlite3
    ### >>> conn = sqlite3.connect('testing.db')
-   ### >>> conn.executescript('schema.sql')
+   ### >>> conn.executescript(open('schema.sql').read())
    ###
    ### ? maybe: conn.commit() and/or conn.close() ... the DML statements
    ### don't seem to require full closure of connection.
