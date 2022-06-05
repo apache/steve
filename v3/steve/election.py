@@ -207,7 +207,7 @@ class Election:
     def list_persons(self):
         "Return ordered (PID, NAME, EMAIL) for each Person."
         self.q_person.perform()
-        return [ row[:3] for row in self.q_prson.fetchall() ]
+        return [ row[:3] for row in self.q_person.fetchall() ]
 
     def add_vote(self, pid, iid, votestring):
         "Add VOTESTRING as the (latest) vote by PID for IID."
