@@ -3,10 +3,10 @@
 ## History
 
 v1 was a set of command-line tools to run voting on a host server, with the
-participants ssh'ing to that server to cast votes.
+people ssh'ing to that server to cast votes.
 
 v2 was a webapp and data server to run the voting process, utilizing LDAP
-authentication for the participants.
+authentication for the people voting.
 
 v3 is intended (primarily) to revamp the data model/storage and the webui
 frameworks, using more recent technologies for greater leverage.
@@ -18,9 +18,9 @@ v2 is the initial guide for a data model, to be used by v3.
 The top-level item is an **Election**, and our design-point (in terms of scale)
 is to manage hundreds of these.
 
-Each **Election** contains some simple metadata, along with **Participants**
+Each **Election** contains some simple metadata, along with **Persons**
 (numbering in the hundreds) that are on record to vote, a set of **Issues**
-(also, hundreds) on the ballot for the participants to vote upon, and a small
+(also, hundreds) on the ballot for the people to vote upon, and a small
 set of **Vote Monitors** (single digit count) for the Election.
 
 This will produce a set of **Votes** (tens of thousands).
@@ -36,13 +36,13 @@ be looking for?
 * Alice voting as Bob (see below)
 * Alice stuffing ballots (eg. as a person not on Record; should be impossible)
 
-Each participant receives a **token** to represent themself during voting. The
-token is regarded as a **shared secret** between STeVe and the Participant.
+Each person receives a **token** to represent themself during voting. The
+token is regarded as a **shared secret** between STeVe and the Person.
 
 Note: this token could be used internally, and the **shared secret** would be
-the Participant's LDAP password. This *may* create undesired data in access logs,
+the Person's LDAP password. This *may* create undesired data in access logs,
 which could be solved by custom config to **omit** the authenticated user from
-the logs. And/or, a Participant could sign in to retrieve a link that embeds
+the logs. And/or, a Person could sign in to retrieve a link that embeds
 their token, and that link requires no authentication (note: would need to
 ensure that **all** browsers obey path-based directives on when to send
 credentials; we'd only want creds for retrieving the token/link, but for them
@@ -51,28 +51,28 @@ to be dropped during voting the ballot).
 Given the above, if Alice is able to discover Bob's token, then she can vote
 as if she were Bob. This may be discoverable by aberrant repeat voting by Bob.
 
-Since votes may only be performed by those on record, with voter tokens, it
+Since votes may only be performed by those on record, with person tokens, it
 does not seem possible for Alice to stuff the ballot box.
 
 ?? other attack vectors? can Monitors help with any?
 
 ## Hashes and Anonymity
 
-The participants must be as anonymous as possible. The goal is that Participants
-and Monitors cannot "unmask" any Participant in the election, nor the Votes that
+The Persons must be as anonymous as possible. The goal is that Persons
+and Monitors cannot "unmask" any Person in the election, nor the Votes that
 they have cast.
 
 It is presumed that the "root" users of the team operating the software would be
-able to unmask Participants and view their votes.
+able to unmask Persons and view their votes.
 
 Cryptographic-grade hashes are used as identifiers to create anonymity.
 
 ## Integrity
 
-When an Election is "opened for voting", all Participants, Issues, and Monitors
+When an Election is "opened for voting", all Persons, Issues, and Monitors
 will be used to construct a singular hash that identifies the precise state of
 the Election. This hash is used to prevent any post-opening tampering of the
-voters of record, the ballot, or those watching for such tampering.
+Persons of record, the ballot, or those watching for such tampering.
 
 ## Implementation
 
@@ -80,7 +80,7 @@ Some notes on implementation, hashing, storage, at-rest encryption, etc.
 
 ```
 ElectionID := 32 bits
-VoterID := availid from iclas.txt
+PersonID := availid from iclas.txt
 IssueID := [-a-zA-Z0-9]+
 
 Election-data := TBD
@@ -88,15 +88,15 @@ Issue-data := TBD
 BLOCK := Election-data + sorted(Issue-Data)
 OpenedKey := Hash(BLOCK, Salt(each-election))
 
-Voters := Map<VoterID, Salt(each-voter)>
-VoterToken := Hash(OpenedKey + VoterID, Salt(each-voter))
+Personss := Map<PersonID, Salt(each-person)>
+PersonToken := Hash(OpenedKey + PersonID, Salt(each-person))
 
 Issues := Map<IssueID, Salt(each-issue)>
 IssueToken := Hash(OpenedKey + IssueID, Salt(each-issue))
 
 votestring = TBD; padding TBD
-VoteKey := Hash(VoterToken + IssueToken, Salt(each-vote))
-Vote := Tuple[ VoterToken, IssueToken, Salt(each-vote), Encrypt(VoteKey, votestring) ]
+VoteKey := Hash(PersonToken + IssueToken, Salt(each-vote))
+Vote := Tuple[ PersonToken, IssueToken, Salt(each-vote), Encrypt(VoteKey, votestring) ]
 ```
 
 When an **Election** is Opened for voting, the `OpenedKey` is calculated, stored,
@@ -120,8 +120,8 @@ the 32 bytes needed for a Fernet key.
 
 ### Storage and Transmission
 
-**IMPORTANT**: the `VoterToken` and `IssueToken` should never be
-stored in a way that ties them to the VoterID and IssueID.  The
+**IMPORTANT**: the `PersonToken` and `IssueToken` should never be
+stored in a way that ties them to the PersonID and IssueID.  The
 `VoteKey` should never be stored. Instead, the `Salt(xx)` values
 are stored, and the tokens/key are computed when needed.
 
@@ -130,18 +130,18 @@ by storing the result. Any attacker must perform the work. During normal
 operation of the voting system, each call of the `Hash()` function should be
 within human-reasonable time limits (but unreasonable to perform in bulk).
 
-Note that `VoterToken` and `IssueToken` are stored as part of each `Vote`,
-but those tokens provide no easy mapping back to a voter or issue.
+Note that `PersonToken` and `IssueToken` are stored as part of each `Vote`,
+but those tokens provide no easy mapping back to a person or issue.
 
-The `VoterToken` is normally emailed to the Participant. If it is not
+The `PersonToken` is normally emailed to the Person. If it is not
 emailed, then LDAP authentication would be used, and the server will
 compute it from the authenticated credentials.
 
-Since `VoterToken` *may* be used by the Participant, via URL, to perform
+Since `PersonToken` *may* be used by the Person, via URL, to perform
 their voting, it must be "URL safe". If LDAP authn mode is used, then
-the `VoterToken` will never be encoded for humans.
+the `PersonToken` will never be encoded for humans.
 
-The `ElectionID` is also visible to Participants, and will be encoded
+The `ElectionID` is also visible to Persons, and will be encoded
 as eight (8) hex digits, just like STeVe v2.
 
 ### (Re)Tally Process
@@ -156,7 +156,7 @@ as eight (8) hex digits, just like STeVe v2.
 Notes: be wary of repeats; collect STV votestrings, for passing in-bulk
 to the STV algorithm.
 
-Note that the tally process does not require unmasking the Participant.
+Note that the tally process does not require unmasking the Person.
 
 
 

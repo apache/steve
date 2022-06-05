@@ -42,28 +42,28 @@ def gen_opened_key(edata: bytes, salt: bytes) -> bytes:
 
 
 def gen_token(opened_key: bytes, value: str, salt: bytes) -> bytes:
-    "Generate a voter or issue token."
+    "Generate a person or issue token."
     return _hash(opened_key + value.encode(), salt)
 
 
 ### fix return type, to be a tuple
-def create_vote(voter_token: bytes,
+def create_vote(person_token: bytes,
                 issue_token: bytes,
                 votestring: str) -> bytes:
     "Create a vote tuple, to record the VOTESTRING."
     salt = gen_salt()
-    key = _hash(voter_token + issue_token, salt)
+    key = _hash(person_token + issue_token, salt)
     b64key = base64.urlsafe_b64encode(key)
     f = cryptography.fernet.Fernet(b64key)
     return salt, f.encrypt(votestring.encode())
 
 
-def decrypt_votestring(voter_token: bytes,
+def decrypt_votestring(person_token: bytes,
                        issue_token: bytes,
                        salt: bytes,
                        token: bytes) -> str:
     "Decrypt TOKEN into a VOTESTRING."
-    key = _hash(voter_token + issue_token, salt)
+    key = _hash(person_token + issue_token, salt)
     b64key = base64.urlsafe_b64encode(key)
     f = cryptography.fernet.Fernet(b64key)
     return f.decrypt(token).decode()

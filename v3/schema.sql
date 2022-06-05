@@ -29,7 +29,7 @@
 
    An Election has three states:
 
-     1. Editable. The election is being set up. Issues and voters of
+     1. Editable. The election is being set up. Issues and persons of
         record can be added, edited, and deleted. The Election's title
         may be changed (EID is fixed, however).
         DEFINITION: salt and opened_key are NULL. closed is n/a.
@@ -102,18 +102,18 @@ CREATE TABLE ISSUES (
 
 /* The set of people "on record" for this Election. Only these people
    may vote.  */
-CREATE TABLE RECORD (
+CREATE TABLE PERSON (
 
-    /* An id assigned to the user (eg. an LDAP username).  */
-    rid  TEXT PRIMARY KEY NOT NULL,
+    /* An id assigned to the person (eg. an LDAP username).  */
+    pid  TEXT PRIMARY KEY NOT NULL,
 
-    /* Optional human-readable name for this user.  */
+    /* Optional human-readable name for this person.  */
     name  TEXT,
 
     /* How to contact this person (ie. to send a ballot link).  */
     email  TEXT NOT NULL,
 
-    /* A salt value to use for hashing this Participant. 16 bytes.
+    /* A salt value to use for hashing this Person. 16 bytes.
        This will be NULL until the Election is opened.  */
     salt  BLOB
 
@@ -122,7 +122,7 @@ CREATE TABLE RECORD (
 /* --------------------------------------------------------------------- */
 
 /* The registered votes, once the Election has been opened. Note that
-   duplicates of (voter, issue) may occur, as re-voting is allowed. Only
+   duplicates of (person, issue) may occur, as re-voting is allowed. Only
    the latest is used.  */
 CREATE TABLE VOTES (
 
@@ -132,8 +132,8 @@ CREATE TABLE VOTES (
        Note: an integer primary key is an alias for _ROWID_.  */
     vid  INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    /* A hashed token representing a single Participant.  32 bytes.  */
-    voter_token  BLOB NOT NULL,
+    /* A hashed token representing a single Person.  32 bytes.  */
+    person_token  BLOB NOT NULL,
 
     /* A hashed token representing an issue.  32 bytes.  */
     issue_token  BLOB NOT NULL,
@@ -146,7 +146,7 @@ CREATE TABLE VOTES (
 
     ) STRICT;
 
-CREATE INDEX I_BY_VOTER ON VOTES (voter_token);
+CREATE INDEX I_BY_PERSON ON VOTES (person_token);
 CREATE INDEX I_BY_ISSUE ON VOTES (issue_token);
 
 /* --------------------------------------------------------------------- */

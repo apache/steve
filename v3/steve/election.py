@@ -34,8 +34,8 @@ class Election:
         # Construct cursors for all operations.
         self.c_salt_issue = self.db.add_statement(
             'UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?')
-        self.c_salt_record = self.db.add_statement(
-            'UPDATE RECORD SET salt = ? WHERE _ROWID_ = ?')
+        self.c_salt_person = self.db.add_statement(
+            'UPDATE PERSON SET salt = ? WHERE _ROWID_ = ?')
         self.c_open = self.db.add_statement(
             'UPDATE METADATA SET salt = ?, opened_key = ?')
         self.c_close = self.db.add_statement(
@@ -48,21 +48,21 @@ class Election:
                  type=excluded.type,
                  kv=excluded.kv
             ''')
-        self.c_add_record = self.db.add_statement(
-            '''INSERT INTO RECORD VALUES (?, ?, ?, ?)
+        self.c_add_person = self.db.add_statement(
+            '''INSERT INTO PERSON VALUES (?, ?, ?, ?)
                ON CONFLICT DO UPDATE SET
                  name=excluded.name,
                  email=excluded.email
             ''')
         self.c_delete_issue = self.db.add_statement(
             'DELETE FROM ISSUES WHERE iid = ?')
-        self.c_delete_record = self.db.add_statement(
-            'DELETE FROM RECORD WHERE rid = ?')
+        self.c_delete_person = self.db.add_statement(
+            'DELETE FROM PERSON WHERE pid = ?')
         self.c_add_vote = self.db.add_statement(
             'INSERT INTO VOTES VALUES (NULL, ?, ?, ?, ?)')
         self.c_has_voted = self.db.add_statement(
             '''SELECT 1 FROM VOTES
-               WHERE voter_token = ? AND issue_token = ?
+               WHERE person_token = ? AND issue_token = ?
                LIMIT 1
             ''')
 
@@ -71,12 +71,12 @@ class Election:
             'SELECT * FROM METADATA')
         self.q_issues = self.db.add_query('issues',
             'SELECT * FROM ISSUES ORDER BY iid')
-        self.q_record = self.db.add_query('record',
-            'SELECT * FROM RECORD ORDER BY rid')
+        self.q_person = self.db.add_query('person',
+            'SELECT * FROM PERSON ORDER BY pid')
         self.q_get_issue = self.db.add_query('issues',
             'SELECT * FROM ISSUES WHERE iid = ?')
-        self.q_get_record = self.db.add_query('record',
-            'SELECT * FROM RECORD WHERE rid = ?')
+        self.q_get_person = self.db.add_query('person',
+            'SELECT * FROM PERSON WHERE pid = ?')
         self.q_by_issue = self.db.add_query('votes',
             'SELECT * FROM VOTES WHERE issue_token = ? ORDER BY _ROWID_')
 
@@ -112,14 +112,14 @@ class Election:
 
         self.q_issues.perform()
         # Use an f-string to render "None" if a column is NULL.
-        idata = ''.join(f'{r.iid}{r.title}{r.description}{r.type}{r.kv}'
-                        for r in self.q_issues.fetchall())
+        idata = ''.join(f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
+                        for i in self.q_issues.fetchall())
 
-        self.q_record.perform()
-        rdata = ''.join(r.rid + r.email
-                        for r in self.q_record.fetchall())
+        self.q_person.perform()
+        pdata = ''.join(p.pid + p.email
+                        for p in self.q_person.fetchall())
 
-        return (mdata + idata + rdata).encode()
+        return (mdata + idata + pdata).encode()
 
     def close(self):
         "Close an election."
@@ -131,7 +131,7 @@ class Election:
         self.c_close.perform()
 
     def add_salts(self):
-        "Set the SALT column in the ISSUES and RECORD tables."
+        "Set the SALT column in the ISSUES and PERSON tables."
 
         # The Election should be editable.
         assert self.is_editable()
@@ -153,7 +153,7 @@ class Election:
                 mod_cursor.perform((salt, r[0]))
 
         for_table('issues', self.c_salt_issue)
-        for_table('record', self.c_salt_record)
+        for_table('person', self.c_salt_person)
 
     def get_issue(self, iid):
         "Return TITLE, DESCRIPTION, TYPE, and KV for issue IID."
@@ -183,53 +183,53 @@ class Election:
         self.q_issues.perform()
         return [ row[:5] for row in self.q_issues.fetchall() ]
 
-    def get_participant(self, rid):
-        "Return NAME, EMAIL for Participant on record RID."
+    def get_person(self, pid):
+        "Return NAME, EMAIL for Person identified by PID."
 
-        # NEVER return record.salt
-        record = self.q_get_record.first_row((rid,))
-        return record.name, record.email
+        # NEVER return person.salt
+        person = self.q_get_person.first_row((pid,))
+        return person.name, person.email
 
-    def add_participant(self, rid, name, email):
-        "Add or update a Participant (voter of record) designated by RID."
+    def add_person(self, pid, name, email):
+        "Add or update a Person designated by PID."
         assert self.is_editable()
 
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
-        self.c_add_record.perform((rid, name, email, None))
+        self.c_add_person.perform((pid, name, email, None))
 
-    def delete_participant(self, rid):
-        "Delete the Participant designated by RID."
+    def delete_person(self, pid):
+        "Delete the Person designated by PID."
         assert self.is_editable()
 
-        self.c_delete_record.perform((rid,))
+        self.c_delete_person.perform((pid,))
 
-    def list_participants(self):
-        "Return ordered (RID, NAME, EMAIL) for each Participant in RECORD."
-        self.q_record.perform()
-        return [ row[:3] for row in self.q_record.fetchall() ]
+    def list_persons(self):
+        "Return ordered (PID, NAME, EMAIL) for each Person."
+        self.q_person.perform()
+        return [ row[:3] for row in self.q_prson.fetchall() ]
 
-    def add_vote(self, rid, iid, votestring):
-        "Add VOTESTRING as the (latest) vote by RID for IID."
+    def add_vote(self, pid, iid, votestring):
+        "Add VOTESTRING as the (latest) vote by PID for IID."
 
         # The Election should be open.
         assert self.is_open()
 
         md = self.q_metadata.first_row()
-        record = self.q_get_record.first_row((rid,))
+        person = self.q_get_person.first_row((pid,))
         issue = self.q_get_issue.first_row((iid,))
 
         ### validate VOTESTRING for ISSUE.TYPE voting
 
-        voter_token = crypto.gen_token(md.opened_key, rid, record.salt)
-        #print('VOTER:', rid, record.salt, voter_token)
+        person_token = crypto.gen_token(md.opened_key, pid, person.salt)
+        #print('PERSON:', pid, person.salt, person_token)
         issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
         #print('ISSUE:', iid, issue.salt, issue_token)
 
-        salt, token = crypto.create_vote(voter_token, issue_token, votestring)
+        salt, token = crypto.create_vote(person_token, issue_token, votestring)
         #print('SALT:', salt)
         #print('TOKEN:', token)
-        self.c_add_vote.perform((voter_token, issue_token, salt, token))
+        self.c_add_vote.perform((person_token, issue_token, salt, token))
 
     def gather_issue_votes(self, iid):
         "Return a list of votestrings for a given ISSUE-ID."
@@ -242,28 +242,28 @@ class Election:
         issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
 
         # Use this dict to retain "most recent" votes.
-        dedup = { }  # (VOTER_TOKEN, ISSUE_TOKEN) : VOTESTRING
+        dedup = { }  # (PERSON_TOKEN, ISSUE_TOKEN) : VOTESTRING
 
         self.q_by_issue.perform((issue_token,))
         for row in self.q_by_issue.fetchall():
             votestring = crypto.decrypt_votestring(
-                row.voter_token, issue_token, row.salt, row.token)
-            dedup[row.voter_token, row.issue_token] = votestring
+                row.person_token, issue_token, row.salt, row.token)
+            dedup[row.person_token, row.issue_token] = votestring
 
         # Make sure the votes are not in database-order.
         votes = list(dedup.values())
         crypto.shuffle(votes)  # in-place
         return votes
 
-    def has_voted_upon(self, rid):
+    def has_voted_upon(self, pid):
         "Return {ISSUE-ID: BOOL} stating what has been voted upon."
 
         # The Election should be open.
         assert self.is_open()
 
         md = self.q_metadata.first_row()
-        record = self.q_get_record.first_row((rid,))
-        voter_token = crypto.gen_token(md.opened_key, rid, record.salt)
+        person = self.q_get_person.first_row((pid,))
+        person_token = crypto.gen_token(md.opened_key, pid, person.salt)
 
         voted_upon = { }
 
@@ -274,11 +274,11 @@ class Election:
                                            issue.salt)
 
             # Is any vote present?
-            self.c_has_voted.perform((voter_token, issue_token))
+            self.c_has_voted.perform((person_token, issue_token))
             row = self.c_has_voted.fetchone()
             _ = self.c_has_voted.fetchall()  # should be empty (LIMIT 1)
 
-            #print('HAS-VOTED:', row, '||', voter_token, issue_token)
+            #print('HAS-VOTED:', row, '||', person_token, issue_token)
             voted_upon[issue.iid] = row is not None
 
         return voted_upon
