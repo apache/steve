@@ -33,9 +33,9 @@ class Election:
 
         # Construct cursors for all operations.
         self.c_salt_issue = self.db.add_statement(
-            '''UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?''')
+            'UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?')
         self.c_salt_record = self.db.add_statement(
-            '''UPDATE RECORD SET salt = ? WHERE _ROWID_ = ?''')
+            'UPDATE RECORD SET salt = ? WHERE _ROWID_ = ?')
         self.c_open = self.db.add_statement(
             'UPDATE METADATA SET salt = ?, opened_key = ?')
         self.c_close = self.db.add_statement(
