@@ -28,8 +28,7 @@ from . import db
 
 class Election:
 
-    def __init__(self, eid, db_fname):
-        self.eid = eid
+    def __init__(self, db_fname):
         self.db = db.DB(db_fname)
 
         # Construct cursors for all operations.
