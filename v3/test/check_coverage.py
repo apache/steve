@@ -57,7 +57,11 @@ def touch_every_line():
     conn.execute('INSERT INTO METADATA'
                  f' VALUES ("{eid}", "title", NULL, NULL, NULL)')
     conn.commit()
+
+    # Ready to load up the Election and exercise it.
     e = steve.election.Election(TESTING_DB)
+
+    _ = e.get_metadata()  # while EDITABLE
 
     e.add_person('alice', 'Alice', 'alice@example.org')
     e.add_person('bob', None, 'bob@example.org')
@@ -83,11 +87,13 @@ def touch_every_line():
     _ = e.get_issue('a')
 
     e.open()
+    _ = e.get_metadata()  # while OPEN
     e.add_vote('alice', 'a', 'y')
     _ = e.has_voted_upon('alice')
     _ = e.is_tampered()
 
     e.close()
+    _ = e.get_metadata()  # while CLOSED
     _ = e.gather_issue_votes('a')
 
 
