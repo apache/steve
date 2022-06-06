@@ -88,7 +88,7 @@ Issue-data := TBD
 BLOCK := Election-data + sorted(Issue-Data)
 OpenedKey := Hash(BLOCK, Salt(each-election))
 
-Personss := Map<PersonID, Salt(each-person)>
+Persons := Map<PersonID, Salt(each-person)>
 PersonToken := Hash(OpenedKey + PersonID, Salt(each-person))
 
 Issues := Map<IssueID, Salt(each-issue)>
@@ -158,6 +158,12 @@ to the STV algorithm.
 
 Note that the tally process does not require unmasking the Person.
 
+### API Documentation
+
+This is _TBD_
+
+A basic example of using the API is available via the
+[code coverage testing script](test/check_coverage.py).
 
 
 [^fernet]: https://cryptography.io/en/latest/fernet/
