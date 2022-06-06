@@ -70,9 +70,16 @@ Cryptographic-grade hashes are used as identifiers to create anonymity.
 ## Integrity
 
 When an Election is "opened for voting", all Persons, Issues, and Monitors
-will be used to construct a singular hash that identifies the precise state of
+will be used to construct a singular hash (`opened_key`) that identifies
+the precise state of
 the Election. This hash is used to prevent any post-opening tampering of the
 Persons of record, the ballot, or those watching for such tampering.
+
+The recorded votes use the `opened_key` to produce the anonymized tokens
+for each Person and each Issue, and it is used as part of the vote encryption
+process. Any attempt to alter the election will produce a new `opened_key`
+value, implying that any recorded vote becomes entirely useless (the vote
+can not be matched to a Person, to an Issue, nor decrypted).
 
 ## Data at Rest
 
@@ -102,8 +109,8 @@ the votes contain any rows with those two tokens. The actual vote does
 not need to be decrypted for this process.
 
 Note that to reveal each recorded vote requires one (1) expensive hash
-computations, and one (1) expensive decryption. Additional hash
-computations are required to pair each Person and each issue with
+computation, and one (1) expensive decryption. Additional hash
+computations are required to pair each Person and each Issue with
 their corresponding tokens. These operations are all salted to increase
 the entropy.
 
@@ -113,12 +120,13 @@ Some notes on implementation, hashing, storage, at-rest encryption, etc.
 
 ```
 ElectionID := 32 bits
-PersonID := availid from iclas.txt
+PersonID := availid from iclas.txt  # for ASF usage
 IssueID := [-a-zA-Z0-9]+
 
-Election-data := TBD
-Issue-data := TBD
-BLOCK := Election-data + sorted(Issue-Data)
+ElectionData := Tuple[ ElectionID, Title ]
+IssueData := Tuple[ IssueID, Title, Description, VoteType, VoteOptions ]
+PersonData := Tuple[ PersonID, Name, Email ]
+BLOCK := ElectionData + sorted(IssueData) + sorted(PersonData)
 OpenedKey := Hash(BLOCK, Salt(each-election))
 
 Persons := Map<PersonID, Salt(each-person)>
