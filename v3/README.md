@@ -74,6 +74,39 @@ will be used to construct a singular hash that identifies the precise state of
 the Election. This hash is used to prevent any post-opening tampering of the
 Persons of record, the ballot, or those watching for such tampering.
 
+## Data at Rest
+
+(for details, see **Implementation** below)
+
+The recorded votes are encrypted when at rest in the SQLite database. Each
+vote is recorded using a hashed form of the Person that performed the vote
+(`person_token`), and a hashed version of the issue voted upon
+(`issue_token`). Thus, a cursory examination of the recorded votes will not
+reveal people's name, nor the issues voted upon.
+
+To reveal the votes for computing a final tally, the `person_token` will
+be used in its opaque form -- there is no need to pair these tokens to
+visible names. For a given issue, its `issue_token` is computed and
+all rows with that token are selected. If two or more selected rows have
+the same `person_token` (a Person filed a later vote), then only the
+most-recent row is used in the tally process. Each vote is decrypted
+using the `person_token` and the `issue_token` from that row, along
+with a unique per-vote salt value. The decrypted vote is then tallied
+according to the chosen vote type (eg. yes/no/abstain, or Single
+Transferable Vote).
+
+When a Person loads their ballot, and needs to know which issues have
+not (yet) been voted upon, then we compute the `person_token` for them.
+For each issue on the ballot, we compute the `issue_token` and see if
+the votes contain any rows with those two tokens. The actual vote does
+not need to be decrypted for this process.
+
+Note that to reveal each recorded vote requires one (1) expensive hash
+computations, and one (1) expensive decryption. Additional hash
+computations are required to pair each Person and each issue with
+their corresponding tokens. These operations are all salted to increase
+the entropy.
+
 ## Implementation
 
 Some notes on implementation, hashing, storage, at-rest encryption, etc.
