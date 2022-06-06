@@ -28,6 +28,11 @@ from . import db
 
 class Election:
 
+    # Current state of an election.
+    S_EDITABLE = 'editable'
+    S_OPEN = 'open'
+    S_CLOSED = 'closed'
+
     def __init__(self, db_fname):
         self.db = db.DB(db_fname)
 
@@ -155,6 +160,15 @@ class Election:
         for_table('issues', self.c_salt_issue)
         for_table('person', self.c_salt_person)
 
+    def get_metadata(self):
+        "Return basic metadata about this Election."
+
+        md = self.q_metadata.first_row()
+        # NOTE: do not return the SALT
+        # note: likely: never return opened_key
+
+        return md.eid, md.title, self.get_state()
+
     def get_issue(self, iid):
         "Return TITLE, DESCRIPTION, TYPE, and KV for issue IID."
 
@@ -180,6 +194,8 @@ class Election:
 
     def list_issues(self):
         "Return ordered (IID, TITLE, DESCRIPTION, TYPE, KV) for all ISSUES."
+
+        # NOTE: the SALT column is omitted. It should never be exposed.
         self.q_issues.perform()
         return [ row[:5] for row in self.q_issues.fetchall() ]
 
@@ -206,6 +222,8 @@ class Election:
 
     def list_persons(self):
         "Return ordered (PID, NAME, EMAIL) for each Person."
+
+        # NOTE: the SALT column is omitted. It should never be exposed.
         self.q_person.perform()
         return [ row[:3] for row in self.q_person.fetchall() ]
 
@@ -303,20 +321,31 @@ class Election:
 
     def is_editable(self):
         "Can this Election be edited?"
-        md = self.q_metadata.first_row()
-        return md.salt is None and md.opened_key is None
+        return self.get_state() == self.S_EDITABLE
 
     def is_open(self):
         "Is this Election open for voting?"
-        md = self.q_metadata.first_row()
-        return (md.salt is not None
-                and md.opened_key is not None
-                and md.closed in (None, 0))
+        return self.get_state() == self.S_OPEN
 
     def is_closed(self):
         "Has this Election been closed?"
+        return self.get_state() == self.S_CLOSED
+
+    def get_state(self):
+        "Derive our election state from the METADATA table."
+
         md = self.q_metadata.first_row()
-        return md.closed == 1
+        if md.closed == 1:
+            assert md.salt is not None and md.opened_key is not None
+            return self.S_CLOSED
+        assert md.closed in (None, 0)
+
+        if md.salt is None:
+            assert md.opened_key is None
+            return self.S_EDITABLE
+        assert md.opened_key is not None
+
+        return self.S_OPEN
 
 
 def new_eid():
