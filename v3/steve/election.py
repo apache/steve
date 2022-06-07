@@ -256,8 +256,16 @@ class Election:
         #print('TOKEN:', token)
         self.c_add_vote.perform((person_token, issue_token, salt, token))
 
-    def gather_issue_votes(self, iid):
-        "Return a list of votestrings for a given ISSUE-ID."
+    def tally_issue(self, iid):
+        """Return the results for a given ISSUE-ID.
+
+        This is a 2-tuple: a human-readable string, and vtype-specific
+        supporting data.
+
+        Note: it is expected the caller has other details associated
+        with the issue, and knows the vote type and how to interpret
+        the supporting data.
+        """
 
         # The Election should be closed.
         assert self.is_closed()
@@ -276,9 +284,14 @@ class Election:
             dedup[row.person_token, row.issue_token] = votestring
 
         # Make sure the votes are not in database-order.
+        # Note: we are not returning the votes, so this may be
+        #  superfluous. But it certainly should not hurt.
         votes = list(dedup.values())
         crypto.shuffle(votes)  # in-place
-        return votes
+
+        # Perform the tally, and return the results.
+        m = vtypes.vtype_module(issue.type)
+        return m.tally(votes, self.json2kv(issue.kv))
 
     def has_voted_upon(self, pid):
         "Return {ISSUE-ID: BOOL} stating what has been voted upon."

@@ -65,9 +65,10 @@ def touch_every_line():
 
     e.add_person('alice', 'Alice', 'alice@example.org')
     e.add_person('bob', None, 'bob@example.org')
-    e.add_person('Carlos', 'Carlos', 'carlos@example.org')
+    e.add_person('carlos', 'Carlos', 'carlos@example.org')
+    e.add_person('david', None, 'david@example.org')
     _ = e.list_persons()
-    e.delete_person('carlos')
+    e.delete_person('david')
     _ = e.get_person('alice')
 
     e.add_issue('a', 'issue A', None, 'yna', None)
@@ -89,12 +90,17 @@ def touch_every_line():
     e.open()
     _ = e.get_metadata()  # while OPEN
     e.add_vote('alice', 'a', 'y')
+    e.add_vote('bob', 'a', 'n')
+    e.add_vote('carlos', 'a', 'a')  # use each of Y/N/A
+    e.add_vote('alice', 'b', 'bc')
+    e.add_vote('bob', 'b', 'ad')
     _ = e.has_voted_upon('alice')
     _ = e.is_tampered()
 
     e.close()
     _ = e.get_metadata()  # while CLOSED
-    _ = e.gather_issue_votes('a')
+    _ = e.tally_issue('a')
+    _ = e.tally_issue('b')
 
 
 def main():
