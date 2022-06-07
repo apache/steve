@@ -20,3 +20,10 @@ TYPES = { 'yna', 'stv' }
 
 from . import yna
 from . import stv
+
+
+def vtype_module(vtype):
+    "Return the vote type's module."
+    assert vtype in TYPES
+
+    return globals()[vtype]
