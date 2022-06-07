@@ -71,7 +71,7 @@ def touch_every_line():
     _ = e.get_person('alice')
 
     e.add_issue('a', 'issue A', None, 'yna', None)
-    e.add_issue('b', 'issue B', None, 'stv', json.dumps({
+    e.add_issue('b', 'issue B', None, 'stv', {
         'seats': 3,
         'labelmap': {
             'a': 'Alice',
@@ -80,7 +80,7 @@ def touch_every_line():
             'd': 'David',
             'e': 'Eve',
             },
-        }))
+        })
     _ = e.list_issues()
     e.add_issue('c', 'issue C', None, 'yna', None)
     e.delete_issue('c')

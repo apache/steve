@@ -21,9 +21,11 @@
 #
 
 import sys
+import json
 
 from . import crypto
 from . import db
+from . import vtypes
 
 
 class Election:
@@ -174,17 +176,19 @@ class Election:
 
         # NEVER return issue.salt
         issue = self.q_get_issue.first_row((iid,))
-        return issue.title, issue.description, issue.type, issue.kv
 
-    def add_issue(self, iid, title, description, type, kv):
+        return (issue.title, issue.description, issue.type,
+                self.json2kv(issue.kv))
+
+    def add_issue(self, iid, title, description, vtype, kv):
         "Add or update an issue designated by IID."
         assert self.is_editable()
-
-        ### validate TYPE
+        assert vtype in vtypes.TYPES
 
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
-        self.c_add_issue.perform((iid, title, description, type, kv, None))
+        self.c_add_issue.perform((iid, title, description, vtype,
+                                  self.kv2json(kv), None))
 
     def delete_issue(self, iid):
         "Delete the Issue designated by IID."
@@ -195,9 +199,12 @@ class Election:
     def list_issues(self):
         "Return ordered (IID, TITLE, DESCRIPTION, TYPE, KV) for all ISSUES."
 
-        # NOTE: the SALT column is omitted. It should never be exposed.
+        def extract_issue(row):
+            # NOTE: the SALT column is omitted. It should never be exposed.
+            return row[:4] + (self.json2kv(row.kv),)
+
         self.q_issues.perform()
-        return [ row[:5] for row in self.q_issues.fetchall() ]
+        return [ extract_issue(row) for row in self.q_issues.fetchall() ]
 
     def get_person(self, pid):
         "Return NAME, EMAIL for Person identified by PID."
@@ -346,6 +353,17 @@ class Election:
         assert md.opened_key is not None
 
         return self.S_OPEN
+
+    @staticmethod
+    def kv2json(kv):
+        'Convert a structured KV into a JSON string for storage.'
+        # Note: avoid serializing None.
+        return kv and json.dumps(kv)
+
+    @staticmethod
+    def json2kv(j):
+        'Convert the KV JSON string back into its structured value.'
+        return j and json.loads(j)
 
 
 def new_eid():
