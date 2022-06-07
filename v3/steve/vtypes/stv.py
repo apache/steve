@@ -36,4 +36,26 @@ def load_stv():
 
 
 def tally(votestrings, kv):
-    pass
+
+    # kv['labelmap'] should be: LABEL: NAME
+    # for example: { 'a': 'John Doe', }
+    labelmap = kv['labelmap']
+
+    seats = kv['seats']
+
+    # Remap all votestrings from a string sequence of label characters,
+    # into a sequence of NAMEs.
+    votes = [[labelmap[c] for c in v] for v in votestrings]
+
+    stv = load_stv()
+
+    # NOTE: it is important that the names are sorted, to create a
+    # reproducible list of names.
+    results = stv.run_stv(sorted(labelmap.values()), votes, seats)
+
+    human = '\n'.join(
+        f'{c.name:40}{" " if c.status == stv.ELECTED else " not "}selected'
+        for c in results.l
+        )
+    data = { 'raw': results, }
+    return human, data
