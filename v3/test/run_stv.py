@@ -56,12 +56,10 @@ def main(mtgdir):
 
     # NOTE: for backwards-compat, the tally() function accepts a
     # list of names with caller-defined sorting.
-    human, data = steve.vtypes.stv.tally(votes, kv, names)
+    human, _ = steve.vtypes.stv.tally(votes, kv, names)
 
-    candidates = data['raw']
-    candidates.print_results()
-
-    ### ugh. for comparison, do it:
+    # For the comparison purposes:
+    print(human)
     print('Done!')
 
 
