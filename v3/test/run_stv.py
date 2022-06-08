@@ -31,8 +31,10 @@ THIS_DIR = os.path.realpath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.dirname(THIS_DIR))
 import steve.vtypes.stv
 
-stv_tool = steve.vtypes.stv.load_stv()
+# The stv module loads the stv_tool module. Tweak it.
+stv_tool = steve.vtypes.stv.stv_tool
 stv_tool.VERBOSE = True
+
 
 def main(mtgdir):
     rawfile = os.path.join(mtgdir, 'raw_board_votes.txt')
@@ -42,14 +44,21 @@ def main(mtgdir):
     assert os.path.exists(labelfile)
 
     labelmap = stv_tool.read_labelmap(labelfile)
+    votes = stv_tool.read_votefile(rawfile).values()
+
     # Construct a label-sorted list of names from the labelmap.
     names = [name for _, name in sorted(labelmap.items())]
 
-    # Turn votes using labels into by-name.
-    votes_by_label = stv_tool.read_votefile(rawfile).values()
-    votes = [[labelmap[l] for l in vote] for vote in votes_by_label]
+    kv = {
+        'labelmap': labelmap,
+        'seats': 9,
+        }
 
-    candidates = stv_tool.run_stv(names, votes, 9)
+    # NOTE: for backwards-compat, the tally() function accepts a
+    # list of names with caller-defined sorting.
+    human, data = steve.vtypes.stv.tally(votes, kv, names)
+
+    candidates = data['raw']
     candidates.print_results()
 
     ### ugh. for comparison, do it:
