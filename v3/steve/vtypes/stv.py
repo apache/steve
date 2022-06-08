@@ -29,13 +29,25 @@ STV_RELPATH = '../../../monitoring/stv_tool.py'
 def load_stv():
     pathname = os.path.join(os.path.dirname(__file__), STV_RELPATH)
     spec = importlib.util.spec_from_file_location('stv_tool', pathname)
-    stv_tool = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(stv_tool)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
-    return stv_tool
+
+# load_stv() loads the module (again) on each call. Each one is separate,
+# with (eg.) a distinct VERBOSE flag. Note that sys.modules is completely
+# uninvolved in this process. Thus, let's load this once. (this is
+# effectively a fancy "import" statement)
+stv_tool = load_stv()
 
 
-def tally(votestrings, kv):
+def tally(votestrings, kv, names=None):
+    "Run the STV tally process."
+
+    # NOTE: the NAMES parameter is usually not passed, but is available
+    # to compare operation against custom ordering of NAMES in the
+    # LABELMAP. This function takes a specific approach, which differs
+    # from historical orderings.
 
     # kv['labelmap'] should be: LABEL: NAME
     # for example: { 'a': 'John Doe', }
@@ -47,14 +59,14 @@ def tally(votestrings, kv):
     # into a sequence of NAMEs.
     votes = [[labelmap[c] for c in v] for v in votestrings]
 
-    stv = load_stv()
-
     # NOTE: it is important that the names are sorted, to create a
-    # reproducible list of names.
-    results = stv.run_stv(sorted(labelmap.values()), votes, seats)
+    # reproducible list of names. Callers may specify a custom ordering.
+    if names is None:
+        names = sorted(labelmap.values())
+    results = stv_tool.run_stv(names, votes, seats)
 
     human = '\n'.join(
-        f'{c.name:40}{" " if c.status == stv.ELECTED else " not "}selected'
+        f'{c.name:40}{" " if c.status == stv_tool.ELECTED else " not "}selected'
         for c in results.l
         )
     data = { 'raw': results, }
