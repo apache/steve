@@ -1,4 +1,4 @@
-Title: Getting Support
+Title: Community and Support
 
 Simple support.
 
