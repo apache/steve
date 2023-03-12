@@ -1,5 +1,9 @@
 Title: Quickstart Guide
 
+**TODO**: rework this for our new git-based repository.
+
+----
+
 ## pySTeVe
 
 ### Quickstart Guide
