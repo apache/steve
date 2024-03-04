@@ -48,7 +48,10 @@ def remove(election, basedata, UID):
     
 
 def hasVoted(election, issue, uid):
-    issue = issue.strip(".json")
+    # Cut away .json endings if found. This is seemingly only used with the file-based db backend.
+    # TODO: Test if this is still needed.
+    if issue.endswith(".json"):
+        issue = issue[:-5]
     return backend.voter_has_voted(election, issue, uid)
 
 def ballots():
