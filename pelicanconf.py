@@ -13,7 +13,7 @@ TIMEZONE = 'UTC'
 # Theme includes templates and possibly static files
 THEME = 'theme'
 # Specify location of plugins, and which to use
-PLUGIN_PATHS = [ '/home/dfoulks/asf/infrastructure-actions/pelican/migration/../plugins',  ]
+PLUGIN_PATHS = [ '/home/dfoulks/asf/infrastructure-actions/pelican/plugins',  ]
 # If the website uses any *.ezmd files, include the 'asfreader' plugin
 PLUGINS = [ 'gfm',  ]
 # All content is located at '.' (aka content/ )
