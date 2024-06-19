@@ -1,0 +1,30 @@
+queries:
+    salt_issue: UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?
+    salt_person: UPDATE PERSON SET salt = ? WHERE _ROWID_ = ?
+    open_election: UPDATE METADATA SET salt = ?, opened_key = ?
+    close_election: UPDATE METADATA SET closed = 1
+    add_issue: |
+            INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?)
+               ON CONFLICT DO UPDATE SET
+                 title=excluded.title,
+                 description=excluded.description,
+                 type=excluded.type,
+                 kv=excluded.kv
+    add_person: |
+            INSERT INTO PERSON VALUES (?, ?, ?, ?)
+               ON CONFLICT DO UPDATE SET
+                 name=excluded.name,
+                 email=excluded.email
+    delete_issue: DELETE FROM ISSUES WHERE iid = ?
+    delete_person: DELETE FROM PERSON WHERE pid = ?
+    add_vote: INSERT INTO VOTES VALUES (NULL, ?, ?, ?, ?)
+    has_voted: |
+            SELECT 1 FROM VOTES
+               WHERE person_token = ? AND issue_token = ?
+               LIMIT 1
+    metadata: SELECT * FROM METADATA
+    issues: SELECT * FROM ISSUES ORDER BY iid
+    person: SELECT * FROM PERSON ORDER BY pid
+    get_issue: SELECT * FROM ISSUES WHERE iid = ?
+    get_person: SELECT * FROM PERSON WHERE pid = ?
+    by_issue: SELECT * FROM VOTES WHERE issue_token = ? ORDER BY _ROWID_
