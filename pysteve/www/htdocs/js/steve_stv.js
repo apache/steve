@@ -654,9 +654,6 @@ function castVotes(args) {
     issue = l.length > 1 ? l[l.length-2] : "";
     uid = l.length > 2 ? l[l.length-1] : "";
     var v = ballotChars.join(" ")
-    if (v.length == 0 && document.getElementById('mbox').value.length > 0) {
-        v = document.getElementById('mbox').value
-    }
     if (v == "") {
         v = "-"
     }
