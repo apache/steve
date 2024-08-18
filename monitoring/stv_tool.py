@@ -34,6 +34,7 @@ import argparse
 import configparser
 import re
 import functools
+import json
 
 ELECTED = 1
 HOPEFUL = 2
@@ -43,6 +44,7 @@ ALMOST = 8
 ERROR_MARGIN = 0.00001
 BILLIONTH = 0.000000001
 
+# "[" date "]" voterhash votes
 RE_VOTE = re.compile(r'\[.{19}\]\s+'
                      r'(?P<voterhash>[\w\d]{32})\s+'
                      r'(?P<votes>[a-z]{1,26})',
@@ -78,6 +80,7 @@ def load_votes(fname):
   names = [name for _, name in sorted(labelmap.items())]
 
   # Load the raw votes that were recorded.
+  ### the voterhash was discarded; this no longer works
   votes_by_label = read_votefile(fname)
 
   # Remap all labels to names in the votes.
@@ -96,7 +99,16 @@ def read_votefile(fname):
       # For a given voter hashcode, record their latest set of votes.
       votes[match.group('voterhash')] = match.group('votes')
 
-  ### we should discard voterhash, and just return .values()
+  # Discard voterhash, and just return the list of votes.
+  return votes.values()
+
+
+def read_jsonvotes(fname):
+  votes = [ ]
+  for v in json.load(open(fname))['votes'].values():
+    # Ignore the "null" votes, for STV purposes.
+    if (vote := v['vote']) != '-':
+      votes.append(vote)
   return votes
 
 
@@ -456,8 +468,12 @@ def main(argv):
   names = [name for _, name in sorted(labelmap.items())]
 
   # Turn votes using labels into by-name.
-  votes_by_label = read_votefile(args.raw_file).values()
-  votes = [[labelmap[l] for l in vote] for vote in votes_by_label]
+  if args.raw_file.endswith('.json'):
+    votes_by_label = read_jsonvotes(args.raw_file)
+    votes = [[labelmap[l.lower()] for l in vote.split()] for vote in votes_by_label]
+  else:
+    votes_by_label = read_votefile(args.raw_file)
+    votes = [[labelmap[l] for l in vote] for vote in votes_by_label]
 
   candidates = run_stv(names, votes, args.seats)
   candidates.print_results()
