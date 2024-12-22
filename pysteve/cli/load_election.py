@@ -37,24 +37,55 @@ LOGGER = logging.getLogger(__name__)
 def main(y_fname):
     cfg = easydict.EasyDict(yaml.safe_load(open(y_fname)))
 
-    election = cfg.election
-    LOGGER.info(f'ELECTION: {election.eid}')
-    ensure_election(cfg)
-
-    ### list current issues
-    ### remove all issues
-    ### load issues from the YAML
-
-
-def ensure_election(cfg):
     s = requests.Session()
 
+    eid = cfg.election.eid
+    LOGGER.info(f'ELECTION: {eid}')
+    issues = ensure_election(s, cfg)
+
+    # Remove all the issues, so we can load the new/current set.
+    for issue in issues:
+        iid = issue['id']
+        print(f'DELETING: {iid}')
+        r = s.get(f'{cfg.config.endpoint}/delete/{eid}/{iid}')
+        if r.status_code != 200:
+            # Something is wrong.
+            LOGGER.error(f'UNKNOWN: {r.status_code}')
+            LOGGER.debug(f'BODY: {r.text}')
+            raise Exception
+
+    # Load all the defined issues.
+    for idx, issue in enumerate(cfg['issues']):
+        iid = f'issue-{idx}'
+        print(f'CREATING: {iid}: {issue}')
+
+        payload = {
+            'title': issue['title'],
+            'description': issue['description'],
+            'type': issue['type'],
+            ### not needed for YNA. fix as needed
+            #'candidates': [ ],
+            }
+        r = s.post(f'{cfg.config.endpoint}/create/{eid}/{iid}',
+                   data=payload)
+        if r.status_code != 201:
+            # Something is wrong.
+            LOGGER.error(f'UNKNOWN: {r.status_code}')
+            LOGGER.debug(f'BODY: {r.text}')
+            raise Exception
+
+        LOGGER.debug(r.json())
+
+
+def ensure_election(s, cfg):
     eid = cfg.election.eid
     r = s.get(f'{cfg.config.endpoint}/view/{eid}')
     LOGGER.debug(f'HEADERS: {r.request.headers}')
     if r.status_code == 200:
-        # All good. The election has already been created.
-        return  ### return the content? update to ensure it matches?
+        # The election has already been created, so return its issues.
+        j = r.json()
+        LOGGER.debug(f'BODY: {j}')
+        return j['issues']
     if r.status_code != 404:
         # Something is wrong.
         LOGGER.error(f'UNKNOWN: {r.status_code}')
@@ -88,6 +119,9 @@ def ensure_election(cfg):
         raise Exception
 
     LOGGER.debug(r.json())
+
+    # We created a new election. It has no issues.
+    return [ ]
 
 
 if __name__ == '__main__':
