@@ -64,6 +64,7 @@ else:
             if re.search(r"([^A-Za-z0-9-.])", electionID):
                 response.respond(400, {'message': "Invalid election ID supplied, must be [A-Za-z0-9-.]+"})
                 sys.exit(0) # BAIL!
+        issue = l[2] if len(l) > 2 else None
  
         # List all existing/previous elections?
         if action == "list":
@@ -118,7 +119,6 @@ else:
         elif action == "create":
             if karma >= 4: # karma of 4 required to set up an issue for the election
                 if electionID:
-                    issue = l[2] if len(l) > 2 else None
                     if not issue:
                         response.respond(400, {'message': 'No issue ID specified'})
                     elif re.search(r"([^A-Za-z0-9-.])", issue):
@@ -183,7 +183,6 @@ else:
         elif action == "delete":
             if karma >= 4: # karma of 4 required to set up an issue for the election
                 if electionID:
-                    issue = l[2] if len(l) > 2 else None
                     if not issue:
                         response.respond(400, {'message': 'No issue ID specified'})
                     else:
@@ -204,7 +203,6 @@ else:
         
         # Edit an issue or election
         elif action == "edit":
-            issue = l[2] if len(l) > 2 else None
             if (issue and karma >= 4) or (karma >= 5 and electionID):
                 if electionID:
                     if not issue:
@@ -402,7 +400,6 @@ else:
                     response.respond(404, {'message': 'No such election'})
         # Tally an issue
         elif action == "tally" and electionID:
-            issue = l[2] if len(l) > 2 else None
             if electionID and issue:
                 basedata = election.getBasedata(electionID)
                 # Allow access at all times to owners/admins, monitors after closed
@@ -461,7 +458,6 @@ else:
         
         # Get vote data
         elif action == "monitor" and electionID:
-            issue = l[2] if len(l) > 2 else None
             if electionID and issue:
                 basedata = election.getBasedata(electionID, hideHash=True)
                 if karma >= 2 or ('owner' in basedata and basedata['owner'] == whoami):
@@ -494,7 +490,6 @@ else:
                     response.respond(404, {'message': 'No such election or issue'})
         # Vote backlog, including all recasts
         elif action == "backlog" and electionID:
-            issue = l[2] if len(l) > 2 else None
             if electionID and issue:
                 basedata = election.getBasedata(electionID, hideHash=True)
                 if karma >= 2 or ('owner' in basedata and basedata['owner'] == whoami):
