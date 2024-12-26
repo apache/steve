@@ -84,15 +84,15 @@ class SteveESWrapperSeven(object):
         self.ES = ES
     
     def get(self, index, doc_type, id):
-        return self.ES.get(index = index+'_'+doc_type, id = id)
+        return self.ES.get(index = index+'_'+doc_type, doc_type = '_doc', id = id)
     def exists(self, index, doc_type, id):
-        return self.ES.exists(index = index+'_'+doc_type, id = id)
+        return self.ES.exists(index = index+'_'+doc_type, doc_type = '_doc', id = id)
     def delete(self, index, doc_type, id):
-        return self.ES.delete(index = index+'_'+doc_type, id = id)
+        return self.ES.delete(index = index+'_'+doc_type, doc_type = '_doc', id = id)
     def index(self, index, doc_type, id = None, body = None):
-        return self.ES.index(index = index+'_'+doc_type, id = id, body = body)
+        return self.ES.index(index = index+'_'+doc_type, doc_type = '_doc', id = id, body = body)
     def update(self, index, doc_type, id, body):
-        return self.ES.update(index = index+'_'+doc_type, id = id, body = body)
+        return self.ES.update(index = index+'_'+doc_type, doc_type = '_doc', id = id, body = body)
     def scroll(self, scroll_id, scroll):
         return self.ES.scroll(scroll_id = scroll_id, scroll = scroll)
     def delete_by_query(self, **kwargs):
@@ -107,7 +107,7 @@ class SteveESWrapperSeven(object):
                 }
             }
         if sort and body:
-            if '.keyword' not in sort:
+            if '.keyword' not in sort and 'timestamp' not in sort:
                 sort = sort + ".keyword"
             body['sort'] = [
                 { sort: 'asc'}
@@ -116,7 +116,7 @@ class SteveESWrapperSeven(object):
             index = index+'_'+doc_type,
             size = size,
             scroll = scroll,
-            _source_includes = _source_include,
+#            _source_includes = _source_include,
             body = body
             )
     def count(self, index, doc_type = '*', body = None):
@@ -124,6 +124,7 @@ class SteveESWrapperSeven(object):
             index = index+'_'+doc_type,
             body = body
             )
+
     
 
 class SteveDatabase(object):
