@@ -193,7 +193,7 @@ class SQLiteBackend:
 
     def election_list(self):
         "List all elections"
-        elections = [x for x in self.DB.db.fetch("elections", limit=None)]
+        elections = [x['id'] for x in self.DB.db.fetch("elections", limit=None)]
         return elections
 
     def vote(self, electionID, issueID, uid, vote, vhash=None):
