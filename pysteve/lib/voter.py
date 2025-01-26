@@ -33,13 +33,13 @@ from lib import constants, election
 backend = constants.initBackend(config)
 
 def get(election, basedata, uid):
-    xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
+    xhash = constants.hexdigest(basedata['hash'] + uid, method=hashlib.sha512)
     return backend.voter_get_uid(election, xhash)
     
     
 def add(election, basedata, PID):
-    uid = hashlib.sha224("%s%s%s%s" % (PID, basedata['hash'], time.time(), random.randint(1,99999999))).hexdigest()
-    xhash = hashlib.sha512(basedata['hash'] + uid).hexdigest()
+    uid = constants.hexdigest("%s%s%s%s" % (PID, basedata['hash'], time.time(), random.randint(1,99999999)))
+    xhash = constants.hexdigest(basedata['hash'] + uid, method=hashlib.sha512)
     backend.voter_add(election, PID, xhash)
     return uid, xhash
     

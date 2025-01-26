@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-
+import hashlib
 VOTE_TYPES = (
     
 )
@@ -23,6 +23,10 @@ VOTE_TYPES = (
 DB_TYPES = (
     
 )
+
+def hexdigest(data: str):
+    """Wrapper for hashlib.sha224().hexdigest that handles encoding"""
+    return hashlib.sha224(data.encode("utf-8")).hexdigest()
 
 def appendVote(*types):
     """ Append a new type of voting to the list"""

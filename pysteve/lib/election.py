@@ -19,7 +19,7 @@ import json
 import os
 import random
 import time
-from itertools import izip
+#from itertools import izip
 
 try:
     from __main__ import config
@@ -28,9 +28,9 @@ except:
     config = configparser.RawConfigParser()
     config.read("%s/../../../steve.cfg" % (os.path.dirname(__file__)))
     
-import constants, voter
-from plugins import *
-from backends import *
+from lib import constants, voter
+from lib.plugins import *
+from lib.backends import *
 
 
 
@@ -88,7 +88,7 @@ def createElection(eid, title, owner, monitors, starts, ends, isopen):
             'monitors': monitors,
             'starts': starts,
             'ends': ends,
-            'hash': hashlib.sha512("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'] if 'REMOTE_ADDR' in os.environ else random.randint(1,99999999999))).hexdigest(),
+            'hash': constants.hexdigest("%f-stv-%s" % (time.time(), os.environ['REMOTE_ADDR'] if 'REMOTE_ADDR' in os.environ else random.randint(1,99999999999)), method=hashlib.sha512),
             'open': isopen
         }
     backend.election_create(eid, basedata)
@@ -122,9 +122,9 @@ def vote(electionID, issueID, voterID, vote):
     basedata = getBasedata(electionID)
     issueData = getIssue(electionID, issueID)
     if basedata and issueData:
-        xhash = hashlib.sha224(electionID + ":" + voterID).hexdigest()
-        vhash = hashlib.sha224(xhash + issueID).hexdigest()
-        votehash = hashlib.sha224(basedata['hash'] + issueID + voterID + vote).hexdigest()
+        xhash = constants.hexdigest(electionID + ":" + voterID)
+        vhash = constants.hexdigest(xhash + issueID)
+        votehash = constants.hexdigest(basedata['hash'] + issueID + voterID + vote)
         
         # Vote verification
         voteType = getVoteType(issueData)
@@ -182,7 +182,7 @@ def getHash(electionID):
         votes = getVotes(electionID, issue)
         ihash += issuedata['hash']
         output.append("Issue #%s: %s\n- Checksum: %s\n- Votes cast: %u\n" % (issue, issuedata['title'], issuedata['hash'], len(votes)))
-    tothash = hashlib.sha224(ihash).hexdigest()
+    tothash = constants.hexdigest(ihash)
     output.insert(0, ("You are receiving this data because you are listed as a monitor for this election.\nThe following data shows the state of the election data on disk. If any of these checksums change, especially the main checksum, then the election has been edited (rigged?) after invites were sent out.\n\nMain Election Checksum : %s\n\n" % tothash))
     output.append("\nYou can monitor votes and recasts online at: %s/monitor.html?%s" % (config.get("general", "rooturl"), electionID))
     return tothash, "\n".join(output)

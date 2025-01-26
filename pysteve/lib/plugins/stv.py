@@ -27,6 +27,7 @@ BILLIONTH = 0.000000001
 
 
 from lib import constants
+import functools
 
 debug = []
 
@@ -137,7 +138,7 @@ class CandidateList(object):
 
   def print_results(self):
     for c in self.l:
-      print '%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not ')
+      print ('%-40s%selected' % (c.name, c.status == ELECTED and ' ' or ' not '))
 
   def dbg_display_tables(self, excess):
     total = excess
@@ -146,7 +147,6 @@ class CandidateList(object):
       total += c.vote
     debug.append('%-20s %15s %15.9f' %( 'Non-transferable', ' ', excess))
     debug.append('%-20s %15s %15.9f' % ( 'Total', ' ', total))
-
 
 class Candidate(object):
   def __init__(self, name, rand, ahead):
@@ -170,11 +170,12 @@ class Candidate(object):
     assert quota is not None
     self.weight = (self.weight * quota) / self.vote
 
-  def __cmp__(self, other):
-    if self.ahead < other.ahead:
+  @staticmethod
+  def cmp(a,b):
+    if a.ahead < b.ahead:
       return -1
-    if self.ahead == other.ahead:
-      return cmp(self.vote, other.vote)
+    if a.ahead == b.ahead:
+        return (a.vote > b.vote) - (a.vote < b.vote)
     return 1
 
 
@@ -227,7 +228,7 @@ def calc_totals(votes, candidates):
 
 
 def calc_aheads(candidates):
-  c_sorted = sorted(candidates.l)
+  c_sorted = sorted(candidates.l, key=functools.cmp_to_key(Candidate.cmp))
   last = 0
   for i in range(1, len(c_sorted)+1):
     if i == len(c_sorted) or c_sorted[last] != c_sorted[i]:

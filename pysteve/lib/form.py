@@ -19,7 +19,8 @@ import cgi
 
 ctype, pdict = cgi.parse_header(os.environ['CONTENT_TYPE'] if 'CONTENT_TYPE' in os.environ else "")
 if ctype == 'multipart/form-data':
-    xform = cgi.parse_multipart(sys.stdin, pdict)
+    pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
+    xform = cgi.parse_multipart(sys.stdin, pdict, encoding="utf-8")
 else:
     xform = cgi.FieldStorage();
 

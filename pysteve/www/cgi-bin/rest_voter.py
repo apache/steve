@@ -36,11 +36,12 @@ if 'SCRIPT_FILENAME' in os.environ:
 config = configparser.RawConfigParser()
 config.read(path + '/../../steve.cfg')
 
+
 # Some quick paths
 homedir = config.get("general", "homedir")
 pathinfo = os.environ['PATH_INFO'] if 'PATH_INFO' in os.environ else None
 
-from lib import response, voter, election, form
+from lib import response, voter, election, form, constants
 
 
 whoami = os.environ['REMOTE_USER'] if 'REMOTE_USER' in os.environ else None
@@ -145,7 +146,7 @@ if pathinfo:
                             response.respond(500, {'message': invalid})
                         else:
                             votehash = election.vote(electionID, issueID, voterID, vote)
-                            voteuid = hashlib.sha224(voterID).hexdigest()
+                            voteuid = constants.hexdigest(voterID)
                             # Catch proxy-emails
                             m = re.match(r"^(.+@.*?[a-zA-Z])-[^.]+$", email)
                             if m:
