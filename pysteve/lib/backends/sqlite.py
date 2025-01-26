@@ -220,22 +220,17 @@ class SQLiteBackend:
     def voter_get_uid(self, electionID, votekey):
         "Get the UID/email for a voter given the vote key hash"
         # First, try the raw hash as an ID
-        try:
-            res = self.DB.db.fetchone("voters", id=votekey)
-            if res:
-                return res
-        except:
-            pass
 
-        # Now, look for it as hash inside the doc
-        try:
-            res = [pickle(x) for x in self.DB.db.fetch("voters", limit=100, election=electionID)]
-            if res:
-                for entry in res:
-                    if entry["hash"] == votekey:
-                        return entry["uid"]
-        except:
-            return False  # ES Error, probably not seeded the voters doc yet
+        res = self.DB.db.fetchone("voters", id=votekey)
+        if res:
+            return res
+
+        # Try looking for hash key
+        res = self.DB.db.fetchone("voters", hash=votekey)
+        if res:
+            return res
+
+        return False  # No ballot found.
 
     def voter_add(self, election, PID, xhash):
         "Add a voter to the DB"
@@ -246,7 +241,7 @@ class SQLiteBackend:
     def ballot_scrub(self, election, xhash, uid=None):
         "Scrub a ballot"
         if uid:
-            xhash = hashlib.sha224(election + ":" + uid).hexdigest()
+            xhash = constants.hexdigest(election + ":" + uid)
 
         # Find ballots and votes matching
         bid = self.voter_get_uid(election, xhash)
@@ -254,7 +249,7 @@ class SQLiteBackend:
             return None
         issues = self.issue_list(election)
         for issue in issues:
-            vhash = hashlib.sha224(xhash + issue).hexdigest()
+            vhash = constants.hexdigest(xhash + issue)
             try:
                 self.DB.db.delete("votes", eid=vhash)
             except:
