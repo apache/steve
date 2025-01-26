@@ -16,4 +16,4 @@
 #
 """Database backends"""
 
-__all__ = ['files','es']
+__all__ = ['files','es', 'sqlite']
