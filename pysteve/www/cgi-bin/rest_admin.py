@@ -465,7 +465,7 @@ else:
                     votes = election.getVotesRaw(electionID, issue)
                     jvotes = {}
                     for vote in votes:
-                        jvotes[hashlib.sha224(vote['key']).hexdigest()] = {
+                        jvotes[constants.hexdigest(vote['key'])] = {
                             'vote': vote['data']['vote'],
                             'timestamp': vote['data']['timestamp']
                         } # yeah, let's not show the actual UID here..
@@ -500,7 +500,7 @@ else:
                         jvotes.append({
                             'vote': vote['data']['vote'],
                             'timestamp': vote['data']['timestamp'],
-                            'uid': hashlib.sha224(vote['key']).hexdigest()
+                            'uid': constants.hexdigest(vote['key'])
                         })
                     if issuedata and votes:
                         if election.validType(issuedata['type']):
