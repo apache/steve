@@ -24,9 +24,9 @@ DB_TYPES = (
     
 )
 
-def hexdigest(data: str):
+def hexdigest(data: str, method=hashlib.sha224):
     """Wrapper for hashlib.sha224().hexdigest that handles encoding"""
-    return hashlib.sha224(data.encode("utf-8")).hexdigest()
+    return method(data.encode("utf-8")).hexdigest()
 
 def appendVote(*types):
     """ Append a new type of voting to the list"""
