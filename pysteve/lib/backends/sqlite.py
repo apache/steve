@@ -223,12 +223,12 @@ class SQLiteBackend:
 
         res = self.DB.db.fetchone("voters", id=votekey)
         if res:
-            return res
+            return unpickle(res)['uid']
 
         # Try looking for hash key
         res = self.DB.db.fetchone("voters", hash=votekey)
         if res:
-            return res
+            return unpickle(res)['uid']
 
         return False  # No ballot found.
 
