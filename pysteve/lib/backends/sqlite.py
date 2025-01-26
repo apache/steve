@@ -87,7 +87,7 @@ class SteveSQLite(object):
 def pickle(doc: dict):
     ndoc = {}
     for k, v in doc.items():
-        if isinstance(v, list) or isinstance(v, dict):
+        if isinstance(v, list) or isinstance(v, dict) or (isinstance(v, str) and v.startswith("%JSON%:")):
             v = "%JSON%:" + json.dumps(v)
         ndoc[k] = v
     return ndoc
