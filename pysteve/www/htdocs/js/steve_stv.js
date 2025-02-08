@@ -146,10 +146,13 @@ function drawCandidates() {
         outer.setAttribute("id", name)
         outer.setAttribute("data", name)
         inner.setAttribute("data", name)
+        inner.setAttribute("draggable", "false")
         outer.setAttribute("draggable", "true")
         outer.setAttribute("ondragstart", "dragVote(event)")
         outer.appendChild(inner)
-        outer.setAttribute("title", "Drag to move "  + name + " to the ballot box")
+        // if it's a super long name, like a data blob, don't tooltip it
+        if (name.length > 32) outer.setAttribute("title", "Drag to move the candidate to the ballot box")
+        else outer.setAttribute("title", "Drag to move "  + name + " to the ballot box")
         outer.setAttribute("ondrop", "dropCandidate(event, false)")
         outer.setAttribute("ondragover", "event.preventDefault();")
         outer.setAttribute("ondragend", "event.preventDefault();")
@@ -159,7 +162,9 @@ function drawCandidates() {
         if (statements[char]) {
             var statement = document.createElement('div')
             statement.setAttribute("class", "statement_marker")
-            statement.setAttribute("title", "Click to read " + name + "'s statement")
+            // if it's a super long name, like a data blob, don't tooltip it
+            if (name.length > 32) statement.setAttribute("title", "Click to read the candidate's statement")
+            else statement.setAttribute("title", "Click to read " + name + "'s statement")
             statement.setAttribute("onclick", "location.hash='#statement_"+char+"';")
             statement.innerHTML = "<a href='#statement_"+char+"'>Statement</a>"
 
