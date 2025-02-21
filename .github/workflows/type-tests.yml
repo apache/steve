@@ -7,6 +7,8 @@ on:
       - '**/*.py'
       - 'requirements.txt'
 
+  pull_request:
+
   workflow_dispatch:
 
 
