@@ -871,7 +871,7 @@ function renderElectionFrontpage(response, el) {
         
         if (issue.hasVoted) {
             outer.setAttribute("style", "background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%); opacity: 0.55;")
-            outer.setAttribute("title", "Notice: You have already voted once on this issue. You may recast your vote if you like.")
+            outer.setAttribute("title", "Notice: You have already voted on this issue. You may recast your vote if you like.")
         } else {
             outer.setAttribute("title", "You have not yet voted on this issue");
         }
@@ -964,7 +964,7 @@ function renderElectionBulk(response, el) {
             // details
             if (issue.hasVoted) {
                 outer.setAttribute("style", "margin-bottom: 15px; background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%);")
-                outer.setAttribute("title", "Notice: You have already voted once on this issue")
+                outer.setAttribute("title", "Notice: You have already voted on this issue")
             } else {
                 outer.setAttribute("title", "You have not yet voted on this issue");
             }
