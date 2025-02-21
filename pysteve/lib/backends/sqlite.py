@@ -266,9 +266,11 @@ class SQLiteBackend:
 
     def voter_has_voted(self, election, issue, uid):
         "Return true if the voter has voted on this issue, otherwise false"
+        # a vote trail can be either the old eid or the vhash.
         eid = constants.hexdigest(election + ":" + issue + ":" + uid)
+        vhash = constants.hexdigest(constants.hexdigest(election + ":" + uid) + issue)
         try:
-            return self.DB.db.fetchone(doc_type="votes", id=eid)
+            return self.DB.db.fetchone("votes", id=eid) or self.DB.db.fetchone("votes", id=vhash)
         except:
             return False
 
