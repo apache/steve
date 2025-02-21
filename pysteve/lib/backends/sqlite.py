@@ -270,7 +270,7 @@ class SQLiteBackend:
         eid = constants.hexdigest(election + ":" + issue + ":" + uid)
         vhash = constants.hexdigest(constants.hexdigest(election + ":" + uid) + issue)
         try:
-            return self.DB.db.fetchone("votes", id=eid) or self.DB.db.fetchone("votes", id=vhash)
+            return self.DB.db.fetchone("votes", eid=eid) or self.DB.db.fetchone("votes", eid=vhash)
         except:
             return False
 
