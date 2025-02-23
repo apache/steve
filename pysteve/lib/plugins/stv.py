@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 """ STV Voting Plugin """
-import re, json, random, time
+import re, random
 
 ELECTED = 1
 HOPEFUL = 2
