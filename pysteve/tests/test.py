@@ -40,7 +40,7 @@ homedir = config.get("general", "homedir")
 if args.nodb:
     config.set("database", "disabled", "true")
 
-from lib import response, voter, election, form, constants
+from lib import constants
 
 crashed = 0
 failed = 0

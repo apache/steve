@@ -17,7 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 """ Tallying program for pySTeVe """
-import sys, re, json, os
+import sys, json, os
 
 version = 2
 if sys.hexversion < 0x03000000:
@@ -25,8 +25,6 @@ if sys.hexversion < 0x03000000:
 else:
     import configparser
     version = 3
-from os import listdir
-from os.path import isdir, isfile
 path = os.path.abspath(os.getcwd() + "/../") # Get parent dir, so we can snag 'lib' from there
 
 sys.path.append(path)
@@ -40,7 +38,7 @@ config.read(path + '/steve.cfg')
 homedir = config.get("general", "homedir")
 
 # Import the goodness
-from lib import response, voter, election, form, constants
+from lib import election
 
 
 

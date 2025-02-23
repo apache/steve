@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import hashlib, json, random, os, sys, time
+import os, sys
 import cgi
 
 ctype, pdict = cgi.parse_header(os.environ['CONTENT_TYPE'] if 'CONTENT_TYPE' in os.environ else "")
