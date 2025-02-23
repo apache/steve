@@ -147,7 +147,7 @@ class SteveDatabase(object):
         self.ESversion = int(self.ES.info()['version']['number'].split('.')[0])
         if self.ESversion >= 7:
             self.ES = SteveESWrapperSeven(self.ES)
-        elif self.ESVersion >= 6:
+        elif self.ESversion >= 6:
             self.ES = SteveESWrapper(self.ES)
 
 class ElasticSearchBackend:
