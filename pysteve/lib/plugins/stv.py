@@ -65,7 +65,6 @@ def run_vote(names, votes, num_seats):
   remap = dict((c.name, c) for c in candidates.l)
 
   # Turn VOTES into a list of ordered-lists of Candidate objects
-  letter = []
   votes = [[remap[n] for n in choices] for choices in votes.values()]
 
   if candidates.count(ELECTED + HOPEFUL) <= num_seats:
@@ -304,7 +303,6 @@ def exclude_lowest(candidates):
   ahead = 1000000000.  # greater than any possible candidate.ahead
   rand = 1.1  # greater than any possible candidate.rand
   which = None
-  used_rand = False
 
   random.shuffle(candidates)
   

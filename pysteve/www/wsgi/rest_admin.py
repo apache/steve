@@ -166,7 +166,7 @@ def application (environ, start_response):
                         if 'closed' in basedata and basedata['closed'] == True:
                             raise Exception("This election has closed")
                         if 'open' in basedata and basedata['open'] == "true":
-                            uid, xhash = voter.add(electionID, basedata, email)
+                            uid, _xhash = voter.add(electionID, basedata, email)
                             voter.email(email, "Your voter link for %s" % basedata['title'], "Your personal vote link is: %s/election.html?%s/%s\nDo not share this link with anyone." % (config.get("general", "rooturl"), electionID, uid))
                             return response.wsgirespond(start_response, 200, {'message': "Voter ID sent via email"})
                         else:

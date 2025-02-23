@@ -45,8 +45,6 @@ def tallyFIC(votes, issue):
         candidates.append(c['name'])
     
 
-    debug = []
-    
     # Set up letters for mangling
     letters = [chr(i) for i in range(ord('a'), ord('a') + len(candidates))]
     cc = "".join(letters)

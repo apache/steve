@@ -36,7 +36,6 @@ def tallyFPP(votes, issue):
         candidates.append(c['name'])
     
 
-    debug = []
     matrix = {}
     
     # Set up counting matrix

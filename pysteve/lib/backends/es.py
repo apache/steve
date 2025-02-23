@@ -285,7 +285,7 @@ class ElasticSearchBackend:
                 for entry in res['hits']['hits']:
                     source  = entry['_source']
                     elections.append(source['id'])
-        except Exception as err:
+        except Exception:
             pass # THIS IS OKAY! On initial setup, this WILL fail until an election has been created
         return elections
     

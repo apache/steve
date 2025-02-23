@@ -45,7 +45,6 @@ def parseCandidatesCOP(data):
     data = data if data else ""
     candidates = []
     pletter = ''
-    cletter = ''
     pname = ''
     s = 0
     for line in data.split("\n"):

@@ -173,7 +173,6 @@ def deleteIssue(electionID, issueID):
 
 
 def getHash(electionID):
-    basedata = getBasedata(electionID)
     issues = listIssues(electionID)
     ihash = ""
     output = []
