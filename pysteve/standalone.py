@@ -57,7 +57,7 @@ class pysteveHTTPHandler(handler):
     cgi_directories = ["/www/cgi-bin"]
     
     def do_AUTHHEAD(self):
-        print "send header"
+        print("send header")
         self.send_response(401)
         self.send_header('WWW-Authenticate', 'Basic realm=\"STeVe Administration\"')
         self.send_header('Content-type', 'text/html')
