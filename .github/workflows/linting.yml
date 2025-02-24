@@ -37,4 +37,4 @@ jobs:
         python -m pip install pylint
     - name: Testing with pylint
       run: |
-          pylint pysteve -d W0311 # enable later
+          pylint pysteve

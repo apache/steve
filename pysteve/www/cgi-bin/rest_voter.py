@@ -134,7 +134,7 @@ def voter_action():
                 issuedata = election.getIssue(electionID, issueID)
                 if basedata and issuedata:
                     if 'closed' in basedata and basedata['closed'] == True:
-                            raise Exception("This election has closed")
+                        raise Exception("This election has closed")
                     email = voter.get(electionID, basedata, voterID)
                     if not email:
                         response.respond(403, {'message': 'Could not save vote: Invalid voter ID presented'})
@@ -188,7 +188,7 @@ def voter_action():
                 basedata = election.getBasedata(electionID, hideHash=True)
                 if basedata:
                     if 'closed' in basedata and basedata['closed'] == True:
-                            raise Exception("This election has closed")
+                        raise Exception("This election has closed")
                     if 'open' in basedata and basedata['open'] == "true":
                         response.respond(200, { 'base_data': basedata } )
                     else:

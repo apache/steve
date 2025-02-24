@@ -38,7 +38,7 @@ def validateCOP(vote, issue):
     except:
         pass # This is a fast way to determine vote type, passing here is FINE!
     if not vote in letters and (ivote < 0 or ivote > len(issue['candidates'])):
-            return "Invalid characters in vote. Accepted are: %s" % ", ".join(letters,range(1,len(issue['candidates'])+1))
+        return "Invalid characters in vote. Accepted are: %s" % ", ".join(letters,range(1,len(issue['candidates'])+1))
     return None
 
 def parseCandidatesCOP(data):

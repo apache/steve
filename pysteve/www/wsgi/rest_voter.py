@@ -128,7 +128,7 @@ def application (environ, start_response):
                 issuedata = election.getIssue(electionID, issueID)
                 if basedata and issuedata:
                     if 'closed' in basedata and basedata['closed'] == True:
-                            raise Exception("This election has closed")
+                        raise Exception("This election has closed")
                     email = voter.get(electionID, basedata, voterID)
                     if not email:
                         return response.wsgirespond(start_response, 403, {'message': 'Could not save vote: Invalid voter ID presented'})
@@ -182,7 +182,7 @@ def application (environ, start_response):
                 basedata = election.getBasedata(electionID, hideHash=True)
                 if basedata:
                     if 'closed' in basedata and basedata['closed'] == True:
-                            raise Exception("This election has closed")
+                        raise Exception("This election has closed")
                     if 'open' in basedata and basedata['open'] == "true":
                         return response.wsgirespond(start_response, 200, { 'base_data': basedata } )
                     else:

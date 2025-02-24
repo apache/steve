@@ -98,8 +98,8 @@ Powered by Apache STeVe - https://steve.apache.org
 """ % (sender, rcpt, subject, message, signature)
     msg = msg.encode('utf-8', errors='replace')
     try:
-       smtpObj = smtplib.SMTP(config.get("email", "mta"))
-       smtpObj.sendmail(sender, receivers, msg)         
+        smtpObj = smtplib.SMTP(config.get("email", "mta"))
+        smtpObj.sendmail(sender, receivers, msg)         
     except SMTPException:
-       raise Exception("Could not send email - SMTP server down?")
+        raise Exception("Could not send email - SMTP server down?")
        

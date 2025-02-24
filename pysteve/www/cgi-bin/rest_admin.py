@@ -304,7 +304,7 @@ else:
                 else:
                     response.respond(404, {'message': 'No such election: %s' % electionID})
             else:
-                    response.respond(404, {'message': 'Invalid election ID'})
+                response.respond(404, {'message': 'Invalid election ID'})
         # Delete an issue
         elif action == "delete" and electionID and issue:
             if electionID and issue:
@@ -319,7 +319,7 @@ else:
                 else:
                     response.respond(403, {'message': "You do not have karma to delete this issue"})
             else:
-                    response.respond(404, {'message': 'No such election or issue'})
+                response.respond(404, {'message': 'No such election or issue'})
         
         # Send issue hash to monitors
         elif action == "debug" and electionID:
@@ -333,19 +333,19 @@ else:
                 else:
                     response.respond(403, {'message': "You do not have karma to do this"})
             else:
-                    response.respond(404, {'message': 'No such election'})
+                response.respond(404, {'message': 'No such election'})
         
         # Get a temp voter ID for peeking
         elif action == "temp" and electionID:
             if electionID and election.exists(electionID):
                 basedata = election.getBasedata(electionID)
                 if karma >= 4 or ('owner' in basedata and basedata['owner'] == whoami):
-                        voterid, xhash = voter.add(electionID, basedata, whoami + "@stv")
-                        response.respond(200, {'id': voterid})
+                    voterid, xhash = voter.add(electionID, basedata, whoami + "@stv")
+                    response.respond(200, {'id': voterid})
                 else:
                     response.respond(403, {'message': "You do not have karma to peek at this election"})
             else:
-                    response.respond(404, {'message': 'No such election'})
+                response.respond(404, {'message': 'No such election'})
             
         # Invite folks to the election
         elif action == "invite" and karma >= 3:
@@ -396,7 +396,7 @@ else:
                     else:
                         response.respond(404, {'message': 'No such election'})
             else:
-                    response.respond(404, {'message': 'No such election'})
+                response.respond(404, {'message': 'No such election'})
         # Tally an issue
         elif action == "tally" and electionID:
             if electionID and issue:
@@ -419,7 +419,7 @@ else:
                 else:
                     response.respond(403, {'message': "You do not have karma to tally the votes here"})
             else:
-                    response.respond(404, {'message': 'No such election or issue'})
+                response.respond(404, {'message': 'No such election or issue'})
         # Close an election
         elif action == "close" and electionID:
             ro = form.getvalue('reopen')
@@ -447,7 +447,7 @@ else:
                 else:
                     response.respond(403, {'message': "You do not have karma to tally the votes here"})
             else:
-                    response.respond(404, {'message': 'No such election or issue'})
+                response.respond(404, {'message': 'No such election or issue'})
         # Get registered vote stpye
         elif action == "types":
             types = {}
@@ -486,7 +486,7 @@ else:
                 else:
                     response.respond(403, {'message': "You do not have karma to tally the votes here"})
             else:
-                    response.respond(404, {'message': 'No such election or issue'})
+                response.respond(404, {'message': 'No such election or issue'})
         # Vote backlog, including all recasts
         elif action == "backlog" and electionID:
             if electionID and issue:
@@ -519,7 +519,7 @@ else:
                 else:
                     response.respond(403, {'message': "You do not have karma to tally the votes here"})
             else:
-                    response.respond(404, {'message': 'No such election or issue'})
+                response.respond(404, {'message': 'No such election or issue'})
                   
         else:
             response.respond(400, {'message': "No (or invalid) action supplied"})
