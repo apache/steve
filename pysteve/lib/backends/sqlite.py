@@ -186,7 +186,7 @@ class SQLiteBackend:
         # Make a clean issue document that only has the sqlite-defined fields in it
         issue_fields = ("id", "election", "title", "description", "type", "candidates", "seconds", "nominatedby")
         new_data = {k:v for k,v in issueData.items() if k in issue_fields}
-        self.DB.db.update("issues", issueData, id=issueID, election=electionID)
+        self.DB.db.update("issues", new_data, id=issueID, election=electionID)
 
     def issue_list(self, election):
         "List all issues in an election"
