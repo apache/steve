@@ -26,7 +26,7 @@ except:
 import smtplib
 from smtplib import SMTPException
 
-from lib import constants
+from lib import constants, election
 
 backend = constants.initBackend(config)
 
