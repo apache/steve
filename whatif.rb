@@ -42,7 +42,7 @@
 
 
 
-MEETINGS  = File.expand_path('../Meetings').untaint unless defined? MEETINGS
+MEETINGS  = File.expand_path('../Meetings') unless defined? MEETINGS
 WHATIF = './whatif.py' unless defined? WHATIF
 
 require 'wunderbar'
@@ -55,7 +55,6 @@ def raw_votes(date)
   else
     result = all_votes.sort.last
   end
-  result.untaint if all_votes.include? result
   result
 end
 
@@ -65,8 +64,6 @@ end
 
 def filtered_election(votes, seats, candidates)
   list = candidates.join(' ')
-  list.untaint if list =~ /^\w+( \w+)*$/
-  seats.untaint if seats =~ /^\d+$/
 
   output = `#{WHATIF} #{votes} #{seats} #{list}`
   output.scan(/.*elected$/).inject(Hash.new('none')) do |results, line|
@@ -118,7 +115,7 @@ _html do
     _form method: 'post', id: 'vote' do
       _select name: 'date' do
         Dir["#{MEETINGS}/*/raw_board_votes.txt"].sort.reverse.each do |votes|
-	  next unless File.exist? ini(votes.untaint)
+	  next unless File.exist? ini(votes)
 	  date = votes[/(\d+)\/raw_board_votes.txt$/,1]
           display = date.sub(/(\d{4})(\d\d)(\d\d)/,'\1-\2-\3')
           _option display, value: date, selected: (votes == raw_votes(@date))
