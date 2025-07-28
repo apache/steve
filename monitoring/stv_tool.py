@@ -47,7 +47,7 @@ BILLIONTH = 0.000000001
 # "[" date "]" voterhash votes
 RE_VOTE = re.compile(r'\[.{19}\]\s+'
                      r'(?P<voterhash>[\w\d]{32})\s+'
-                     r'(?P<votes>[a-z]{1,26})',
+                     r'(?P<votes>.*)$',
                      re.I)
 
 VERBOSE = False
@@ -96,7 +96,7 @@ def load_votes(fname):
   return names, votes
 
 
-def read_votefile(fname):
+def read_votefile(fname, newformat):
   """Return a list of votestrings, throwing out who produced each.
 
   Note: the file is time-ordered, and later votes override any prior
@@ -108,10 +108,19 @@ def read_votefile(fname):
     match = RE_VOTE.match(line)
     if match:
       # For a given voter hashcode, record their latest set of votes.
-      votes[match.group('voterhash')] = match.group('votes')
+      vhash = match.group('voterhash')
+      vstring = match.group('votes').lower()
+      if vstring == '-':  # abstain
+        continue
+      if newformat:
+        # New format; example: AA AB AC
+        votes[vhash] = [ v for v in vstring.split() ]
+      else:
+        # Old format; example: abc
+        votes[vhash] = [ v for v in vstring ]
 
   # Discard voterhash, and just return the list of votes.
-  return votes.values()
+  return list(votes.values())
 
 
 def read_jsonvotes(fname):
@@ -493,8 +502,10 @@ def main(argv):
     votes_by_label = read_jsonvotes(args.raw_file)
     votes = [[labelmap[l.lower()] for l in vote.split()] for vote in votes_by_label]
   else:
-    votes_by_label = read_votefile(args.raw_file)
-    votes = [[labelmap[l] for l in vote] for vote in votes_by_label]
+    newformat = (len(list(labelmap.keys())[0]) > 1)  # keys like "a" or "aa"?
+    # votes_by_label: [ [L1, L2, ...], [ L1, L2, ... ], ... ]
+    votes_by_label = read_votefile(args.raw_file, newformat)
+    votes = [[labelmap[label] for label in votelist] for votelist in votes_by_label]
 
   candidates = run_stv(names, votes, args.seats)
   candidates.print_results()
