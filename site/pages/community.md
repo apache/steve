@@ -50,7 +50,7 @@ Contributing to the project is a great way to support the community.  Some great
 </tr>
 <tr>
 <td> <a href="mailto:gstein@apache.org" rel="nofollow">Greg Stein</a> </td>
-<td> PMC Member/Committer </td>
+<td> PMC Member/Committer (chair)</td>
 </tr>
 <tr>
 <td> <a href="mailto:adc@apache.org" rel="nofollow">Alan Cabrera</a> </td>
@@ -58,7 +58,7 @@ Contributing to the project is a great way to support the community.  Some great
 </tr>
 <tr>
 <td> <a href="mailto:humbedooh@apache.org" rel="nofollow">Daniel Gruno</a> </td>
-<td> PMC Member/Committer (chair)</td>
+<td> PMC Member/Committer</td>
 </tr>
 <tr>
 <td><a href='mailto:kelly@apache.org' rel='nofollow'>Sean Kelly</a></td>
