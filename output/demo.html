@@ -21,12 +21,11 @@
             <h1>
                 Quickstart Guide
             </h1>
-            <p><strong>TODO</strong>: rework this for our new git-based repository.</p>
-<hr />
+            <hr />
 <h2>pySTeVe</h2>
 <h3>Quickstart Guide</h3>
 <ul>
-<li><code>svn co https://svn.apache.org/repos/asf/steve/trunk/pysteve/</code></li>
+<li><code>git clone https://github.com/apache/steve.git</code></li>
 <li>Edit <code>steve.cfg</code> to suit your needs (karma, DB backend etc)
 <ul>
 <li>IF you choose ElasticSearch as backend, install the python module (pip install elasticsearch)</li>
@@ -39,9 +38,9 @@
 <li>Start voting!</li>
 </ul>
 <h3>Building a Docker image</h3>
-<p>You can also build pySTeVe as a Docker image using the Dockerfile locate in the <code>docker</code> directory:</p>
+<p>You can also build pySTeVe as a Docker image using the Dockerfile located in the <code>docker</code> directory:</p>
 <ul>
-<li><code>svn co https://svn.apache.org/repos/asf/steve/trunk/pysteve/</code></li>
+<li><code>git clone https://github.com/apache/steve.git</code></li>
 <li><code>docker build -t pysteve docker/</code></li>
 <li><code>docker run -i -p 127.0.0.1:80:80 pysteve</code></li>
 <li>Navigate to <code>http://localhost/admin</code> to set up stuff, using the default credentials (admin/demo)</li>
