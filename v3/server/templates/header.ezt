@@ -1,9 +1,9 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         <!-- Left-aligned icon and title -->
-        <a class="navbar-brand" href="#">
-            <img src="https://via.placeholder.com/30" alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
-            Voter App
+        <a class="navbar-brand" href="/">
+            <img src="https://www.apache.org/foundation/press/kit/feather.png" alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
+            Apache STeVe
         </a>
         <!-- Toggler for mobile view -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,10 +17,10 @@
                         John Doe
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
-                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                        <li><a class="dropdown-item" href="/settings">Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Sign Out</a></li>
+                        <li><a class="dropdown-item" href="/sign-out">Sign Out</a></li>
                     </ul>
                 </li>
             </ul>

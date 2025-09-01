@@ -1,4 +1,4 @@
-<footer class="bg-light text-center text-lg-start py-3">
+<footer class="bg-light text-center text-lg-start py-3 my-5 border-top border-2">
     <div class="container">
         <div class="row">
             <div class="col-12">

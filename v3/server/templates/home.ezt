@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apache STeVe</title>
-    <!-- Bootstrap CSS -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9">
 </head>
 <body>
     [include "header.ezt"]
     <div class="container">
-        <h1>Apache STeVe</h1>
-        <p>
+        <p class="my-3">
           Welcome! What are you here for? Select an option below.
         </p>
         <div class="row justify-content-center">
@@ -49,10 +47,16 @@
                 </a>
             </div>
         </div>
+
+        <p>
+          This site is being served using the
+          <a href="https://steve.apache.org/">Apache STeVe</a>
+          codebase, from the
+          <a href="https://www.apache.org/">Apache Software Foundation</a>.
+        </p>
     </div>
 
     [include "footer.ezt"]
-    <!-- Bootstrap JS (bundle includes Popper) -->
     <script src="/static/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"></script>
 </body>
 </html>
