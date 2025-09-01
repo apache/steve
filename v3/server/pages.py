@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -16,35 +15,17 @@
 # limitations under the License.
 #
 
-import logging
-import pathlib
-
 import asfquart
-from easydict import EasyDict as edict
-import ezt
-
-_LOGGER = logging.getLogger(__name__)
-DATE_FORMAT = '%m/%d %H:%M'
-
-THIS_DIR = pathlib.Path(__file__).resolve().parent
+APP = asfquart.APP
 
 
-def main():
-    logging.basicConfig(level=logging.DEBUG,
-                        style='{',
-                        format='[{asctime}|{levelname}|{module}] {message}',
-                        datefmt=DATE_FORMAT,
-                        )
-
-    app = asfquart.construct('steve')
-
-    # Now that we have an APP, import modules that will add page
-    # and API endpoints into the APP.
-    import pages
-    import api
-
-    app.runx(port=app.cfg.port)
+@APP.get('/')
+@APP.use_template('templates/home.ezt')
+async def home_page():
+    return { }
 
 
-if __name__ == '__main__':
-    main()
+# Route to serve static files (CSS and JS)
+@APP.route('/static/<path:filename>')
+async def serve_static(filename):
+    return await send_from_directory('static', filename)
