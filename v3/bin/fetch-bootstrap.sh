@@ -42,4 +42,12 @@ unzip -joq "${ZIPFILE}" "${DIST}/js/bootstrap.bundle.min.js" -d "${STATIC_DIR}/j
 echo "Extracting: bootstrap.bundle.min.js.map"
 unzip -joq "${ZIPFILE}" "${DIST}/js/bootstrap.bundle.min.js.map" -d "${STATIC_DIR}/js"
 
+echo ""
+echo "Modify templates with new integrity values:"
+echo "bootstrap.min.css:"
+echo -n "sha384-" ; openssl dgst -sha384 -binary "${STATIC_DIR}/css/bootstrap.min.css" | openssl base64 -A ; echo ""
+echo "bootstrap.bundle.min.js:"
+echo -n "sha384-" ; openssl dgst -sha384 -binary "${STATIC_DIR}/js/bootstrap.bundle.min.js" | openssl base64 -A ; echo ""
+
+echo ""
 echo "NOTE: zip can now be removed: ${ZIPFILE}"
