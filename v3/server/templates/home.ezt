@@ -8,12 +8,50 @@
     <link href="/static/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9">
 </head>
 <body>
+    [include "header.ezt"]
     <div class="container">
         <h1>Apache STeVe</h1>
-        <p>This is a basic example of a web page using Bootstrap.</p>
-        <button class="btn btn-primary">Click Me</button>
+        <p>
+          Welcome! What are you here for? Select an option below.
+        </p>
+        <div class="row justify-content-center">
+            <div class="col-md-5 mb-4">
+                <a href="/voter" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">I'm here to vote!</h5>
+                            <p class="card-text">
+                                There are vote(s) occurring now, and I
+                                want to see them and register my vote.
+                            </p>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <small>Requires sign-in</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+  
+            <div class="col-md-5 mb-4">
+                <a href="/admin" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Administrating a Vote</h5>
+                            <p class="card-text">
+                                I am administering a vote, and/or I
+                                want to begin a vote for my community.
+                            </p>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <small>Requires sign-in</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
 
+    [include "footer.ezt"]
     <!-- Bootstrap JS (bundle includes Popper) -->
     <script src="/static/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"></script>
 </body>
