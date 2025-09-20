@@ -22,6 +22,7 @@
 
 import sys
 import json
+import secrets
 
 from . import crypto
 from . import db
@@ -386,8 +387,5 @@ class Election:
 def new_eid():
     "Create a new ElectionID."
 
-    # Use 4 bytes of a salt, for 32 bits.
-    b = crypto.gen_salt()
-
-    # Format into 8 hex characters.
-    return f'{b[0]:02x}{b[1]:02x}{b[2]:02x}{b[3]:02x}'
+    # Use 8 hex characters for an ElectionID.
+    return secrets.token_hex(4)  # 4 bytes

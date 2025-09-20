@@ -19,7 +19,7 @@
 #
 
 import base64
-import random
+import secrets
 
 import passlib.hash  # note that .argon2 is proxy in this pkg
 import passlib.utils  # for the RNG, to create Salt values
@@ -78,5 +78,17 @@ def _hash(data: bytes, salt: bytes) -> bytes:
 
 def shuffle(x):
     "Ensure we use the strongest RNG available for shuffling."
-    ### second param was removed in 3.11. need to revisit this.
-    return random.shuffle(x)  ###, passlib.utils.rng.random)
+
+    # Implements the Fisher-Yates shuffle, using secrets.randbelow() for
+    # cryptographically-safe (aka unpredictable) shuffling of elements.
+
+    # Count backwards, "fixing" a chosen element into place.
+    for i in range(len(x)-1, 0, -1):
+        # Choose element to fix from remaining pool.
+        j = secrets.randbelow(i + 1)
+
+        # Swap them in-place.
+        x[i], x[j] = x[j], x[i]
+
+    # We shuffled in-place, but also return for funsies.
+    return x
