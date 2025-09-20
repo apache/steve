@@ -28,7 +28,7 @@ import os.path
 import sqlite3
 import json
 
-import coverage
+import coverage  # pip3 install coverage
 
 # Ensure that we can import the "steve" package.
 THIS_DIR = os.path.realpath(os.path.dirname(__file__))
@@ -54,12 +54,12 @@ def touch_every_line():
         pass
     conn = sqlite3.connect(TESTING_DB)
     conn.executescript(open(SCHEMA_FILE).read())
-    conn.execute('INSERT INTO METADATA'
-                 f' VALUES ("{eid}", "title", NULL, NULL, NULL)')
+    conn.execute('INSERT INTO ELECTIONS VALUES'
+                 f' ("{eid}", "title", "alice", NULL, NULL, NULL, NULL)')
     conn.commit()
 
     # Ready to load up the Election and exercise it.
-    e = steve.election.Election(TESTING_DB)
+    e = steve.election.Election(TESTING_DB, eid)
 
     _ = e.get_metadata()  # while EDITABLE
 
@@ -71,8 +71,8 @@ def touch_every_line():
     e.delete_person('david')
     _ = e.get_person('alice')
 
-    e.add_issue('a', 'issue A', None, 'yna', None)
-    e.add_issue('b', 'issue B', None, 'stv', {
+    e.add_issue('a', eid, 'issue A', None, 'yna', None)
+    e.add_issue('b', eid, 'issue B', None, 'stv', {
         'seats': 3,
         'labelmap': {
             'a': 'Alice',
@@ -83,7 +83,7 @@ def touch_every_line():
             },
         })
     _ = e.list_issues()
-    e.add_issue('c', 'issue C', None, 'yna', None)
+    e.add_issue('c', eid, 'issue C', None, 'yna', None)
     e.delete_issue('c')
     _ = e.get_issue('a')
 

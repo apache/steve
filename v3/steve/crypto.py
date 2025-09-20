@@ -78,4 +78,5 @@ def _hash(data: bytes, salt: bytes) -> bytes:
 
 def shuffle(x):
     "Ensure we use the strongest RNG available for shuffling."
-    return random.shuffle(x, passlib.utils.rng.random)
+    ### second param was removed in 3.11. need to revisit this.
+    return random.shuffle(x)  ###, passlib.utils.rng.random)

@@ -35,8 +35,9 @@ class Election:
     S_OPEN = 'open'
     S_CLOSED = 'closed'
 
-    def __init__(self, db_fname):
+    def __init__(self, db_fname, eid):
         self.db = db.DB(db_fname)
+        self.eid = eid
 
         # Construct cursors for all operations.
         self.c_salt_issue = self.db.add_statement(
@@ -44,11 +45,13 @@ class Election:
         self.c_salt_person = self.db.add_statement(
             'UPDATE PERSON SET salt = ? WHERE _ROWID_ = ?')
         self.c_open = self.db.add_statement(
-            'UPDATE METADATA SET salt = ?, opened_key = ?')
+            'UPDATE ELECTIONS SET salt = ?, opened_key = ?'
+            ' WHERE eid = ?')
         self.c_close = self.db.add_statement(
-            'UPDATE METADATA SET closed = 1')
+            'UPDATE ELECTIONS SET closed = 1'
+            ' WHERE eid = ?')
         self.c_add_issue = self.db.add_statement(
-            '''INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?)
+            '''INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?, ?)
                ON CONFLICT DO UPDATE SET
                  title=excluded.title,
                  description=excluded.description,
@@ -74,8 +77,9 @@ class Election:
             ''')
 
         # Cursors for running queries.
-        self.q_metadata = self.db.add_query('metadata',
-            'SELECT * FROM METADATA')
+        ### need to add eid to the ISSUES queries; likely ELECTIONS
+        self.q_metadata = self.db.add_query('elections',
+            'SELECT * FROM ELECTIONS')
         self.q_issues = self.db.add_query('issues',
             'SELECT * FROM ISSUES ORDER BY iid')
         self.q_person = self.db.add_query('person',
@@ -103,7 +107,7 @@ class Election:
 
         print('SALT:', salt)
         print('KEY:', opened_key)
-        self.c_open.perform((salt, opened_key))
+        self.c_open.perform((salt, opened_key, self.eid))
 
     def gather_election_data(self):
         "Gather a definition of this election for keying and anti-tamper."
@@ -135,7 +139,7 @@ class Election:
         assert self.is_open()
 
         # Simple tweak of the metadata to close the Election.
-        self.c_close.perform()
+        self.c_close.perform((self.eid,))
 
     def add_salts(self):
         "Set the SALT column in the ISSUES and PERSON tables."
@@ -180,14 +184,14 @@ class Election:
         return (issue.title, issue.description, issue.type,
                 self.json2kv(issue.kv))
 
-    def add_issue(self, iid, title, description, vtype, kv):
+    def add_issue(self, iid, eid, title, description, vtype, kv):
         "Add or update an issue designated by IID."
         assert self.is_editable()
         assert vtype in vtypes.TYPES
 
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
-        self.c_add_issue.perform((iid, title, description, vtype,
+        self.c_add_issue.perform((iid, eid, title, description, vtype,
                                   self.kv2json(kv), None))
 
     def delete_issue(self, iid):

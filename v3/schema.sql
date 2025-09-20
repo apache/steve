@@ -17,13 +17,15 @@
  * under the License.
  */
 
-/* ### TBD DOCCO.  */
+/* There is a per-install SQLite database containing all election data
+   for the site. This file defines/constructs the schema of that database.
+   */
 
-/* ### $ sqlite3 testing.db < schema.sql
+/* ### $ sqlite3 steve.db < steve/v3/schema.sql
    ###
    ### OR:
    ### >>> import sqlite3
-   ### >>> conn = sqlite3.connect('testing.db')
+   ### >>> conn = sqlite3.connect('steve.db')
    ### >>> conn.executescript(open('schema.sql').read())
    ###
    ### ? maybe: conn.commit() and/or conn.close() ... the DML statements
@@ -34,7 +36,6 @@
 /* --------------------------------------------------------------------- */
 
 /* Various metadata about the Election contained in this database.
-   Only one row will exist.
 
    An Election has three states:
 
@@ -49,18 +50,24 @@
      3. Closed. The election is closed.
         DEFINITION: salt and opened_key are NOT NULL. closed is 1.
 */
-CREATE TABLE METADATA (
+CREATE TABLE ELECTIONS (
 
-    /* The Election ID. This value might be replicated in the
-       filesystem holding this database. To remain independent of
-       application file choices, the ID is stored here.  */
+    /* The Election ID. This is a unique text string. We do not use
+       AUTOINCREMENT, so that URLs for elections cannot be deduced.  */
     eid  TEXT PRIMARY KEY NOT NULL,
 
     /* Title of this election.  */
     title  TEXT NOT NULL,
 
+    /* Who is the owner/creator of this election?  */
+    owner_pid  TEXT NOT NULL,
+
+    /* What authz group is allowed to edit this election? If NULL,
+       then only the OWNER_PID can edit.  */
+    /* ### contents/format is TBD; think "which PMC" or "Foundation"  */
+    authz  TEXT,
+
     /* ### if we have monitors, they go here.  */
-    /* ### maybe add an owner?  */
 
     /* A salt value to use for hashing this Election. 16 bytes.
        This will be NULL until the Election is opened.  */
@@ -76,15 +83,31 @@ CREATE TABLE METADATA (
        opened). 1 for closed (implies it was opened).  */
     closed  INTEGER
 
+    /* ### add foreign key for owner_pid  */
+
+    /*
+    ,
+            FOREIGN KEY (convo_id) REFERENCES convo(id)
+            ON DELETE RESTRICT
+            ON UPDATE NO ACTION,
+
+            FOREIGN KEY (file_id) REFERENCES files(fname)
+            ON DELETE RESTRICT
+            ON UPDATE NO ACTION
+            */
     ) STRICT;
 
 /* --------------------------------------------------------------------- */
 
-/* The set of issues to vote upon in this Election.  */
+/* The set of issues to vote upon for a given Election.  */
 CREATE TABLE ISSUES (
 
     /* The Issue ID, matching [-a-zA-Z0-9]+  */
+    /* ### switch to autoincrement? use TITLE for humans.  */
     iid  TEXT PRIMARY KEY NOT NULL,
+
+    /* Which election is this issue associated with?  */
+    eid  TEXT NOT NULL,
 
     /* Simple one-line title for this issue.  */
     title  TEXT NOT NULL,
@@ -104,6 +127,8 @@ CREATE TABLE ISSUES (
     /* A salt value to use for hashing this Issue. 16 bytes.
        This will be NULL until the Election is opened.  */
     salt  BLOB
+
+    /* ### add foreign reference for EID  */
 
     ) STRICT;
 
@@ -155,6 +180,7 @@ CREATE TABLE VOTES (
 
     ) STRICT;
 
+/* ### review queries.yaml to figure out proper indexes  */
 CREATE INDEX I_BY_PERSON ON VOTES (person_token);
 CREATE INDEX I_BY_ISSUE ON VOTES (issue_token);
 
