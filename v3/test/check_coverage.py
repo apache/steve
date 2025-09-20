@@ -42,8 +42,9 @@ SCHEMA_FILE = os.path.join(PARENT_DIR, 'schema.sql')
 def touch_every_line():
     "A minimal test to run each line in the 'steve' package."
 
-    # Do the import *WITHIN* the coverage test.
+    # Do the imports *WITHIN* the coverage test.
     import steve.election
+    import steve.crypto
 
     eid = steve.election.new_eid()
 
@@ -71,8 +72,12 @@ def touch_every_line():
     e.delete_person('david')
     _ = e.get_person('alice')
 
-    e.add_issue('a', eid, 'issue A', None, 'yna', None)
-    e.add_issue('b', eid, 'issue B', None, 'stv', {
+    i1 = steve.crypto.create_id()
+    i2 = steve.crypto.create_id()
+    i3 = steve.crypto.create_id()
+
+    e.add_issue(i1, eid, 'issue A', None, 'yna', None)
+    e.add_issue(i2, eid, 'issue B', None, 'stv', {
         'seats': 3,
         'labelmap': {
             'a': 'Alice',
@@ -83,24 +88,24 @@ def touch_every_line():
             },
         })
     _ = e.list_issues()
-    e.add_issue('c', eid, 'issue C', None, 'yna', None)
-    e.delete_issue('c')
-    _ = e.get_issue('a')
+    e.add_issue(i3, eid, 'issue C', None, 'yna', None)
+    e.delete_issue(i3)
+    _ = e.get_issue(i1)
 
     e.open()
     _ = e.get_metadata()  # while OPEN
-    e.add_vote('alice', 'a', 'y')
-    e.add_vote('bob', 'a', 'n')
-    e.add_vote('carlos', 'a', 'a')  # use each of Y/N/A
-    e.add_vote('alice', 'b', 'bc')
-    e.add_vote('bob', 'b', 'ad')
+    e.add_vote('alice', i1, 'y')
+    e.add_vote('bob', i1, 'n')
+    e.add_vote('carlos', i1, 'a')  # use each of Y/N/A
+    e.add_vote('alice', i2, 'bc')
+    e.add_vote('bob', i2, 'ad')
     _ = e.has_voted_upon('alice')
     _ = e.is_tampered()
 
     e.close()
     _ = e.get_metadata()  # while CLOSED
-    _ = e.tally_issue('a')
-    _ = e.tally_issue('b')
+    _ = e.tally_issue(i1)
+    _ = e.tally_issue(i2)
 
 
 def main():

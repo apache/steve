@@ -92,3 +92,10 @@ def shuffle(x):
 
     # We shuffled in-place, but also return for funsies.
     return x
+
+
+def create_id():
+    "Create a standard ID value."
+
+    # Use 10 hex characters for the ID
+    return secrets.token_hex(5)  # 5 bytes

@@ -384,8 +384,5 @@ class Election:
         return j and json.loads(j)
 
 
-def new_eid():
-    "Create a new ElectionID."
-
-    # Use 8 hex characters for an ElectionID.
-    return secrets.token_hex(4)  # 4 bytes
+### compat:
+new_eid = crypto.create_id

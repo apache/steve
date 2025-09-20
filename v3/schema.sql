@@ -56,8 +56,8 @@
 */
 CREATE TABLE elections (
 
-    /* The Election ID. This is a unique text string. We do not use
-       AUTOINCREMENT, so that URLs for elections cannot be deduced.  */
+    /* The Election ID; 10 hex characters. We do not use AUTOINCREMENT,
+       so that URLs for Elections cannot be deduced.  */
     eid  TEXT PRIMARY KEY NOT NULL,
 
     /* Title of this election.  */
@@ -88,6 +88,10 @@ CREATE TABLE elections (
        opened). 1 for closed (implies it was opened).  */
     closed  INTEGER,
 
+    /* Enforce the primary key as a 10-character (5 byte) hex string.  */
+    CHECK (length(eid) = 10
+           AND eid GLOB '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
+
     /* Enforce/declare/document relationships.  */
     FOREIGN KEY (owner_pid) REFERENCES person(pid)
     ON DELETE RESTRICT
@@ -100,8 +104,8 @@ CREATE TABLE elections (
 /* The set of Issues to vote upon for a given Election.  */
 CREATE TABLE issues (
 
-    /* The Issue ID, matching [-a-zA-Z0-9]+  */
-    /* ### switch to autoincrement? use TITLE for humans.  */
+    /* The Issue ID; 10 hex characters. We do not use AUTOINCREMENT,
+       so that URLs for Issues cannot be deduced.  */
     iid  TEXT PRIMARY KEY NOT NULL,
 
     /* Which election is this issue associated with?  */
@@ -125,6 +129,10 @@ CREATE TABLE issues (
     /* A salt value to use for hashing this Issue. 16 bytes.
        This will be NULL until the Election is opened.  */
     salt  BLOB,
+
+    /* Enforce the primary key as a 10-character (5 byte) hex string.  */
+    CHECK (length(iid) = 10
+           AND iid GLOB '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
 
     /* Enforce/declare/document relationships.  */
     FOREIGN KEY (eid) REFERENCES elections(eid)
