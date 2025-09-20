@@ -119,9 +119,9 @@ the entropy.
 Some notes on implementation, hashing, storage, at-rest encryption, etc.
 
 ```
-ElectionID := 32 bits
+ElectionID := 40 bits, as 10 hex characters
 PersonID := availid from iclas.txt  # for ASF usage
-IssueID := [-a-zA-Z0-9]+
+IssueID := 40 bits, as 10 hex characters
 
 ElectionData := Tuple[ ElectionID, Title ]
 IssueData := Tuple[ IssueID, Title, Description, VoteType, VoteOptions ]
@@ -147,7 +147,8 @@ with the ballot definition.
 The size of **Salt(xx)** is 16 bytes, which is the default used by the Argon2
 implementation. The salt values should never be transmitted.
 
-The `Hash()` function will be **Argon2**[^argon2]. Note that `Hash()` is
+The `Hash()` function will be **Argon2**[^argon2], producing 32 bytes.
+Note that `Hash()` is
 computationally/memory intensive, in order to make "unmasking" of votes
 somewhat costly for **root**. Yet it needs to be reasonable to decrypt
 the votestrings for final tallying (eg. after ballot-close, **several hours**
