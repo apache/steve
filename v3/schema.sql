@@ -19,6 +19,10 @@
 
 /* There is a per-install SQLite database containing all election data
    for the site. This file defines/constructs the schema of that database.
+
+   Note that foreign key references are defined within this scheme. For
+   these to be enforced at runtime, you must use a PRAGMA statement:
+       conn.execute('PRAGMA foreign_keys = ON')
    */
 
 /* ### $ sqlite3 steve.db < steve/v3/schema.sql
@@ -35,11 +39,11 @@
 
 /* --------------------------------------------------------------------- */
 
-/* Various metadata about the Election contained in this database.
+/* Various Election metadata.
 
    An Election has three states:
 
-     1. Editable. The election is being set up. Issues and persons of
+     1. Editable. The election is being set up. Issues and Persons of
         record can be added, edited, and deleted. The Election's title
         may be changed (EID is fixed, however).
         DEFINITION: salt and opened_key are NULL. closed is n/a.
@@ -50,7 +54,7 @@
      3. Closed. The election is closed.
         DEFINITION: salt and opened_key are NOT NULL. closed is 1.
 */
-CREATE TABLE ELECTIONS (
+CREATE TABLE elections (
 
     /* The Election ID. This is a unique text string. We do not use
        AUTOINCREMENT, so that URLs for elections cannot be deduced.  */
@@ -68,6 +72,7 @@ CREATE TABLE ELECTIONS (
     authz  TEXT,
 
     /* ### if we have monitors, they go here.  */
+    /* ### skip monitors. only OWNER_PID may monitor.  */
 
     /* A salt value to use for hashing this Election. 16 bytes.
        This will be NULL until the Election is opened.  */
@@ -81,26 +86,19 @@ CREATE TABLE ELECTIONS (
     /* Has this election been closed? NULL or 0 for not-closed (see
        SALT and OPENED_KEY to determine if the election has been
        opened). 1 for closed (implies it was opened).  */
-    closed  INTEGER
+    closed  INTEGER,
 
-    /* ### add foreign key for owner_pid  */
+    /* Enforce/declare/document relationships.  */
+    FOREIGN KEY (owner_pid) REFERENCES person(pid)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION
 
-    /*
-    ,
-            FOREIGN KEY (convo_id) REFERENCES convo(id)
-            ON DELETE RESTRICT
-            ON UPDATE NO ACTION,
-
-            FOREIGN KEY (file_id) REFERENCES files(fname)
-            ON DELETE RESTRICT
-            ON UPDATE NO ACTION
-            */
     ) STRICT;
 
 /* --------------------------------------------------------------------- */
 
-/* The set of issues to vote upon for a given Election.  */
-CREATE TABLE ISSUES (
+/* The set of Issues to vote upon for a given Election.  */
+CREATE TABLE issues (
 
     /* The Issue ID, matching [-a-zA-Z0-9]+  */
     /* ### switch to autoincrement? use TITLE for humans.  */
@@ -126,17 +124,19 @@ CREATE TABLE ISSUES (
 
     /* A salt value to use for hashing this Issue. 16 bytes.
        This will be NULL until the Election is opened.  */
-    salt  BLOB
+    salt  BLOB,
 
-    /* ### add foreign reference for EID  */
+    /* Enforce/declare/document relationships.  */
+    FOREIGN KEY (eid) REFERENCES elections(eid)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION
 
     ) STRICT;
 
 /* --------------------------------------------------------------------- */
 
-/* The set of people "on record" for this Election. Only these people
-   may vote.  */
-CREATE TABLE PERSON (
+/* The set of Persons ever seen, across all Elections.  */
+CREATE TABLE person (
 
     /* An id assigned to the person (eg. an LDAP username).  */
     pid  TEXT PRIMARY KEY NOT NULL,
@@ -155,10 +155,39 @@ CREATE TABLE PERSON (
 
 /* --------------------------------------------------------------------- */
 
+/* The set of Persons who may vote on an Issue (aka eligible/allowed).  */
+CREATE TABLE mayvote (
+
+    /* The Person who may vote...  */
+    pid  TEXT NOT NULL,
+
+    /* ... on this Issue.  */
+    iid  TEXT NOT NULL,
+
+    /* A salt value for hashing this Person/Issue pair's vote. 16 bytes.
+       This will be NULL until the Election (containing IID) is opened.  */
+    salt  BLOB,
+
+    /* The pair should be unique.  */
+    PRIMARY KEY (pid, iid),
+
+    /* Enforce/declare/document relationships.  */
+    FOREIGN KEY (pid) REFERENCES person(pid)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION,
+
+    FOREIGN KEY (iid) REFERENCES issues(iid)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION
+
+    ) STRICT;
+
+/* --------------------------------------------------------------------- */
+
 /* The registered votes, once the Election has been opened. Note that
    duplicates of (person, issue) may occur, as re-voting is allowed. Only
    the latest is used.  */
-CREATE TABLE VOTES (
+CREATE TABLE votes (
 
     /* The key is auto-incrementing to provide a record of insert-order,
        so that we have an ordering to find the "most recent" when
@@ -181,7 +210,7 @@ CREATE TABLE VOTES (
     ) STRICT;
 
 /* ### review queries.yaml to figure out proper indexes  */
-CREATE INDEX I_BY_PERSON ON VOTES (person_token);
-CREATE INDEX I_BY_ISSUE ON VOTES (issue_token);
+CREATE INDEX idx_by_person ON votes (person_token);
+CREATE INDEX idx_by_issue ON votes (issue_token);
 
 /* --------------------------------------------------------------------- */
