@@ -58,12 +58,17 @@ CREATE TABLE elections (
 
     /* The Election ID; 10 hex characters. We do not use AUTOINCREMENT,
        so that URLs for Elections cannot be deduced.  */
-    eid  TEXT PRIMARY KEY NOT NULL,
+    eid  TEXT
+           PRIMARY KEY NOT NULL
+           CHECK (length(eid) = 10
+                  AND eid GLOB '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
 
     /* Title of this election.  */
     title  TEXT NOT NULL,
 
-    /* Who is the owner/creator of this election?  */
+    /* Who is the owner/creator of this election?
+       Note: no need to CHECK OWNER_PID as it refers to a foreign table
+       where its propriety is enforced.  */
     owner_pid  TEXT NOT NULL,
 
     /* What authz group is allowed to edit this election? If NULL,
@@ -76,21 +81,18 @@ CREATE TABLE elections (
 
     /* A salt value to use for hashing this Election. 16 bytes.
        This will be NULL until the Election is opened.  */
-    salt  BLOB,
+    salt  BLOB  CHECK (salt IS NULL OR length(salt) = 16),
 
     /* If this Election has been opened for voting, then we store
        the OpenedKey here to avoid recomputing. 32 bytes.
        This will be NULL until the Election is opened.  */
-    opened_key  BLOB,
+    opened_key  BLOB  CHECK (opened_key IS NULL OR length(opened_key) = 32),
 
     /* Has this election been closed? NULL or 0 for not-closed (see
        SALT and OPENED_KEY to determine if the election has been
        opened). 1 for closed (implies it was opened).  */
-    closed  INTEGER,
+    closed  INTEGER  CHECK (closed IS NULL OR closed IN (0, 1)),
 
-    /* Enforce the primary key as a 10-character (5 byte) hex string.  */
-    CHECK (length(eid) = 10
-           AND eid GLOB '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
 
     /* Enforce/declare/document relationships.  */
     FOREIGN KEY (owner_pid) REFERENCES person(pid)
@@ -106,9 +108,14 @@ CREATE TABLE issues (
 
     /* The Issue ID; 10 hex characters. We do not use AUTOINCREMENT,
        so that URLs for Issues cannot be deduced.  */
-    iid  TEXT PRIMARY KEY NOT NULL,
+    iid  TEXT
+           PRIMARY KEY NOT NULL
+           CHECK (length(iid) = 10
+                  AND iid GLOB '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
 
-    /* Which election is this issue associated with?  */
+    /* Which election is this issue associated with?
+       Note: no need to CHECK EID as it refers to a foreign table where
+       its propriety is enforced.  */
     eid  TEXT NOT NULL,
 
     /* Simple one-line title for this issue.  */
@@ -125,14 +132,6 @@ CREATE TABLE issues (
     /* Per-type set of key/value pairs specifying additional data. This
        value is JSON-formatted  */
     kv  TEXT,
-
-    /* A salt value to use for hashing this Issue. 16 bytes.
-       This will be NULL until the Election is opened.  */
-    salt  BLOB,
-
-    /* Enforce the primary key as a 10-character (5 byte) hex string.  */
-    CHECK (length(iid) = 10
-           AND iid GLOB '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
 
     /* Enforce/declare/document relationships.  */
     FOREIGN KEY (eid) REFERENCES elections(eid)
@@ -152,12 +151,8 @@ CREATE TABLE person (
     /* Optional human-readable name for this person.  */
     name  TEXT,
 
-    /* How to contact this person (ie. to send a ballot link).  */
-    email  TEXT NOT NULL,
-
-    /* A salt value to use for hashing this Person. 16 bytes.
-       This will be NULL until the Election is opened.  */
-    salt  BLOB
+    /* How to contact this person (eg. to send a ballot link).  */
+    email  TEXT NOT NULL
 
     ) STRICT;
 
@@ -172,12 +167,16 @@ CREATE TABLE mayvote (
     /* ... on this Issue.  */
     iid  TEXT NOT NULL,
 
-    /* A salt value for hashing this Person/Issue pair's vote. 16 bytes.
-       This will be NULL until the Election (containing IID) is opened.  */
-    salt  BLOB,
+    /* A salt value for hashing this Person/Issue pair into a vote_token.
+       16 bytes. This will be NULL until the Election (containing IID)
+       is opened.  16 bytes.  */
+    salt  BLOB  CHECK (salt IS NULL OR length(salt) = 16),
 
     /* The pair should be unique.  */
     PRIMARY KEY (pid, iid),
+
+    /* Note: no need to check PID/IID columns as they refer to a foreign
+       table where their propriety is enforced.  */
 
     /* Enforce/declare/document relationships.  */
     FOREIGN KEY (pid) REFERENCES person(pid)
@@ -193,8 +192,8 @@ CREATE TABLE mayvote (
 /* --------------------------------------------------------------------- */
 
 /* The registered votes, once the Election has been opened. Note that
-   duplicates of (person, issue) may occur, as re-voting is allowed. Only
-   the latest is used.  */
+   duplicates of (person, issue) may occur (the vote_token will be the
+   same), as re-voting is allowed. Only the latest is used.  */
 CREATE TABLE votes (
 
     /* The key is auto-incrementing to provide a record of insert-order,
@@ -203,22 +202,16 @@ CREATE TABLE votes (
        Note: an integer primary key is an alias for _ROWID_.  */
     vid  INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    /* A hashed token representing a single Person.  32 bytes.  */
-    person_token  BLOB NOT NULL,
-
-    /* A hashed token representing an issue.  32 bytes.  */
-    issue_token  BLOB NOT NULL,
-
-    /* A binary value used to salt the token's encryption.  16 bytes.  */
-    salt  BLOB NOT NULL,
+    /* A hashed-based token (32 bytes) based on a (Person, Issue) pair
+       from the MAYVOTE table. Used to produce a key for encryption.   */
+    vote_token  BLOB NOT NULL  CHECK (length(vote_token) = 32),
 
     /* An encrypted form of the vote.  */
-    token  BLOB NOT NULL
+    ciphertext  BLOB NOT NULL
 
     ) STRICT;
 
 /* ### review queries.yaml to figure out proper indexes  */
-CREATE INDEX idx_by_person ON votes (person_token);
-CREATE INDEX idx_by_issue ON votes (issue_token);
+CREATE INDEX idx_by_vote_token ON votes (vote_token);
 
 /* --------------------------------------------------------------------- */
