@@ -168,7 +168,8 @@ CREATE TABLE mayvote (
     iid  TEXT NOT NULL,
 
     /* A salt value for hashing this Person/Issue pair into a vote_token.
-       16 bytes. This will be NULL until the Election (containing IID)
+       Also used via key-stretching to create an encryption key for the
+       vote values. This will be NULL until the Election (containing IID)
        is opened.  16 bytes.  */
     salt  BLOB  CHECK (salt IS NULL OR length(salt) = 16),
 
