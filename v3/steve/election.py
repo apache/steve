@@ -41,10 +41,8 @@ class Election:
         self.eid = eid
 
         # Construct cursors for all operations.
-        self.c_salt_issue = self.db.add_statement(
-            'UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?')
-        self.c_salt_person = self.db.add_statement(
-            'UPDATE PERSON SET salt = ? WHERE _ROWID_ = ?')
+        self.c_salt_mayvote = self.db.add_statement(
+            'UPDATE mayvote SET salt = ? WHERE _ROWID_ = ?')
         self.c_open = self.db.add_statement(
             'UPDATE ELECTIONS SET salt = ?, opened_key = ?'
             ' WHERE eid = ?')
@@ -52,7 +50,7 @@ class Election:
             'UPDATE ELECTIONS SET closed = 1'
             ' WHERE eid = ?')
         self.c_add_issue = self.db.add_statement(
-            '''INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?, ?)
+            '''INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?)
                ON CONFLICT DO UPDATE SET
                  title=excluded.title,
                  description=excluded.description,
@@ -60,7 +58,7 @@ class Election:
                  kv=excluded.kv
             ''')
         self.c_add_person = self.db.add_statement(
-            '''INSERT INTO PERSON VALUES (?, ?, ?, ?)
+            '''INSERT INTO PERSON VALUES (?, ?, ?)
                ON CONFLICT DO UPDATE SET
                  name=excluded.name,
                  email=excluded.email
@@ -70,27 +68,55 @@ class Election:
         self.c_delete_person = self.db.add_statement(
             'DELETE FROM PERSON WHERE pid = ?')
         self.c_add_vote = self.db.add_statement(
-            'INSERT INTO VOTES VALUES (NULL, ?, ?, ?, ?)')
-        self.c_has_voted = self.db.add_statement(
-            '''SELECT 1 FROM VOTES
-               WHERE person_token = ? AND issue_token = ?
-               LIMIT 1
-            ''')
+            'INSERT INTO VOTES VALUES (NULL, ?, ?)')
+        self.c_add_mayvote = self.db.add_statement(
+            'INSERT INTO mayvote (pid, iid, salt) VALUES (?, ?, NULL)')
+        self.c_add_mayvote_all = self.db.add_statement(
+            'INSERT INTO mayvote (pid, iid, salt)'
+            ' SELECT ?, iid, NULL FROM issues WHERE eid = ?')
 
         # Cursors for running queries.
-        ### need to add eid to the ISSUES queries; likely ELECTIONS
         self.q_metadata = self.db.add_query('elections',
-            'SELECT * FROM ELECTIONS')
+            'SELECT * FROM ELECTIONS WHERE eid = ?')
         self.q_issues = self.db.add_query('issues',
-            'SELECT * FROM ISSUES ORDER BY iid')
+            'SELECT * FROM ISSUES WHERE eid = ? ORDER BY iid')
         self.q_person = self.db.add_query('person',
             'SELECT * FROM PERSON ORDER BY pid')
         self.q_get_issue = self.db.add_query('issues',
             'SELECT * FROM ISSUES WHERE iid = ?')
         self.q_get_person = self.db.add_query('person',
             'SELECT * FROM PERSON WHERE pid = ?')
-        self.q_by_issue = self.db.add_query('votes',
-            'SELECT * FROM VOTES WHERE issue_token = ? ORDER BY _ROWID_')
+        self.q_get_mayvote = self.db.add_query('mayvote',
+            'SELECT * FROM MAYVOTE WHERE pid = ? AND iid = ?')
+        self.q_tally = self.db.add_query('mayvote',
+            'SELECT * FROM MAYVOTE WHERE iid = ?')
+
+        # Manual queries: these queries do not follow the 'SELECT * '
+        # pattern, so we cannot use .add_query() and will not have
+        # attribute access to the row results while running the query.
+        self.m_find_issues = self.db.add_statement(
+            '''SELECT m.*
+               FROM mayvote m
+               JOIN issues i ON m.iid = i.iid
+               WHERE m.pid = ? AND i.eid = ?
+            ''')
+        self.m_has_voted = self.db.add_statement(
+            '''SELECT 1 FROM VOTES
+               WHERE vote_token = ?
+               LIMIT 1
+            ''')
+        self.m_recent_vote = self.db.add_statement(
+            '''SELECT ciphertext FROM VOTES
+               WHERE vote_token = ?
+               ORDER BY _ROWID_ DESC
+               LIMIT 1
+            ''')
+        self.m_all_issues = self.db.add_statement(
+            '''SELECT m._ROWID_
+               FROM mayvote m
+               JOIN issues i ON m.iid = i.iid
+               WHERE i.eid = ?;
+            ''')
 
     def open(self):
 
@@ -119,10 +145,10 @@ class Election:
 
         # NOTE: all assembly of rows must use a repeatable ordering.
 
-        md = self.q_metadata.first_row()
+        md = self.q_metadata.first_row((self.eid,))
         mdata = md.eid + md.title
 
-        self.q_issues.perform()
+        self.q_issues.perform((self.eid,))
         # Use an f-string to render "None" if a column is NULL.
         idata = ''.join(f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
                         for i in self.q_issues.fetchall())
@@ -143,34 +169,29 @@ class Election:
         self.c_close.perform((self.eid,))
 
     def add_salts(self):
-        "Set the SALT column in the ISSUES and PERSON tables."
+        "Set the SALT column in the MAYVOTE table."
 
         # The Election should be editable.
         assert self.is_editable()
 
-        cur = self.db.conn.cursor()
+        # Use M_ALL_ISSUES to iterate over all Person/Issue mappings
+        # in this Election (specified by EID).
+        self.m_all_issues.execute('BEGIN TRANSACTION')
+        self.m_all_issues.perform((self.eid,))
+        for mayvote in self.m_all_issues.fetchall():
+            # MAYVOTE is a 1-tuple: _ROWID_
 
-        def for_table(table, mod_cursor):
-            "Use MOD_CURSOR to salt each row of TABLE."
+            # Use a distinct cursor to insert the SALT value.
+            salt = crypto.gen_salt()
+            #print('ROW will use:', table, r[0], salt)
+            self.c_salt_mayvote.perform((salt, mayvote[0]))
 
-            # Fetch all ROWID values now, to avoid two cursors
-            # attempting to work on TABLE at the same time.
-            cur.execute(f'SELECT _ROWID_ FROM {table}')
-            ids = cur.fetchall()
-
-            # Now, add a salt to every row.
-            for r in ids:
-                salt = crypto.gen_salt()
-                print('ROW will use:', table, r[0], salt)
-                mod_cursor.perform((salt, r[0]))
-
-        for_table('issues', self.c_salt_issue)
-        for_table('person', self.c_salt_person)
+        self.m_all_issues.execute('COMMIT')
 
     def get_metadata(self):
         "Return basic metadata about this Election."
 
-        md = self.q_metadata.first_row()
+        md = self.q_metadata.first_row((self.eid,))
         # NOTE: do not return the SALT
         # note: likely: never return opened_key
 
@@ -193,7 +214,7 @@ class Election:
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
         self.c_add_issue.perform((iid, eid, title, description, vtype,
-                                  self.kv2json(kv), None))
+                                  self.kv2json(kv)))
 
     def delete_issue(self, iid):
         "Delete the Issue designated by IID."
@@ -208,7 +229,7 @@ class Election:
             # NOTE: the SALT column is omitted. It should never be exposed.
             return row[:4] + (self.json2kv(row.kv),)
 
-        self.q_issues.perform()
+        self.q_issues.perform((self.eid,))
         return [ extract_issue(row) for row in self.q_issues.fetchall() ]
 
     def get_person(self, pid):
@@ -224,7 +245,7 @@ class Election:
 
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
-        self.c_add_person.perform((pid, name, email, None))
+        self.c_add_person.perform((pid, name, email,))
 
     def delete_person(self, pid):
         "Delete the Person designated by PID."
@@ -239,27 +260,31 @@ class Election:
         self.q_person.perform()
         return [ row[:3] for row in self.q_person.fetchall() ]
 
-    def add_vote(self, pid, iid, votestring):
+    def add_voter(self, pid: str, iid: str | None = None) -> None:
+        "Add PID (Person) to Issue IID, or to all Issues (None)."
+
+        if iid:
+            self.c_add_mayvote.perform((pid, iid,))
+        else:
+            self.c_add_mayvote_all.perform((pid, self.eid,))
+
+    def add_vote(self, pid: str, iid: str, votestring: str):
         "Add VOTESTRING as the (latest) vote by PID for IID."
 
         # The Election should be open.
         assert self.is_open()
 
-        md = self.q_metadata.first_row()
-        person = self.q_get_person.first_row((pid,))
-        issue = self.q_get_issue.first_row((iid,))
+        md = self.q_metadata.first_row((self.eid,))
 
         ### validate VOTESTRING for ISSUE.TYPE voting
 
-        person_token = crypto.gen_token(md.opened_key, pid, person.salt)
-        #print('PERSON:', pid, person.salt, person_token)
-        issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
-        #print('ISSUE:', iid, issue.salt, issue_token)
+        mayvote = self.q_get_mayvote.first_row((pid, iid,))
+        vote_token = crypto.gen_vote_token(md.opened_key, pid, iid, mayvote.salt)
 
-        salt, token = crypto.create_vote(person_token, issue_token, votestring)
-        #print('SALT:', salt)
-        #print('TOKEN:', token)
-        self.c_add_vote.perform((person_token, issue_token, salt, token))
+        # Pass MAYVOTE.SALT for PBKDF.
+        ciphertext = crypto.create_vote(vote_token, mayvote.salt, votestring)
+
+        self.c_add_vote.perform((vote_token, ciphertext))
 
     def tally_issue(self, iid):
         """Return the results for a given ISSUE-ID.
@@ -275,25 +300,37 @@ class Election:
         # The Election should be closed.
         assert self.is_closed()
 
-        md = self.q_metadata.first_row()
+        md = self.q_metadata.first_row((self.eid,))
+
+        # Need the issue TYPE
         issue = self.q_get_issue.first_row((iid,))
-        issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
 
-        # Use this dict to retain "most recent" votes.
-        dedup = { }  # (PERSON_TOKEN, ISSUE_TOKEN) : VOTESTRING
+        # Accumulate all MOST-RECENT votes for Issue IID.
+        votes = [ ]
 
-        self.q_by_issue.perform((issue_token,))
-        for row in self.q_by_issue.fetchall():
+        # Use mayvote to determine all potential voters for Issue IID.
+        self.q_tally.perform((iid,))
+        for mayvote in self.q_tally.fetchall():
+            # Each row is: PID, IID, SALT
+
+            # For the given Person PID found, compute a VOTE_TOKEN.
+            vote_token = crypto.gen_vote_token(
+                md.opened_key, mayvote.pid, iid, mayvote.salt,
+            )
+
+            # We don't need/want all columns, so only pick CIPHERTEXT.
+            row = self.m_recent_vote.first_row((vote_token,))
             votestring = crypto.decrypt_votestring(
-                row.person_token, issue_token, row.salt, row.token)
-            dedup[row.person_token, row.issue_token] = votestring
+                vote_token, mayvote.salt, row[0],
+            )
+            votes.append(votestring)
 
-        # Make sure the votes are not in database-order.
+        # Make sure the votes are NOT in database-order.
         # Note: we are not returning the votes, so this may be
         #  superfluous. But it certainly should not hurt.
-        votes = list(dedup.values())
         crypto.shuffle(votes)  # in-place
 
+        print('VOTES:', votes)
         # Perform the tally, and return the results.
         m = vtypes.vtype_module(issue.type)
         return m.tally(votes, self.json2kv(issue.kv))
@@ -304,25 +341,21 @@ class Election:
         # The Election should be open.
         assert self.is_open()
 
-        md = self.q_metadata.first_row()
-        person = self.q_get_person.first_row((pid,))
-        person_token = crypto.gen_token(md.opened_key, pid, person.salt)
+        md = self.q_metadata.first_row((self.eid,))
 
         voted_upon = { }
 
-        self.q_issues.perform()
-        for issue in self.q_issues.fetchall():
-            issue_token = crypto.gen_token(md.opened_key,
-                                           issue.iid,
-                                           issue.salt)
+        self.m_find_issues.perform((pid, self.eid,))
+        for row in self.m_find_issues.fetchall():
+            # Query is mayvote.* ... so ROW is: PID, IID, SALT
+            vote_token = crypto.gen_vote_token(
+                md.opened_key, pid, row[1], row[2]
+            )
 
-            # Is any vote present?
-            self.c_has_voted.perform((person_token, issue_token))
-            row = self.c_has_voted.fetchone()
-            _ = self.c_has_voted.fetchall()  # should be empty (LIMIT 1)
+            # Is any vote present? (wicked fast)
+            voted = self.m_has_voted.first_row((vote_token,))
 
-            #print('HAS-VOTED:', row, '||', person_token, issue_token)
-            voted_upon[issue.iid] = row is not None
+            voted_upon[row[1]] = (voted is not None)
 
         return voted_upon
 
@@ -331,7 +364,7 @@ class Election:
         # The Election should be open.
         assert self.is_open()
 
-        md = self.q_metadata.first_row()
+        md = self.q_metadata.first_row((self.eid,))
 
         # Compute an opened_key based on the current data.
         edata = self.gather_election_data()
@@ -359,7 +392,7 @@ class Election:
     def get_state(self):
         "Derive our election state from the METADATA table."
 
-        md = self.q_metadata.first_row()
+        md = self.q_metadata.first_row((self.eid,))
         if md.closed == 1:
             assert md.salt is not None and md.opened_key is not None
             return self.S_CLOSED
