@@ -92,6 +92,11 @@ def touch_every_line():
     e.delete_issue(i3)
     _ = e.get_issue(i1)
 
+    # Alice and Bob can vote on all issues. Carlos only on i1.
+    e.add_voter('alice')
+    e.add_voter('bob')
+    e.add_voter('carlos', i1)
+
     e.open()
     _ = e.get_metadata()  # while OPEN
     e.add_vote('alice', i1, 'y')
