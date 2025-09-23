@@ -183,7 +183,6 @@ class Election:
 
             # Use a distinct cursor to insert the SALT value.
             salt = crypto.gen_salt()
-            #print('ROW will use:', table, r[0], salt)
             self.c_salt_mayvote.perform((salt, mayvote[0]))
 
         self.m_all_issues.execute('COMMIT')
@@ -330,7 +329,6 @@ class Election:
         #  superfluous. But it certainly should not hurt.
         crypto.shuffle(votes)  # in-place
 
-        print('VOTES:', votes)
         # Perform the tally, and return the results.
         m = vtypes.vtype_module(issue.type)
         return m.tally(votes, self.json2kv(issue.kv))
