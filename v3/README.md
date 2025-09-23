@@ -20,10 +20,6 @@ v2 is the initial guide for a data model, to be used by v3.
 The top-level item is an **Election**, and our design-point (in terms of scale)
 is to manage hundreds of these. Each Election contains some simple metadata.
 
-Each **Election** contains some simple metadata, along with **Persons**
-(numbering from ten to hundreds) that are on record to vote, and a set of **Issues**
-(from one to a hundred) on the ballot for the people to vote upon.
-
 The number of **Persons** is numbered in low thousands, and is the entire union
 of people who may be eligible to vote in any of the Elections. 
 
