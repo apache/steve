@@ -140,6 +140,8 @@ CREATE TABLE issues (
 
     ) STRICT;
 
+CREATE INDEX idx_issues_eid ON issues(eid);
+
 /* --------------------------------------------------------------------- */
 
 /* The set of Persons ever seen, across all Elections.  */
