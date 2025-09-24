@@ -74,6 +74,17 @@ class Election:
         self.c_add_mayvote_all = self.db.add_statement(
             'INSERT INTO mayvote (pid, iid, salt)'
             ' SELECT ?, iid, NULL FROM issues WHERE eid = ?')
+        self.c_delete_mayvote = self.db.add_statement(
+            '''DELETE FROM mayvote
+               WHERE iid IN (
+                 SELECT iid
+                 FROM issues
+                 WHERE eid = ?
+               )''')
+        self.c_delete_issues = self.db.add_statement(
+            'DELETE FROM issues WHERE eid = ?')
+        self.c_delete_election = self.db.add_statement(
+            'DELETE FROM elections WHERE eid = ?')
 
         # Cursors for running queries.
         self.q_metadata = self.db.add_query('elections',
@@ -117,6 +128,27 @@ class Election:
                JOIN issues i ON m.iid = i.iid
                WHERE i.eid = ?;
             ''')
+
+    def delete(self):
+        "Delete this Election and its Issues and Person/Issue pairs."
+
+        # Can't delete if it has been opened (even if later closed).
+        assert self.is_editable()
+
+        self.db.conn.execute('BEGIN TRANSACTION')
+
+        # Order these things because of referential integrity.
+
+        # Delete all rows that refer to Issues within this Election.
+        self.c_delete_mayvote.execute((self.eid,))
+
+        # Now, delete all the Issues that are part of this Election.
+        self.c_delete_issues.execute((self.eid,))
+
+        # Finally, remove the Election itself.
+        self.c_delete_election.execute((self.eid,))
+
+        self.db.conn.execute('COMMIT')
 
     def open(self):
 
@@ -217,6 +249,8 @@ class Election:
 
     def delete_issue(self, iid):
         "Delete the Issue designated by IID."
+
+        # Can only delete Issues before the Election is OPEN.
         assert self.is_editable()
 
         self.c_delete_issue.perform((iid,))
@@ -248,6 +282,8 @@ class Election:
 
     def delete_person(self, pid):
         "Delete the Person designated by PID."
+
+        # Can only delete Persons before the Election is OPEN.
         assert self.is_editable()
 
         self.c_delete_person.perform((pid,))
@@ -261,6 +297,9 @@ class Election:
 
     def add_voter(self, pid: str, iid: str | None = None) -> None:
         "Add PID (Person) to Issue IID, or to all Issues (None)."
+
+        # This is only allowed while the Election is editable.
+        assert self.is_editable()
 
         if iid:
             self.c_add_mayvote.perform((pid, iid,))
@@ -413,6 +452,10 @@ class Election:
     def json2kv(j):
         'Convert the KV JSON string back into its structured value.'
         return j and json.loads(j)
+
+    @classmethod
+    def create(cls, title, owner_pid, authz=None):
+        pass
 
 
 ### compat:
