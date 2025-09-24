@@ -20,8 +20,6 @@ import logging
 import pathlib
 
 import asfquart
-from easydict import EasyDict as edict
-import ezt
 
 _LOGGER = logging.getLogger(__name__)
 DATE_FORMAT = '%m/%d %H:%M'
@@ -40,9 +38,10 @@ def main():
 
     # Now that we have an APP, import modules that will add page
     # and API endpoints into the APP.
-    import pages
-    import api
+    import pages  # pylint: disable=unused-import
+    import api  # pylint: disable=unused-import
 
+    # Spool up the app!
     app.runx(port=app.cfg.port)
 
 

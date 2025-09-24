@@ -20,9 +20,7 @@
 #
 #
 
-import sys
 import json
-import secrets
 
 from . import crypto
 from . import db

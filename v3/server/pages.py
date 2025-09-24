@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+import quart
 import asfquart
 APP = asfquart.APP
 
@@ -58,4 +59,4 @@ async def about_page():
 # Route to serve static files (CSS and JS)
 @APP.route('/static/<path:filename>')
 async def serve_static(filename):
-    return await send_from_directory('static', filename)
+    return await quart.send_from_directory('static', filename)

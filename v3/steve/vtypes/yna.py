@@ -25,7 +25,7 @@ NO = { 'n', 'no', '0', 'false', }
 # "abstain" is any other (non-affirmative) value.
 
 
-def tally(votestrings, kv):
+def tally(votestrings, _kv):
     y = n = a = 0
     for v in votestrings:
         if v in YES:

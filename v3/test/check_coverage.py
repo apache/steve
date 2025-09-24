@@ -26,7 +26,6 @@
 import sys
 import os.path
 import sqlite3
-import json
 
 import coverage  # pip3 install coverage
 
