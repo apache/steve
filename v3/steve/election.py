@@ -49,13 +49,13 @@ class Election:
         self.c_salt_mayvote = self.db.add_statement(
             'UPDATE mayvote SET salt = ? WHERE _ROWID_ = ?')
         self.c_open = self.db.add_statement(
-            'UPDATE ELECTIONS SET salt = ?, opened_key = ?'
+            'UPDATE election SET salt = ?, opened_key = ?'
             ' WHERE eid = ?')
         self.c_close = self.db.add_statement(
-            'UPDATE ELECTIONS SET closed = 1'
+            'UPDATE election SET closed = 1'
             ' WHERE eid = ?')
         self.c_add_issue = self.db.add_statement(
-            '''INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?)
+            '''INSERT INTO issue VALUES (?, ?, ?, ?, ?, ?)
                ON CONFLICT DO UPDATE SET
                  title=excluded.title,
                  description=excluded.description,
@@ -63,37 +63,37 @@ class Election:
                  kv=excluded.kv
             ''')
         self.c_delete_issue = self.db.add_statement(
-            'DELETE FROM ISSUES WHERE iid = ?')
+            'DELETE FROM issue WHERE iid = ?')
         self.c_add_vote = self.db.add_statement(
-            'INSERT INTO VOTES VALUES (NULL, ?, ?)')
+            'INSERT INTO vote VALUES (NULL, ?, ?)')
         self.c_add_mayvote = self.db.add_statement(
             'INSERT INTO mayvote (pid, iid, salt) VALUES (?, ?, NULL)')
         self.c_add_mayvote_all = self.db.add_statement(
             'INSERT INTO mayvote (pid, iid, salt)'
-            ' SELECT ?, iid, NULL FROM issues WHERE eid = ?')
+            ' SELECT ?, iid, NULL FROM issue WHERE eid = ?')
         self.c_delete_mayvote = self.db.add_statement(
             '''DELETE FROM mayvote
                WHERE iid IN (
                  SELECT iid
-                 FROM issues
+                 FROM issue
                  WHERE eid = ?
                )''')
         self.c_delete_issues = self.db.add_statement(
-            'DELETE FROM issues WHERE eid = ?')
+            'DELETE FROM issue WHERE eid = ?')
         self.c_delete_election = self.db.add_statement(
-            'DELETE FROM elections WHERE eid = ?')
+            'DELETE FROM election WHERE eid = ?')
 
         # Cursors for running queries.
-        self.q_metadata = self.db.add_query('elections',
-            'SELECT * FROM ELECTIONS WHERE eid = ?')
-        self.q_issues = self.db.add_query('issues',
-            'SELECT * FROM ISSUES WHERE eid = ? ORDER BY iid')
-        self.q_get_issue = self.db.add_query('issues',
-            'SELECT * FROM ISSUES WHERE iid = ?')
+        self.q_metadata = self.db.add_query('election',
+            'SELECT * FROM election WHERE eid = ?')
+        self.q_issues = self.db.add_query('issue',
+            'SELECT * FROM issue WHERE eid = ? ORDER BY iid')
+        self.q_get_issue = self.db.add_query('issue',
+            'SELECT * FROM issue WHERE iid = ?')
         self.q_get_mayvote = self.db.add_query('mayvote',
-            'SELECT * FROM MAYVOTE WHERE pid = ? AND iid = ?')
+            'SELECT * FROM mayvote WHERE pid = ? AND iid = ?')
         self.q_tally = self.db.add_query('mayvote',
-            'SELECT * FROM MAYVOTE WHERE iid = ?')
+            'SELECT * FROM mayvote WHERE iid = ?')
 
         # Manual queries: these queries do not follow the 'SELECT * '
         # pattern, so we cannot use .add_query() and will not have
@@ -101,16 +101,16 @@ class Election:
         self.m_find_issues = self.db.add_statement(
             '''SELECT m.*
                FROM mayvote m
-               JOIN issues i ON m.iid = i.iid
+               JOIN issue i ON m.iid = i.iid
                WHERE m.pid = ? AND i.eid = ?
             ''')
         self.m_has_voted = self.db.add_statement(
-            '''SELECT 1 FROM VOTES
+            '''SELECT 1 FROM vote
                WHERE vote_token = ?
                LIMIT 1
             ''')
         self.m_recent_vote = self.db.add_statement(
-            '''SELECT ciphertext FROM VOTES
+            '''SELECT ciphertext FROM vote
                WHERE vote_token = ?
                ORDER BY _ROWID_ DESC
                LIMIT 1
@@ -118,7 +118,7 @@ class Election:
         self.m_all_issues = self.db.add_statement(
             '''SELECT m._ROWID_
                FROM mayvote m
-               JOIN issues i ON m.iid = i.iid
+               JOIN issue i ON m.iid = i.iid
                WHERE i.eid = ?;
             ''')
 
@@ -429,7 +429,7 @@ class Election:
         while True:
             eid = crypto.create_id()
             try:
-                conn.execute('INSERT INTO elections (eid, title, owner_pid)'
+                conn.execute('INSERT INTO election (eid, title, owner_pid)'
                              ' VALUES (?, ?, ?)',
                              (eid, title, owner_pid,))
                 break

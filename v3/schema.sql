@@ -54,7 +54,7 @@
      3. Closed. The election is closed.
         DEFINITION: salt and opened_key are NOT NULL. closed is 1.
 */
-CREATE TABLE elections (
+CREATE TABLE election (
 
     /* The Election ID; 10 hex characters. We do not use AUTOINCREMENT,
        so that URLs for Elections cannot be deduced.  */
@@ -104,7 +104,7 @@ CREATE TABLE elections (
 /* --------------------------------------------------------------------- */
 
 /* The set of Issues to vote upon for a given Election.  */
-CREATE TABLE issues (
+CREATE TABLE issue (
 
     /* The Issue ID; 10 hex characters. We do not use AUTOINCREMENT,
        so that URLs for Issues cannot be deduced.  */
@@ -134,13 +134,13 @@ CREATE TABLE issues (
     kv  TEXT,
 
     /* Enforce/declare/document relationships.  */
-    FOREIGN KEY (eid) REFERENCES elections(eid)
+    FOREIGN KEY (eid) REFERENCES election(eid)
     ON DELETE RESTRICT
     ON UPDATE NO ACTION
 
     ) STRICT;
 
-CREATE INDEX idx_issues_eid ON issues(eid);
+CREATE INDEX idx_issue_eid ON issue(eid);
 
 /* --------------------------------------------------------------------- */
 
@@ -186,7 +186,7 @@ CREATE TABLE mayvote (
     ON DELETE RESTRICT
     ON UPDATE NO ACTION,
 
-    FOREIGN KEY (iid) REFERENCES issues(iid)
+    FOREIGN KEY (iid) REFERENCES issue(iid)
     ON DELETE RESTRICT
     ON UPDATE NO ACTION
 
@@ -197,7 +197,7 @@ CREATE TABLE mayvote (
 /* The registered votes, once the Election has been opened. Note that
    duplicates of (person, issue) may occur (the vote_token will be the
    same), as re-voting is allowed. Only the latest is used.  */
-CREATE TABLE votes (
+CREATE TABLE vote (
 
     /* The key is auto-incrementing to provide a record of insert-order,
        so that we have an ordering to find the "most recent" when
@@ -215,6 +215,6 @@ CREATE TABLE votes (
     ) STRICT;
 
 /* ### review queries.yaml to figure out proper indexes  */
-CREATE INDEX idx_by_vote_token ON votes (vote_token);
+CREATE INDEX idx_by_vote_token ON vote (vote_token);
 
 /* --------------------------------------------------------------------- */
