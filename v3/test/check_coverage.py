@@ -26,16 +26,18 @@
 import sys
 import os.path
 import sqlite3
+import logging
+import pathlib
 
 import coverage  # pip3 install coverage
 
 # Ensure that we can import the "steve" package.
-THIS_DIR = os.path.realpath(os.path.dirname(__file__))
-PARENT_DIR = os.path.dirname(THIS_DIR)
-sys.path.insert(0, PARENT_DIR)
+THIS_DIR = pathlib.Path(__file__).resolve().parent
+PARENT_DIR = THIS_DIR.parent
+sys.path.insert(0, str(PARENT_DIR))
 
-TESTING_DB = os.path.join(THIS_DIR, 'covtest.db')
-SCHEMA_FILE = os.path.join(PARENT_DIR, 'schema.sql')
+TESTING_DB = THIS_DIR / 'covtest.db'
+SCHEMA_FILE = PARENT_DIR / 'schema.sql'
 
 
 def touch_every_line():
@@ -46,21 +48,17 @@ def touch_every_line():
     import steve.crypto
     import steve.persondb
 
-    eid = steve.election.new_eid()
-
     # Start the election, and open it.
     try:
         os.remove(TESTING_DB)
     except OSError:
         pass
-    conn = sqlite3.connect(TESTING_DB)
+    conn = sqlite3.connect(TESTING_DB, isolation_level=None)
     conn.executescript(open(SCHEMA_FILE).read())
-    conn.execute('INSERT INTO ELECTIONS VALUES'
-                 f' ("{eid}", "title", "alice", NULL, NULL, NULL, NULL)')
-    conn.commit()
+    conn.close()
 
     # Ready to load up the Election and exercise it.
-    e = steve.election.Election(TESTING_DB, eid)
+    e = steve.election.Election.create(TESTING_DB, 'coverage', 'alice')
 
     _ = e.get_metadata()  # while EDITABLE
 
@@ -77,8 +75,8 @@ def touch_every_line():
     i2 = steve.crypto.create_id()
     i3 = steve.crypto.create_id()
 
-    e.add_issue(i1, eid, 'issue A', None, 'yna', None)
-    e.add_issue(i2, eid, 'issue B', None, 'stv', {
+    e.add_issue(i1, 'issue A', None, 'yna', None)
+    e.add_issue(i2, 'issue B', None, 'stv', {
         'seats': 3,
         'labelmap': {
             'a': 'Alice',
@@ -89,7 +87,7 @@ def touch_every_line():
             },
         })
     _ = e.list_issues()
-    e.add_issue(i3, eid, 'issue C', None, 'yna', None)
+    e.add_issue(i3, 'issue C', None, 'yna', None)
     e.delete_issue(i3)
     _ = e.get_issue(i1)
 
@@ -113,6 +111,19 @@ def touch_every_line():
     _ = e.tally_issue(i1)
     _ = e.tally_issue(i2)
 
+    # Complete coverage: delete an election.
+    e2 = steve.election.Election.create(TESTING_DB, 'E2', 'alice')
+    # Provide some data that should get deleted.
+    ### note: the referential integrity should to into a test suite.
+    e2i1 = steve.crypto.create_id()
+    e2.add_issue(e2i1, 'issue E2.A', None, 'yna', None)
+    e2.add_voter('alice')
+    e2.delete()
+
+    # Use the class method this time.
+    eid = steve.election.Election.create(TESTING_DB, 'E3', 'alice').eid
+    steve.election.Election.delete_by_eid(TESTING_DB, eid)
+
 
 def main():
     cov = coverage.Coverage(
@@ -127,8 +138,14 @@ def main():
         cov.stop()
 
     cov.report(file=sys.stdout)
-    cov.html_report(directory='covreport')
+    cov.html_report(directory=str(THIS_DIR / 'covreport'))
 
 
 if __name__ == '__main__':
+    DATE_FORMAT = '%m/%d %H:%M'
+    logging.basicConfig(level=logging.DEBUG,
+                        style='{',
+                        format='[{asctime}|{levelname}|{module}] {message}',
+                        datefmt=DATE_FORMAT,
+                        )
     main()

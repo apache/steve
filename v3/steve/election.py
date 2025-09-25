@@ -20,11 +20,15 @@
 #
 #
 
+import logging
 import json
+import sqlite3
 
 from . import crypto
 from . import db
 from . import vtypes
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Election:
@@ -35,6 +39,8 @@ class Election:
     S_CLOSED = 'closed'
 
     def __init__(self, db_fname, eid):
+        _LOGGER.debug(f'Opening election ID "{eid}"')
+
         ### switch to asfpy.db
         self.db = db.DB(db_fname)
         self.eid = eid
@@ -127,15 +133,19 @@ class Election:
         # Order these things because of referential integrity.
 
         # Delete all rows that refer to Issues within this Election.
-        self.c_delete_mayvote.execute((self.eid,))
+        self.c_delete_mayvote.perform((self.eid,))
 
         # Now, delete all the Issues that are part of this Election.
-        self.c_delete_issues.execute((self.eid,))
+        self.c_delete_issues.perform((self.eid,))
 
         # Finally, remove the Election itself.
-        self.c_delete_election.execute((self.eid,))
+        self.c_delete_election.perform((self.eid,))
 
         self.db.conn.execute('COMMIT')
+
+        # Disable this instance.
+        self.db.conn.close()
+        self.db = None
 
     def open(self, pdb):
 
@@ -197,7 +207,7 @@ class Election:
 
         # Use M_ALL_ISSUES to iterate over all Person/Issue mappings
         # in this Election (specified by EID).
-        self.m_all_issues.execute('BEGIN TRANSACTION')
+        self.db.conn.execute('BEGIN TRANSACTION')
         self.m_all_issues.perform((self.eid,))
         for mayvote in self.m_all_issues.fetchall():
             # MAYVOTE is a 1-tuple: _ROWID_
@@ -206,7 +216,7 @@ class Election:
             salt = crypto.gen_salt()
             self.c_salt_mayvote.perform((salt, mayvote[0]))
 
-        self.m_all_issues.execute('COMMIT')
+        self.db.conn.execute('COMMIT')
 
     def get_metadata(self):
         "Return basic metadata about this Election."
@@ -226,14 +236,14 @@ class Election:
         return (issue.title, issue.description, issue.type,
                 self.json2kv(issue.kv))
 
-    def add_issue(self, iid, eid, title, description, vtype, kv):
+    def add_issue(self, iid, title, description, vtype, kv):
         "Add or update an issue designated by IID."
         assert self.is_editable()
         assert vtype in vtypes.TYPES
 
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
-        self.c_add_issue.perform((iid, eid, title, description, vtype,
+        self.c_add_issue.perform((iid, self.eid, title, description, vtype,
                                   self.kv2json(kv)))
 
     def delete_issue(self, iid):
@@ -413,9 +423,23 @@ class Election:
         return j and json.loads(j)
 
     @classmethod
-    def create(cls, title, owner_pid, authz=None):
-        pass
+    def create(cls, db_fname, title, owner_pid, authz=None):
+        # Open in autocommit
+        conn = sqlite3.connect(db_fname, isolation_level=None)
+        while True:
+            eid = crypto.create_id()
+            try:
+                conn.execute('INSERT INTO elections (eid, title, owner_pid)'
+                             ' VALUES (?, ?, ?)',
+                             (eid, title, owner_pid,))
+                break
+            except sqlite3.IntegrityError:
+                _LOGGER.debug('EID conflict(!!) ... trying again.')
+        conn.close()
 
+        return cls(db_fname, eid)
 
-### compat:
-new_eid = crypto.create_id
+    @classmethod
+    def delete_by_eid(cls, db_fname, eid):
+        "Delete the specified Election."
+        cls(db_fname, eid).delete()
