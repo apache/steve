@@ -44,6 +44,7 @@ def touch_every_line():
     # Do the imports *WITHIN* the coverage test.
     import steve.election
     import steve.crypto
+    import steve.persondb
 
     eid = steve.election.new_eid()
 
@@ -63,13 +64,14 @@ def touch_every_line():
 
     _ = e.get_metadata()  # while EDITABLE
 
-    e.add_person('alice', 'Alice', 'alice@example.org')
-    e.add_person('bob', None, 'bob@example.org')
-    e.add_person('carlos', 'Carlos', 'carlos@example.org')
-    e.add_person('david', None, 'david@example.org')
-    _ = e.list_persons()
-    e.delete_person('david')
-    _ = e.get_person('alice')
+    pdb = steve.persondb.PersonDB(TESTING_DB)
+    pdb.add_person('alice', 'Alice', 'alice@example.org')
+    pdb.add_person('bob', None, 'bob@example.org')
+    pdb.add_person('carlos', 'Carlos', 'carlos@example.org')
+    pdb.add_person('david', None, 'david@example.org')
+    _ = pdb.list_persons()
+    pdb.delete_person('david')
+    _ = pdb.get_person('alice')
 
     i1 = steve.crypto.create_id()
     i2 = steve.crypto.create_id()
@@ -96,7 +98,7 @@ def touch_every_line():
     e.add_voter('bob')
     e.add_voter('carlos', i1)
 
-    e.open()
+    e.open(pdb)
     _ = e.get_metadata()  # while OPEN
     e.add_vote('alice', i1, 'y')
     e.add_vote('bob', i1, 'n')
@@ -104,7 +106,7 @@ def touch_every_line():
     e.add_vote('alice', i2, 'bc')
     e.add_vote('bob', i2, 'ad')
     _ = e.has_voted_upon('alice')
-    _ = e.is_tampered()
+    _ = e.is_tampered(pdb)
 
     e.close()
     _ = e.get_metadata()  # while CLOSED

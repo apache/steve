@@ -35,6 +35,7 @@ class Election:
     S_CLOSED = 'closed'
 
     def __init__(self, db_fname, eid):
+        ### switch to asfpy.db
         self.db = db.DB(db_fname)
         self.eid = eid
 
@@ -55,16 +56,8 @@ class Election:
                  type=excluded.type,
                  kv=excluded.kv
             ''')
-        self.c_add_person = self.db.add_statement(
-            '''INSERT INTO PERSON VALUES (?, ?, ?)
-               ON CONFLICT DO UPDATE SET
-                 name=excluded.name,
-                 email=excluded.email
-            ''')
         self.c_delete_issue = self.db.add_statement(
             'DELETE FROM ISSUES WHERE iid = ?')
-        self.c_delete_person = self.db.add_statement(
-            'DELETE FROM PERSON WHERE pid = ?')
         self.c_add_vote = self.db.add_statement(
             'INSERT INTO VOTES VALUES (NULL, ?, ?)')
         self.c_add_mayvote = self.db.add_statement(
@@ -89,12 +82,8 @@ class Election:
             'SELECT * FROM ELECTIONS WHERE eid = ?')
         self.q_issues = self.db.add_query('issues',
             'SELECT * FROM ISSUES WHERE eid = ? ORDER BY iid')
-        self.q_person = self.db.add_query('person',
-            'SELECT * FROM PERSON ORDER BY pid')
         self.q_get_issue = self.db.add_query('issues',
             'SELECT * FROM ISSUES WHERE iid = ?')
-        self.q_get_person = self.db.add_query('person',
-            'SELECT * FROM PERSON WHERE pid = ?')
         self.q_get_mayvote = self.db.add_query('mayvote',
             'SELECT * FROM MAYVOTE WHERE pid = ? AND iid = ?')
         self.q_tally = self.db.add_query('mayvote',
@@ -148,7 +137,7 @@ class Election:
 
         self.db.conn.execute('COMMIT')
 
-    def open(self):
+    def open(self, pdb):
 
         # Double-check the Election is in the editing state.
         assert self.is_editable()
@@ -157,7 +146,7 @@ class Election:
         # happens before we move to the "opened" state.
         self.add_salts()
 
-        edata = self.gather_election_data()
+        edata = self.gather_election_data(pdb)
         print('EDATA:', edata)
         salt = crypto.gen_salt()
         opened_key = crypto.gen_opened_key(edata, salt)
@@ -166,7 +155,7 @@ class Election:
         print('KEY:', opened_key)
         self.c_open.perform((salt, opened_key, self.eid))
 
-    def gather_election_data(self):
+    def gather_election_data(self, pdb):
         "Gather a definition of this election for keying and anti-tamper."
 
         # NOTE: separators and other zero-entropy constant chars are
@@ -183,9 +172,11 @@ class Election:
         idata = ''.join(f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
                         for i in self.q_issues.fetchall())
 
-        self.q_person.perform()
-        pdata = ''.join(p.pid + p.email
-                        for p in self.q_person.fetchall())
+        ### we don't want all people. Just those who are allowed to
+        ### vote in this Election. Examine the "mayvote" table.
+        ### list_persons returns 3-tuples of (PID,NAME,EMAIL). We only
+        ### want pid/email in PDATA.
+        pdata = ''.join(p[0] + p[2] for p in pdb.list_persons())
 
         return (mdata + idata + pdata).encode()
 
@@ -262,36 +253,6 @@ class Election:
 
         self.q_issues.perform((self.eid,))
         return [ extract_issue(row) for row in self.q_issues.fetchall() ]
-
-    def get_person(self, pid):
-        "Return NAME, EMAIL for Person identified by PID."
-
-        # NEVER return person.salt
-        person = self.q_get_person.first_row((pid,))
-        return person.name, person.email
-
-    def add_person(self, pid, name, email):
-        "Add or update a Person designated by PID."
-        assert self.is_editable()
-
-        # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
-        # be touched (it should be NULL).
-        self.c_add_person.perform((pid, name, email,))
-
-    def delete_person(self, pid):
-        "Delete the Person designated by PID."
-
-        # Can only delete Persons before the Election is OPEN.
-        assert self.is_editable()
-
-        self.c_delete_person.perform((pid,))
-
-    def list_persons(self):
-        "Return ordered (PID, NAME, EMAIL) for each Person."
-
-        # NOTE: the SALT column is omitted. It should never be exposed.
-        self.q_person.perform()
-        return [ row[:3] for row in self.q_person.fetchall() ]
 
     def add_voter(self, pid: str, iid: str | None = None) -> None:
         "Add PID (Person) to Issue IID, or to all Issues (None)."
@@ -394,7 +355,7 @@ class Election:
 
         return voted_upon
 
-    def is_tampered(self):
+    def is_tampered(self, pdb):
 
         # The Election should be open.
         assert self.is_open()
@@ -402,7 +363,7 @@ class Election:
         md = self.q_metadata.first_row((self.eid,))
 
         # Compute an opened_key based on the current data.
-        edata = self.gather_election_data()
+        edata = self.gather_election_data(pdb)
         opened_key = crypto.gen_opened_key(edata, md.salt)
 
         print('EDATA:', edata)
