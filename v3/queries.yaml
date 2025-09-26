@@ -56,13 +56,6 @@ election:
     q_get_issue: SELECT * FROM issue WHERE iid = ?
     q_get_mayvote: SELECT * FROM mayvote WHERE pid = ? AND iid = ?
     q_tally: SELECT * FROM mayvote WHERE iid = ?
-    q_has_voted: |
-        SELECT 1 FROM vote
-        WHERE person_token = ? AND issue_token = ?
-        LIMIT 1
-    q_metadata: SELECT * FROM election
-    q_issues: SELECT * FROM issue ORDER BY iid
-    q_get_issue: SELECT * FROM issue WHERE iid = ?
     q_by_issue: SELECT * FROM vote WHERE issue_token = ? ORDER BY _ROWID_
 
     m_find_issues: |
