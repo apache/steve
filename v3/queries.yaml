@@ -18,6 +18,11 @@
 #
 # ### TBD: DOCCO
 #
+# CURSOR NAMING:
+#   c_* performs various actions
+#   q_* runs queries
+#   m_* runs queries that don't fit "SELECT *" pattern ($reasons)
+#
 
 election:
     c_salt_mayvote: UPDATE mayvote SET salt = ? WHERE _ROWID_ = ?
