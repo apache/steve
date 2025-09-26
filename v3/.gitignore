@@ -1,0 +1,8 @@
+poetry.lock
+
+bin/bs.zip
+
+server/config.yaml
+server/apptoken.txt
+
+test/covtest.db

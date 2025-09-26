@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "apache-steve"
+version = "3.0.0"
+description = "The Apache STeVe voting system."
+authors = ["Apache STeVe Community <dev@steve.apache.org>"]
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/apache/steve"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+asfpy = ">=0.56"
+asfquart = ">=0.1.12"
+ezt = "^1.1"
+easydict = "^1.13"
+passlib = "^1.7.4"
+cryptography = "^44.0.3"
+argon2-cffi = "^25.1.0"
+
+[tool.poetry.group.test.dependencies]
+coverage = "^7.10.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
