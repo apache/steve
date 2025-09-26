@@ -79,11 +79,11 @@ election:
 
 person:
     c_add_person: |
-        INSERT INTO PERSON VALUES (?, ?, ?)
+        INSERT INTO person VALUES (?, ?, ?)
         ON CONFLICT DO UPDATE SET
             name=excluded.name,
             email=excluded.email
-    c_delete_person: DELETE FROM PERSON WHERE pid = ?
+    c_delete_person: DELETE FROM person WHERE pid = ?
 
-    q_person: SELECT * FROM PERSON ORDER BY pid
-    q_get_person: SELECT * FROM PERSON WHERE pid = ?
+    q_person: SELECT * FROM person ORDER BY pid
+    q_get_person: SELECT * FROM person WHERE pid = ?
