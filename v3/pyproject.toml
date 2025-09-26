@@ -20,7 +20,7 @@ argon2-cffi = "^25.1.0"
 coverage = "^7.10.6"
 
 [tool.poetry.group.server.dependencies]
-asfquart = ">=0.1.12"   # For server web app, pulls in quart transitively
+asfquart = ">=0.1.12"
 
 [build-system]
 requires = ["poetry-core"]
