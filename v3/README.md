@@ -13,6 +13,9 @@ email interception of a voting token, which anybody could use).
 v3 is intended (primarily) to revamp the data model and storage and the webui
 framework, using more recent technologies for greater leverage.
 
+For background reference in this README, see the documentation for the
+[database schema](docs/schema.md)
+
 ## Data Model
 
 v2 is the initial guide for a data model, to be used by v3.
@@ -93,6 +96,10 @@ The actual vote does
 not need to be decrypted for this process.
 
 ## Implementation
+
+All information/data is recorded within a site-wide SQLite database,
+using [this schema](docs/schema.md)
+(see also: [schema.sql](schema.sql)).
 
 Some notes on implementation, hashing, storage, at-rest encryption, etc.
 
