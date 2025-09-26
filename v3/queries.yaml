@@ -21,7 +21,6 @@
 # CURSOR NAMING:
 #   c_* performs various actions
 #   q_* runs queries
-#   m_* runs queries that don't fit "SELECT *" pattern ($reasons)
 #
 
 election:
@@ -57,22 +56,21 @@ election:
     q_get_mayvote: SELECT * FROM mayvote WHERE pid = ? AND iid = ?
     q_tally: SELECT * FROM mayvote WHERE iid = ?
     q_by_issue: SELECT * FROM vote WHERE issue_token = ? ORDER BY _ROWID_
-
-    m_find_issues: |
+    q_find_issues: |
         SELECT m.*
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid
         WHERE m.pid = ? AND i.eid = ?
-    m_has_voted: |
+    q_has_voted: |
         SELECT 1 FROM vote
         WHERE vote_token = ?
         LIMIT 1
-    m_recent_vote: |
+    q_recent_vote: |
         SELECT ciphertext FROM vote
         WHERE vote_token = ?
         ORDER BY _ROWID_ DESC
         LIMIT 1
-    m_all_issues: |
+    q_all_issues: |
         SELECT m._ROWID_
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid

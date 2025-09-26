@@ -137,11 +137,11 @@ class Election:
         # The Election should be editable.
         assert self.is_editable()
 
-        # Use M_ALL_ISSUES to iterate over all Person/Issue mappings
+        # Use Q_ALL_ISSUES to iterate over all Person/Issue mappings
         # in this Election (specified by EID).
         self.db.conn.execute('BEGIN TRANSACTION')
-        self.m_all_issues.perform(self.eid)
-        for mayvote in self.m_all_issues.fetchall():
+        self.q_all_issues.perform(self.eid)
+        for mayvote in self.q_all_issues.fetchall():
             # MAYVOTE is a 1-tuple: _ROWID_
             #print('COLUMNS:', dir(mayvote))
 
@@ -263,7 +263,7 @@ class Election:
             )
 
             # We don't need/want all columns, so only pick CIPHERTEXT.
-            row = self.m_recent_vote.first_row(vote_token)
+            row = self.q_recent_vote.first_row(vote_token)
             votestring = crypto.decrypt_votestring(
                 vote_token, mayvote.salt, row.ciphertext,
             )
@@ -288,8 +288,8 @@ class Election:
 
         voted_upon = { }
 
-        self.m_find_issues.perform(pid, self.eid)
-        for row in self.m_find_issues.fetchall():
+        self.q_find_issues.perform(pid, self.eid)
+        for row in self.q_find_issues.fetchall():
             #print('COLUMNS:', dir(row))
 
             # Query is mayvote.* ... so ROW is: PID, IID, SALT
@@ -298,7 +298,7 @@ class Election:
             )
 
             # Is any vote present? (wicked fast)
-            voted = self.m_has_voted.first_row(vote_token)
+            voted = self.q_has_voted.first_row(vote_token)
 
             voted_upon[row.iid] = (voted is not None)
 
