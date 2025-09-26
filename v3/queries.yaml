@@ -55,7 +55,6 @@ election:
     q_get_issue: SELECT * FROM issue WHERE iid = ?
     q_get_mayvote: SELECT * FROM mayvote WHERE pid = ? AND iid = ?
     q_tally: SELECT * FROM mayvote WHERE iid = ?
-    q_by_issue: SELECT * FROM vote WHERE issue_token = ? ORDER BY _ROWID_
     q_find_issues: |
         SELECT m.*
         FROM mayvote m
