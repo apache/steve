@@ -21,8 +21,6 @@
 
 import pathlib
 
-from . import db
-
 import asfpy.db
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
