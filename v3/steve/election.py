@@ -26,6 +26,7 @@ import sqlite3
 import pathlib
 
 import asfpy.db
+import easydict
 
 from . import crypto
 from . import vtypes
@@ -114,11 +115,10 @@ class Election:
         idata = ''.join(f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
                         for i in self.q_issues.fetchall())
 
+        # Include the PID and EMAIL for each Person.
         ### we don't want all people. Just those who are allowed to
         ### vote in this Election. Examine the "mayvote" table.
-        ### list_persons returns 3-tuples of (PID,NAME,EMAIL). We only
-        ### want pid/email in PDATA.
-        pdata = ''.join(p[0] + p[2] for p in pdb.list_persons())
+        pdata = ''.join(p.pid + p.email for p in pdb.list_persons())
 
         return (mdata + idata + pdata).encode()
 
@@ -188,11 +188,15 @@ class Election:
         self.c_delete_issue.perform(iid)
 
     def list_issues(self):
-        "Return ordered (IID, TITLE, DESCRIPTION, TYPE, KV) for all ISSUES."
+        "Return ordered EasyDicgt<IID, TITLE, DESCRIPTION, TYPE, KV> for all ISSUES."
 
         def extract_issue(row):
-            return (row.iid, row.title, row.description, row.type,
-                    self.json2kv(row.kv),)
+            return easydict.EasyDict(iid=row.iid,
+                                     title=row.title,
+                                     description=row.description,
+                                     type=row.type,
+                                     kv=self.json2kv(row.kv),
+                                     )
 
         self.q_issues.perform(self.eid)
         return [ extract_issue(row) for row in self.q_issues.fetchall() ]

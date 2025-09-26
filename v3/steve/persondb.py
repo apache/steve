@@ -22,6 +22,7 @@
 import pathlib
 
 import asfpy.db
+import easydict
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 QUERIES = THIS_DIR.parent / 'queries.yaml'
@@ -63,8 +64,10 @@ class PersonDB:
         self.c_delete_person.perform(pid)
 
     def list_persons(self):
-        "Return ordered (PID, NAME, EMAIL) for each Person."
+        "Return ordered EasyDict<PID, NAME, EMAIL> for each Person."
 
+        ### switch to explicitly returning a generator?
+
+        # Run the query to completion, and return the entire list of Persons.
         self.q_person.perform()
-        return [ (row.pid, row.name, row.email)
-                 for row in self.q_person.fetchall() ]
+        return list(self.q_person.fetchall())
