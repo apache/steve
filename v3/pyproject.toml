@@ -10,7 +10,6 @@ repository = "https://github.com/apache/steve"
 [tool.poetry.dependencies]
 python = "^3.10"
 asfpy = ">=0.56"
-asfquart = ">=0.1.12"
 ezt = "^1.1"
 easydict = "^1.13"
 passlib = "^1.7.4"
@@ -19,6 +18,9 @@ argon2-cffi = "^25.1.0"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.10.6"
+
+[tool.poetry.group.server.dependencies]
+asfquart = ">=0.1.12"   # For server web app, pulls in quart transitively
 
 [build-system]
 requires = ["poetry-core"]
