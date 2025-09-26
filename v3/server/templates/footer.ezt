@@ -1,3 +1,5 @@
+[# above this, is the close of <div class="container"> ]
+
 <footer class="bg-light text-center text-lg-start py-3 my-5 border-top border-2">
     <div class="container">
         <div class="row">
@@ -12,3 +14,7 @@
         </div>
     </div>
 </footer>
+
+    <script src="/static/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"></script>
+</body>
+</html>
