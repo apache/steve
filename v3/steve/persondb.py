@@ -19,36 +19,31 @@
 # ### TBD: DOCCO
 #
 
+import pathlib
+
 from . import db
 
 import asfpy.db
+
+THIS_DIR = pathlib.Path(__file__).resolve().parent
+QUERIES = THIS_DIR.parent / 'queries.yaml'
 
 
 class PersonDB:
 
     def __init__(self, db_fname):
-        ### switch to asfpy.db
-        self.db = db.DB(db_fname)
+        self.db = asfpy.db.DB(db_fname,
+                              yaml_fname=QUERIES, yaml_section='person')
 
-        self.c_add_person = self.db.add_statement(
-            '''INSERT INTO PERSON VALUES (?, ?, ?)
-               ON CONFLICT DO UPDATE SET
-                 name=excluded.name,
-                 email=excluded.email
-            ''')
-        self.c_delete_person = self.db.add_statement(
-            'DELETE FROM PERSON WHERE pid = ?')
-
-        self.q_person = self.db.add_query('person',
-            'SELECT * FROM PERSON ORDER BY pid')
-        self.q_get_person = self.db.add_query('person',
-            'SELECT * FROM PERSON WHERE pid = ?')
+    def __getattr__(self, name):
+        "Proxy the cursors."
+        return self.__dict__.get(name, getattr(self.db, name))
 
     def get_person(self, pid):
         "Return NAME, EMAIL for Person identified by PID."
 
         # NEVER return person.salt
-        person = self.q_get_person.first_row((pid,))
+        person = self.q_get_person.first_row(pid)
         return person.name, person.email
 
     def add_person(self, pid, name, email):
@@ -56,7 +51,7 @@ class PersonDB:
 
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
-        self.c_add_person.perform((pid, name, email,))
+        self.c_add_person.perform(pid, name, email)
 
     def delete_person(self, pid):
         "Delete the Person designated by PID."
@@ -67,11 +62,11 @@ class PersonDB:
         #
         ### maybe we just don't delete a person, ever?
 
-        self.c_delete_person.perform((pid,))
+        self.c_delete_person.perform(pid)
 
     def list_persons(self):
         "Return ordered (PID, NAME, EMAIL) for each Person."
 
-        # NOTE: the SALT column is omitted. It should never be exposed.
         self.q_person.perform()
-        return [ row[:3] for row in self.q_person.fetchall() ]
+        return [ (row.pid, row.name, row.email)
+                 for row in self.q_person.fetchall() ]

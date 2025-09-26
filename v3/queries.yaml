@@ -1,30 +1,93 @@
-queries:
-    salt_issue: UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?
-    salt_person: UPDATE PERSON SET salt = ? WHERE _ROWID_ = ?
-    open_election: UPDATE METADATA SET salt = ?, opened_key = ?
-    close_election: UPDATE METADATA SET closed = 1
-    add_issue: |
-            INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?)
-               ON CONFLICT DO UPDATE SET
-                 title=excluded.title,
-                 description=excluded.description,
-                 type=excluded.type,
-                 kv=excluded.kv
-    add_person: |
-            INSERT INTO PERSON VALUES (?, ?, ?, ?)
-               ON CONFLICT DO UPDATE SET
-                 name=excluded.name,
-                 email=excluded.email
-    delete_issue: DELETE FROM ISSUES WHERE iid = ?
-    delete_person: DELETE FROM PERSON WHERE pid = ?
-    add_vote: INSERT INTO VOTES VALUES (NULL, ?, ?, ?, ?)
-    has_voted: |
-            SELECT 1 FROM VOTES
-               WHERE person_token = ? AND issue_token = ?
-               LIMIT 1
-    metadata: SELECT * FROM METADATA
-    issues: SELECT * FROM ISSUES ORDER BY iid
-    person: SELECT * FROM PERSON ORDER BY pid
-    get_issue: SELECT * FROM ISSUES WHERE iid = ?
-    get_person: SELECT * FROM PERSON WHERE pid = ?
-    by_issue: SELECT * FROM VOTES WHERE issue_token = ? ORDER BY _ROWID_
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ----
+#
+# ### TBD: DOCCO
+#
+
+election:
+    c_salt_mayvote: UPDATE mayvote SET salt = ? WHERE _ROWID_ = ?
+    c_open: UPDATE election SET salt = ?, opened_key = ? WHERE eid = ?
+    c_close: UPDATE election SET closed = 1 WHERE eid = ?
+    c_add_issue: |
+        INSERT INTO issue VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT DO UPDATE SET
+            title=excluded.title,
+            description=excluded.description,
+            type=excluded.type,
+            kv=excluded.kv
+    c_delete_issue: DELETE FROM issue WHERE iid = ?
+    c_add_vote: INSERT INTO vote VALUES (NULL, ?, ?)
+    c_add_mayvote: INSERT INTO mayvote (pid, iid, salt) VALUES (?, ?, NULL)
+    c_add_mayvote_all: |
+        INSERT INTO mayvote (pid, iid, salt)
+        SELECT ?, iid, NULL FROM issue WHERE eid = ?
+    c_delete_mayvote: |
+        DELETE FROM mayvote
+        WHERE iid IN (
+            SELECT iid
+            FROM issue
+            WHERE eid = ?
+            )
+    c_delete_issues: DELETE FROM issue WHERE eid = ?
+    c_delete_election: DELETE FROM election WHERE eid = ?
+
+    q_metadata: SELECT * FROM election WHERE eid = ?
+    q_issues: SELECT * FROM issue WHERE eid = ? ORDER BY iid
+    q_get_issue: SELECT * FROM issue WHERE iid = ?
+    q_get_mayvote: SELECT * FROM mayvote WHERE pid = ? AND iid = ?
+    q_tally: SELECT * FROM mayvote WHERE iid = ?
+    q_has_voted: |
+        SELECT 1 FROM vote
+        WHERE person_token = ? AND issue_token = ?
+        LIMIT 1
+    q_metadata: SELECT * FROM election
+    q_issues: SELECT * FROM issue ORDER BY iid
+    q_get_issue: SELECT * FROM issue WHERE iid = ?
+    q_by_issue: SELECT * FROM vote WHERE issue_token = ? ORDER BY _ROWID_
+
+    m_find_issues: |
+        SELECT m.*
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        WHERE m.pid = ? AND i.eid = ?
+    m_has_voted: |
+        SELECT 1 FROM vote
+        WHERE vote_token = ?
+        LIMIT 1
+    m_recent_vote: |
+        SELECT ciphertext FROM vote
+        WHERE vote_token = ?
+        ORDER BY _ROWID_ DESC
+        LIMIT 1
+    m_all_issues: |
+        SELECT m._ROWID_
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        WHERE i.eid = ?
+
+
+person:
+    c_add_person: |
+        INSERT INTO PERSON VALUES (?, ?, ?)
+        ON CONFLICT DO UPDATE SET
+            name=excluded.name,
+            email=excluded.email
+    c_delete_person: DELETE FROM PERSON WHERE pid = ?
+
+    q_person: SELECT * FROM PERSON ORDER BY pid
+    q_get_person: SELECT * FROM PERSON WHERE pid = ?
