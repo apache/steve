@@ -76,9 +76,6 @@ CREATE TABLE election (
     /* ### contents/format is TBD; think "which PMC" or "Foundation"  */
     authz  TEXT,
 
-    /* ### if we have monitors, they go here.  */
-    /* ### skip monitors. only OWNER_PID may monitor.  */
-
     /* A salt value to use for hashing this Election. 16 bytes.
        This will be NULL until the Election is opened.  */
     salt  BLOB  CHECK (salt IS NULL OR length(salt) = 16),
