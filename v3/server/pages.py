@@ -23,19 +23,41 @@ APP = asfquart.APP
 @APP.get('/')
 @APP.use_template('templates/home.ezt')
 async def home_page():
-    return { }
+    return {
+        'title': 'Home',
+    }
+
+
+@APP.get('/voter')
+@APP.use_template('templates/voter.ezt')
+async def voter_page():
+    return {
+        'title': 'Voting',
+    }
+
+
+@APP.get('/admin')
+@APP.use_template('templates/admin.ezt')
+async def admin_page():
+    return {
+        'title': 'Administration',
+    }
 
 
 @APP.get('/profile')
 @APP.use_template('templates/profile.ezt')
 async def profile_page():
-    return { }
+    return {
+        'title': 'Profile',
+    }
 
 
 @APP.get('/settings')
 @APP.use_template('templates/settings.ezt')
 async def settings_page():
-    return { }
+    return {
+        'title': 'Settings',
+    }
 
 
 @APP.get('/sign-out')
@@ -47,13 +69,17 @@ async def sign_out():
 @APP.get('/privacy')
 @APP.use_template('templates/privacy.ezt')
 async def privacy_page():
-    return { }
+    return {
+        'title': 'Privacy',
+    }
 
 
 @APP.get('/about')
 @APP.use_template('templates/about.ezt')
 async def about_page():
-    return { }
+    return {
+        'title': 'About',
+    }
 
 
 # Route to serve static files (CSS and JS)

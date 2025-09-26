@@ -1,6 +1,6 @@
 [include "header.ezt"]
     <div class="container">
-        <h1>Profile</h1>
+        <h1>[title]</h1>
         <p>
             TBD
         </p>
