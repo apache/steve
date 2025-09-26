@@ -64,16 +64,26 @@ election:
         SELECT 1 FROM vote
         WHERE vote_token = ?
         LIMIT 1
-    q_recent_vote: |
-        SELECT ciphertext FROM vote
-        WHERE vote_token = ?
-        ORDER BY _ROWID_ DESC
-        LIMIT 1
     q_all_issues: |
         SELECT m._ROWID_
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid
         WHERE i.eid = ?
+
+    q_recent_vote: |
+        SELECT ciphertext FROM vote
+        WHERE vote_token = ?
+        ORDER BY _ROWID_ DESC
+        LIMIT 1
+    # ALTERNATIVE to above:
+    #
+    # SELECT ciphertext FROM vote
+    # WHERE vote_token = ?
+    # AND vid = (SELECT MAX(vid) FROM vote WHERE vote_token = ?)
+    #
+    # ... this is clearer about the MAX() and avoids the sorting from
+    #     the ORDER BY. However, with few revotes, that sort is not
+    #     expensive. Collect some data. Or maybe people can lobby.
 
 
 person:
