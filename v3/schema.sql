@@ -87,7 +87,7 @@ CREATE TABLE election (
 
     /* Has this election been closed? NULL or 0 for not-closed (see
        SALT and OPENED_KEY to determine if the election has been
-       opened). 1 for closed (implies it was opened).  */
+       opened). 1 for closed (implies it was formerly-opened).  */
     closed  INTEGER  CHECK (closed IS NULL OR closed IN (0, 1)),
 
 

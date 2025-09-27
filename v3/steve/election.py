@@ -44,11 +44,15 @@ class Election:
     S_OPEN = 'open'
     S_CLOSED = 'closed'
 
+    @staticmethod
+    def open_database(db_fname):
+        return asfpy.db.DB(db_fname,
+                           yaml_fname=QUERIES, yaml_section='election')
+
     def __init__(self, db_fname, eid):
         _LOGGER.debug(f'Opening election ID "{eid}"')
 
-        self.db = asfpy.db.DB(db_fname,
-                              yaml_fname=QUERIES, yaml_section='election')
+        self.db = self.open_database(db_fname)
         self.eid = eid
 
     def __getattr__(self, name):
@@ -382,3 +386,26 @@ class Election:
     def delete_by_eid(cls, db_fname, eid):
         "Delete the specified Election."
         cls(db_fname, eid).delete()
+
+    @classmethod
+    def open_to_pid(cls, db_fname, pid):
+        "List of elections are OPEN for PID to vote upon."
+
+        db = cls.open_database(db_fname)
+
+        # Run the generator to get all rows. Returned as EasyDicts.
+        db.q_open_to_me(pid,)
+        return [ row for row in db.q_open_to_me.fetchall() ]
+
+    @classmethod
+    def owned_elections(cls, db_fname, pid):
+        "List of elections are that PID has created."
+
+        db = cls.open_database(db_fname)
+
+        # NOTE: contains subset of columns. We don't want to return the
+        #       SALT or OPENED_KEY values.
+        #
+        # Run the generator to get all rows. Returned as EasyDicts.
+        db.q_owned(pid,)
+        return [ row for row in db.q_owned.fetchall() ]

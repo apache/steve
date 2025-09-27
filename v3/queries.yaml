@@ -85,6 +85,19 @@ election:
     #     the ORDER BY. However, with few revotes, that sort is not
     #     expensive. Collect some data. Or maybe people can lobby.
 
+    q_open_to_me: |
+        SELECT DISTINCT e.eid, e.title
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        JOIN election e ON i.eid = e.eid
+        WHERE m.pid = ?
+          AND e.salt IS NOT NULL
+          AND (e.closed IS NULL OR e.closed = 0)
+        ORDER BY e._ROWID_
+    q_owned: |
+        SELECT eid, title, authz, closed
+        FROM election WHERE owner_pid = ?
+
 
 person:
     c_add_person: |
