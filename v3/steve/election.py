@@ -394,7 +394,7 @@ class Election:
         db = cls.open_database(db_fname)
 
         # Run the generator to get all rows. Returned as EasyDicts.
-        db.q_open_to_me(pid,)
+        db.q_open_to_me.perform(pid,)
         return [ row for row in db.q_open_to_me.fetchall() ]
 
     @classmethod
@@ -407,5 +407,5 @@ class Election:
         #       SALT or OPENED_KEY values.
         #
         # Run the generator to get all rows. Returned as EasyDicts.
-        db.q_owned(pid,)
+        db.q_owned.perform(pid,)
         return [ row for row in db.q_owned.fetchall() ]
