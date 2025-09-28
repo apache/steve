@@ -2,7 +2,14 @@
     <div class="container">
         <h1>[title]</h1>
         <p>
-            TBD
+          [for election]
+            [election.eid] [election.title]
+          [end]
+        </p>
+        <p>
+          [for owned]
+            [owned.eid] [owned.title] [owned.authz] [owned.closed]
+          [end]
         </p>
     </div>
 [include "footer.ezt"]

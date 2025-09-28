@@ -15,9 +15,22 @@
 # limitations under the License.
 #
 
+import sys
+import pathlib
+
+from easydict import EasyDict as edict
+import asfpy.stopwatch
 import quart
 import asfquart
+from asfquart.auth import Requirements as R
+
 APP = asfquart.APP
+
+THIS_DIR = pathlib.Path(__file__).resolve().parent
+DB_FNAME = THIS_DIR / APP.cfg.db
+
+sys.path.insert(0, str(THIS_DIR.parent))
+import steve.election
 
 
 @APP.get('/')
@@ -29,14 +42,25 @@ async def home_page():
 
 
 @APP.get('/voter')
+@asfquart.auth.require({R.committer})
 @APP.use_template('templates/voter.ezt')
 async def voter_page():
+    with asfpy.stopwatch.Stopwatch():
+        election = steve.election.Election.open_to_pid(DB_FNAME, 'gstein')
+        owned = steve.election.Election.owned_elections(DB_FNAME, 'gstein')
+
+    election = [ edict(eid='123', title='test election') ]
+    owned = [ edict(eid='456', title='another', authz=None, closed=None) ]
+
     return {
         'title': 'Voting',
+        'election': election,
+        'owned': owned,
     }
 
 
 @APP.get('/admin')
+@asfquart.auth.require({R.committer})
 @APP.use_template('templates/admin.ezt')
 async def admin_page():
     return {
@@ -45,6 +69,7 @@ async def admin_page():
 
 
 @APP.get('/profile')
+@asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template('templates/profile.ezt')
 async def profile_page():
     return {
@@ -53,6 +78,7 @@ async def profile_page():
 
 
 @APP.get('/settings')
+@asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template('templates/settings.ezt')
 async def settings_page():
     return {
@@ -61,6 +87,7 @@ async def settings_page():
 
 
 @APP.get('/sign-out')
+@asfquart.auth.require  # Bare decorator means just require a valid session
 async def sign_out():
     ### clear the cookie?
     return '', 204
