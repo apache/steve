@@ -15,8 +15,17 @@
 # limitations under the License.
 #
 
-# Default port for the server. Typical usage is that a proxy sits
-# in front of this server, so we don't use ports 80 or 443.
-# Note: we want 78383 which is "STEVE" on your telephone keypad.
-#    ... let's settle with something close (less than 65536).
-port: 58383
+server:
+    # Default port for the server. Typical usage is that a proxy sits
+    # in front of this server, so we don't use ports 80 or 443.
+    # Note: we want 78383 which is "STEVE" on your telephone keypad.
+    #    ... let's settle with something close (less than 65536).
+    port: 58383
+
+    # Specify the .pem files to serve using TLS, or leave these two
+    # fields blank for plain HTTP.
+    certfile: server.crt
+    keyfile: server.key
+
+# Path to the database, absolute or relative to APP.
+db: steve.db
