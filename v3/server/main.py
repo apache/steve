@@ -34,6 +34,17 @@ def main():
                         datefmt=DATE_FORMAT,
                         )
 
+    # Switch some loggers to INFO, rather than DEBUG
+    logging.getLogger('selector_events').setLevel(logging.INFO)
+    logging.getLogger('hpack').setLevel(logging.INFO)
+    logging.getLogger('sslproto').setLevel(logging.INFO)
+
+    ### is this really needed right now?
+    # Avoid OIDC
+    import asfquart.generics
+    asfquart.generics.OAUTH_URL_INIT = "https://oauth.apache.org/auth?state=%s&redirect_uri=%s"
+    asfquart.generics.OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
+
     app = asfquart.construct('steve')
 
     # Now that we have an APP, import modules that will add page
@@ -41,8 +52,16 @@ def main():
     import pages  # pylint: disable=unused-import
     import api  # pylint: disable=unused-import
 
+    kwargs = { }
+    if app.cfg.server.certfile:
+        kwargs['certfile'] = THIS_DIR / app.cfg.server.certfile
+        kwargs['keyfile'] = THIS_DIR / app.cfg.server.keyfile
+
     # Spool up the app!
-    app.runx(port=app.cfg.port)
+    app.runx(port=app.cfg.server.port, **kwargs)
+
+    #print('LOGGERS:', sorted(_LOGGER.manager.loggerDict.keys()))
+    #print(_LOGGER.manager.loggerDict['sslproto'])
 
 
 if __name__ == '__main__':
