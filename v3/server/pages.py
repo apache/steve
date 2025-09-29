@@ -21,7 +21,7 @@ import pathlib
 from easydict import EasyDict as edict
 import asfpy.stopwatch
 import quart
-import asfquart
+import asfquart.session
 from asfquart.auth import Requirements as R
 
 APP = asfquart.APP
@@ -33,12 +33,27 @@ sys.path.insert(0, str(THIS_DIR.parent))
 import steve.election
 
 
+async def signin_info():
+    "Return EZT template data for the Sign-In, in the upper right."
+    s = await asfquart.session.read()
+    if s:
+        return {
+            'uid': s['uid'],
+            'name': s['fullname'],
+            'email': s['email'],
+            }
+
+    # No session.
+    return { 'uid': None, 'name': None, 'email': None, }
+
+
 @APP.get('/')
 @APP.use_template('templates/home.ezt')
 async def home_page():
-    return {
-        'title': 'Home',
-    }
+    result = edict(await signin_info())
+    result.title = 'Home'
+
+    return result
 
 
 @APP.get('/voter')
@@ -49,64 +64,83 @@ async def voter_page():
         election = steve.election.Election.open_to_pid(DB_FNAME, 'gstein')
         owned = steve.election.Election.owned_elections(DB_FNAME, 'gstein')
 
-    election = [ edict(eid='123', title='test election') ]
-    owned = [ edict(eid='456', title='another', authz=None, closed=None) ]
+    result = edict(await signin_info())
+    result.title = 'Voting'
 
-    return {
-        'title': 'Voting',
-        'election': election,
-        'owned': owned,
-    }
+    result.election = [ edict(eid='123', title='test election') ]
+    result.owned = [ edict(eid='456', title='another', authz=None, closed=None) ]
+
+    return result
 
 
+### NOTE: this is for ASF committers only. Obviously, this is not a
+### general purpose solution. Something for the future, to figure out
+### how we'd like to do configuration authorization for various install
+### scenarios and authn systems.
 @APP.get('/admin')
 @asfquart.auth.require({R.committer})
 @APP.use_template('templates/admin.ezt')
 async def admin_page():
-    return {
-        'title': 'Administration',
-    }
+    result = edict(await signin_info())
+    result.title = 'Administration'
+
+    return result
 
 
 @APP.get('/profile')
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template('templates/profile.ezt')
 async def profile_page():
-    return {
-        'title': 'Profile',
-    }
+    result = edict(await signin_info())
+    result.title = 'Profile'
+
+    return result
 
 
 @APP.get('/settings')
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template('templates/settings.ezt')
 async def settings_page():
-    return {
-        'title': 'Settings',
-    }
+    result = edict(await signin_info())
+    result.title = 'Settings'
+
+    return result
 
 
 @APP.get('/sign-out')
 @asfquart.auth.require  # Bare decorator means just require a valid session
 async def sign_out():
-    ### clear the cookie?
-    return '', 204
+    asfquart.session.clear()
+
+    # When signing out, go to the Home page.
+    return quart.redirect('/')
+
+
+@APP.get('/sign-in')
+@asfquart.auth.require  # Bare decorator means just require a valid session
+async def sign_in():
+    "Forces sign-in (via OAuth), then redirects to the Home page."
+
+    # And if we are back here, we are signed-in. Go to the Home page.
+    return quart.redirect('/')
 
 
 @APP.get('/privacy')
 @APP.use_template('templates/privacy.ezt')
 async def privacy_page():
-    return {
-        'title': 'Privacy',
-    }
+    result = edict(await signin_info())
+    result.title = 'Privacy'
+
+    return result
 
 
 @APP.get('/about')
 @APP.use_template('templates/about.ezt')
 async def about_page():
-    return {
-        'title': 'About',
-    }
+    result = edict(await signin_info())
+    result.title = 'About'
+
+    return result
 
 
 # Route to serve static files (CSS and JS)

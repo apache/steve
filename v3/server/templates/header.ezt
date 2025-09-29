@@ -12,19 +12,20 @@
     <div class="container-fluid">
         <!-- Left-aligned icon and title -->
         <a class="navbar-brand" href="/">
-            <img src="https://www.apache.org/foundation/press/kit/feather.png" alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
+            <img src="https://www.apache.org/foundation/press/kit/feather.svg" alt="Logo" width="30" height="30" class="d-inline-block align-text-top">
             Apache STeVe
         </a>
         <!-- Toggler for mobile view -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        [if-any uid]
         <!-- Right-aligned user name and dropdown -->
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        John Doe
+                        [name]
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="/profile">Profile</a></li>
@@ -35,6 +36,16 @@
                 </li>
             </ul>
         </div>
+        [else]
+            <!-- Sign-in link for users not signed in -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/sign-in">Sign In</a>
+                    </li>
+                </ul>
+            </div>
+        [end]
     </div>
 </nav>
 
