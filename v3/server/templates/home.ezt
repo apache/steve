@@ -15,7 +15,11 @@
                             </p>
                         </div>
                         <div class="card-footer text-muted">
-                            <small>Requires sign-in</small>
+                            [if-any uid]
+                                <small>Signed in as [name] ([uid])</small>
+                            [else]
+                                <small>Requires sign-in</small>
+                            [end]
                         </div>
                     </div>
                 </a>
@@ -32,7 +36,11 @@
                             </p>
                         </div>
                         <div class="card-footer text-muted">
-                            <small>Requires sign-in</small>
+                            [if-any uid]
+                                <small>Signed in as [name] ([uid])</small>
+                            [else]
+                                <small>Requires sign-in</small>
+                            [end]
                         </div>
                     </div>
                 </a>
