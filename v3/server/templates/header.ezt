@@ -31,7 +31,7 @@
                         <li><a class="dropdown-item" href="/profile">Profile</a></li>
                         <li><a class="dropdown-item" href="/settings">Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/sign-out">Sign Out</a></li>
+                        <li><a class="dropdown-item" href="/auth?logout=/">Sign Out</a></li>
                     </ul>
                 </li>
             </ul>
@@ -41,7 +41,7 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="/sign-in">Sign In</a>
+                        <a class="nav-link" href="/auth?login=/">Sign In</a>
                     </li>
                 </ul>
             </div>

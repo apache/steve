@@ -110,24 +110,6 @@ async def settings_page():
     return result
 
 
-@APP.get('/sign-out')
-@asfquart.auth.require  # Bare decorator means just require a valid session
-async def sign_out():
-    asfquart.session.clear()
-
-    # When signing out, go to the Home page.
-    return quart.redirect('/')
-
-
-@APP.get('/sign-in')
-@asfquart.auth.require  # Bare decorator means just require a valid session
-async def sign_in():
-    "Forces sign-in (via OAuth), then redirects to the Home page."
-
-    # And if we are back here, we are signed-in. Go to the Home page.
-    return quart.redirect('/')
-
-
 @APP.get('/privacy')
 @APP.use_template('templates/privacy.ezt')
 async def privacy_page():
