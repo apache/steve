@@ -15,6 +15,13 @@
 # limitations under the License.
 #
 
+###
+### NOTE: the voting handlers require login for ASF committers only.
+### Obviously, this is not a general purpose solution. Something for
+### the future, to figure out how we'd like to do configuration
+### authorization for various install scenarios and authn systems.
+###
+
 import sys
 import pathlib
 
@@ -37,34 +44,30 @@ async def signin_info():
     "Return EZT template data for the Sign-In, in the upper right."
     s = await asfquart.session.read()
     if s:
-        return {
-            'uid': s['uid'],
-            'name': s['fullname'],
-            'email': s['email'],
-            }
+        return edict(uid=s['uid'], name=s['fullname'], email=s['email'],)
 
     # No session.
-    return { 'uid': None, 'name': None, 'email': None, }
+    return edict(uid=None, name=None, email=None,)
 
 
 @APP.get('/')
 @APP.use_template('templates/home.ezt')
 async def home_page():
-    result = edict(await signin_info())
+    result = await signin_info()
     result.title = 'Home'
 
     return result
 
 
 @APP.get('/voter')
-@asfquart.auth.require({R.committer})
+@asfquart.auth.require({R.committer})  ### need general solution
 @APP.use_template('templates/voter.ezt')
 async def voter_page():
     with asfpy.stopwatch.Stopwatch():
         election = steve.election.Election.open_to_pid(DB_FNAME, 'gstein')
         owned = steve.election.Election.owned_elections(DB_FNAME, 'gstein')
 
-    result = edict(await signin_info())
+    result = await signin_info()
     result.title = 'Voting'
 
     result.election = [ edict(eid='123', title='test election') ]
@@ -78,10 +81,10 @@ async def voter_page():
 ### how we'd like to do configuration authorization for various install
 ### scenarios and authn systems.
 @APP.get('/admin')
-@asfquart.auth.require({R.committer})
+@asfquart.auth.require({R.committer})  ### need general solution
 @APP.use_template('templates/admin.ezt')
 async def admin_page():
-    result = edict(await signin_info())
+    result = await signin_info()
     result.title = 'Administration'
 
     return result
@@ -91,7 +94,7 @@ async def admin_page():
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template('templates/profile.ezt')
 async def profile_page():
-    result = edict(await signin_info())
+    result = await signin_info()
     result.title = 'Profile'
 
     return result
@@ -101,7 +104,7 @@ async def profile_page():
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template('templates/settings.ezt')
 async def settings_page():
-    result = edict(await signin_info())
+    result = await signin_info()
     result.title = 'Settings'
 
     return result
@@ -128,7 +131,7 @@ async def sign_in():
 @APP.get('/privacy')
 @APP.use_template('templates/privacy.ezt')
 async def privacy_page():
-    result = edict(await signin_info())
+    result = await signin_info()
     result.title = 'Privacy'
 
     return result
@@ -137,7 +140,7 @@ async def privacy_page():
 @APP.get('/about')
 @APP.use_template('templates/about.ezt')
 async def about_page():
-    result = edict(await signin_info())
+    result = await signin_info()
     result.title = 'About'
 
     return result
