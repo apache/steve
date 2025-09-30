@@ -223,7 +223,7 @@ ignore-on-opaque-inference=yes
 # Suppresses the E1101: no-member lint error, for these classes.
 ignored-classes=
     optparse.Values,thread._local,_thread._local,xml.parsers.expat,
-    easydict.EasyDict,asfpy.DB
+    easydict.EasyDict,asfpy.db.DB
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
