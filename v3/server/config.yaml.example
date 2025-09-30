@@ -23,9 +23,12 @@ server:
     port: 58383
 
     # Specify the .pem files to serve using TLS, or leave these two
-    # fields blank for plain HTTP.
-    certfile: server.crt
-    keyfile: server.key
+    # fields blank for plain HTTP. These files are relative to the
+    # "certs" subdirectory of main.py (the app), or they can be absolute
+    # paths to their installed location.
+    certfile: localhost.apache.org+3.pem
+    keyfile: localhost.apache.org+3-key.pem
+
 
 # Path to the database, absolute or relative to APP.
 db: steve.db

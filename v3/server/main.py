@@ -25,6 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 DATE_FORMAT = '%m/%d %H:%M'
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
+CERTS_DIR = THIS_DIR / 'certs'
 
 
 def main():
@@ -54,8 +55,8 @@ def main():
 
     kwargs = { }
     if app.cfg.server.certfile:
-        kwargs['certfile'] = THIS_DIR / app.cfg.server.certfile
-        kwargs['keyfile'] = THIS_DIR / app.cfg.server.keyfile
+        kwargs['certfile'] = CERTS_DIR / app.cfg.server.certfile
+        kwargs['keyfile'] = CERTS_DIR / app.cfg.server.keyfile
 
     # Spool up the app!
     app.runx(port=app.cfg.server.port, **kwargs)
