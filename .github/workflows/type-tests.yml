@@ -3,19 +3,22 @@ name: Type Tests
 on:
   push:
     paths:
+      - 'v3/**/*.py'
       - '**/type-tests.yml'
-      - '**/*.py'
-      - 'requirements.txt'
+      - 'v3/pyproject.toml'
 
   pull_request:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       max-parallel: 1
       matrix:
         python-version: [3.12]
@@ -27,17 +30,21 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pypoetry
+        key: ${{ runner.os }}-poetry-${{ hashFiles('v3/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+    - name: Install Poetry
+      run: |
+        python -m pip install poetry
     - name: Install dependencies
+      working-directory: v3  # Set the working directory to v3 where pyproject.toml is located
       run: |
-        python -m pip install -r requirements.txt
-        python -m pip install mypy
-        python3 -m pip install types-PyYAML
-        python3 -m pip install types-requests
+        poetry install --with test,server
     - name: Type testing with mypy
+      working-directory: v3  # Ensure mypy runs in the correct directory
       run: |
-          # exclude duplicate module names under wsgi; also standalone.py print syntax error as they cause failure
-          # Need to re-enable var-annotated later
-          mypy --cache-dir /tmp/ --ignore-missing-imports \
-            --exclude pysteve/www/wsgi --exclude pysteve/standalone.py \
-            --disable-error-code var-annotated \
-            pysteve
+        poetry run mypy --cache-dir /tmp/ --ignore-missing-imports .

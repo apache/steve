@@ -20,6 +20,10 @@ argon2-cffi = "^25.1.0"
 [tool.poetry.group.test.dependencies]
 coverage = "^7.10.6"
 pylint = "^3.3.8"
+mypy = "^1.18.2"
+types-PyYAML = "^6.0.12"
+types-requests = "^2.32.4"
+types-aiofiles = "^24.1.0"
 
 [tool.poetry.group.server.dependencies]
 asfquart = ">=0.1.12"
