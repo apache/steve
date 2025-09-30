@@ -19,8 +19,6 @@
 import logging
 import pathlib
 
-import asfquart
-
 _LOGGER = logging.getLogger(__name__)
 DATE_FORMAT = '%m/%d %H:%M'
 

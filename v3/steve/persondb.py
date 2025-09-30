@@ -22,7 +22,6 @@
 import pathlib
 
 import asfpy.db
-import easydict
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 QUERIES = THIS_DIR.parent / 'queries.yaml'
@@ -70,4 +69,4 @@ class PersonDB:
 
         # Run the query to completion, and return the entire list of Persons.
         self.q_person.perform()
-        return list(self.q_person.fetchall())
+        return list(self.q_person.fetchall())  # asfpy.db.DB uses EasyDict

@@ -67,11 +67,15 @@ async def voter_page():
         election = steve.election.Election.open_to_pid(DB_FNAME, 'gstein')
         owned = steve.election.Election.owned_elections(DB_FNAME, 'gstein')
 
+    ### for now
+    election = [ edict(eid='123', title='test election') ]
+    owned = [ edict(eid='456', title='another', authz=None, closed=None) ]
+
     result = await signin_info()
     result.title = 'Voting'
 
-    result.election = [ edict(eid='123', title='test election') ]
-    result.owned = [ edict(eid='456', title='another', authz=None, closed=None) ]
+    result.election = election
+    result.owned = owned
 
     return result
 

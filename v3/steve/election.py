@@ -372,9 +372,9 @@ class Election:
         while True:
             eid = crypto.create_id()
             try:
-                conn.execute('INSERT INTO election (eid, title, owner_pid)'
-                             ' VALUES (?, ?, ?)',
-                             (eid, title, owner_pid,))
+                conn.execute('INSERT INTO election (eid, title, owner_pid, authz)'
+                             ' VALUES (?, ?, ?, ?)',
+                             (eid, title, owner_pid, authz, ))
                 break
             except sqlite3.IntegrityError:
                 _LOGGER.debug('EID conflict(!!) ... trying again.')
