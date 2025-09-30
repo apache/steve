@@ -49,7 +49,7 @@ def gen_vote_token(opened_key: bytes, pid: str, iid: str, salt: bytes) -> bytes:
     return _hash(opened_key + pid.encode() + iid.encode(), salt)
 
 
-def _b64_vote_key(vote_token: bytes, salt: bytes) -> str:
+def _b64_vote_key(vote_token: bytes, salt: bytes) -> bytes:
     "Key-stretch the vote_token. (ref: PBKDF)"
 
     ### still using Fernet now, but will switch soon. Leaving comments.
