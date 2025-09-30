@@ -18,6 +18,7 @@ argon2-cffi = "^25.1.0"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.10.6"
+pylint = "^3.3.8"
 
 [tool.poetry.group.server.dependencies]
 asfquart = ">=0.1.12"
