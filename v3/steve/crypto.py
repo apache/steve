@@ -22,7 +22,6 @@ import base64
 import secrets
 
 import passlib.hash  # note that .argon2 is proxy in this pkg
-import passlib.utils  # for the RNG, to create Salt values
 
 import cryptography.fernet
 from cryptography.hazmat.primitives import hashes
@@ -36,7 +35,7 @@ SALT_LEN = 16
 
 def gen_salt() -> bytes:
     "Generate bytes to be used as a salt, for hashing."
-    return passlib.utils.getrandbytes(passlib.utils.rng, SALT_LEN)
+    return secrets.token_bytes(SALT_LEN)
 
 
 def gen_opened_key(edata: bytes, salt: bytes) -> bytes:
