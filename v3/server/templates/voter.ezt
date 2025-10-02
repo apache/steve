@@ -25,7 +25,9 @@
                         <div class="card-footer text-muted">
                             [if-any election.closed]
                                 Closed
-                                <span title="[election.fmt_close_at_full]">[election.fmt_close_at]</span>
+                                <span title="[election.fmt_close_at_full]"
+                                        style="border-bottom: 1px dotted #007bff;"
+                                        >[election.fmt_close_at]</span>
                             [else]
                                 [if-any election.open_at]
                                   <div>
