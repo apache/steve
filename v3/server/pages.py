@@ -96,12 +96,14 @@ async def voter_page():
                 ).timestamp()
 
     def new_test_election():
+        import random
         return edict(
             eid=steve.crypto.create_id(),
             title=f'Title blah:{steve.crypto.create_id()}',
             owner_pid='alice',
             authz=None,
-            closed=None,
+            is_opened=(random.randrange(10) < 3),  # open 30%
+            closed=(random.randrange(10) < 3),  # closed 30%
             open_at=some_future(),
             close_at=some_future(),
             )
@@ -194,8 +196,13 @@ def format_datetime(dt):
 def postprocess_election(e):
     "Post-process attributes in an Election, as an EasyDict."
 
-    # Anything but 1 means the Election is Open.
+    # Anything but 1 means the Election is not closed.
     e.closed = ezt.boolean(e.closed == 1)
+
+    # Anything but 1 means the Election is not open.
+    e.is_opened = ezt.boolean(e.is_opened == 1)
+
+    # note: an election has an Edit state: not open, not closed.
 
     # Format dates, if present.
     dt_open = e.open_at and datetime.datetime.fromtimestamp(e.open_at)

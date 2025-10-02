@@ -89,7 +89,8 @@ election:
     # Note: SALT and OPENED_KEY are never returned.
     q_open_to_me: |
         SELECT DISTINCT e.eid, e.title, e.owner_pid, e.authz, e.closed,
-                        e.open_at, e.close_at
+                        e.open_at, e.close_at,
+                        (e.opened_key IS NOT NULL) AS is_opened
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid
         JOIN election e ON i.eid = e.eid
@@ -100,7 +101,8 @@ election:
 
     # Which elections were created by PID?
     q_owned: |
-        SELECT eid, title, authz, closed, open_at, close_at
+        SELECT eid, title, authz, closed, open_at, close_at,
+               (opened_key IS NOT NULL) AS is_opened
         FROM election WHERE owner_pid = ?
 
 

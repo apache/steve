@@ -7,7 +7,9 @@
                 <a href="#" class="text-decoration-none">
                     <div class="card h-100">
                         <div class="card-body">
-                            <h5 class="card-title">[election.title]</h5>
+                            <h5 class="card-title">[election.title][#
+                              ][if-any election.is_opened] (open)[else][#
+                              ][if-any election.closed] (closed)[end][end]</h5>
                             <p class="card-text">
                                 something about the election?
                                 <br/>
@@ -25,20 +27,25 @@
                                 Closed on
                                 <span title="[election.fmt_close_at_full]">[election.fmt_close_at]</span>
                             [else]
-                                already open?
                                 [if-any election.open_at]
-                                    <br/>
-                                    Opening
+                                  <div>
+                                    [if-any election.is_opened]
+                                        Opened
+                                    [else]
+                                        Opening
+                                    [end]
                                     <span title="[election.fmt_open_at_full]"
                                         style="border-bottom: 1px dotted #007bff;"
                                         >[election.fmt_open_at]</span>
+                                  </div>
                                 [end]
                                 [if-any election.close_at]
-                                    <br/>
+                                  <div>
                                     Closing
                                     <span title="[election.fmt_close_at_full]"
                                         style="border-bottom: 1px dotted #007bff;"
                                         >[election.fmt_close_at]</span>
+                                  </div>
                                 [end]
                             [end]
                         </div>
