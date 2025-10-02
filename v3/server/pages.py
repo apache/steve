@@ -38,6 +38,7 @@ DB_FNAME = THIS_DIR / APP.cfg.db
 
 sys.path.insert(0, str(THIS_DIR.parent))
 import steve.election
+import steve.crypto
 
 
 async def signin_info():
@@ -64,12 +65,23 @@ async def home_page():
 @APP.use_template('templates/voter.ezt')
 async def voter_page():
     with asfpy.stopwatch.Stopwatch():
+        # These are lists of EasyDict instances for each Election.
         election = steve.election.Election.open_to_pid(DB_FNAME, 'gstein')
         owned = steve.election.Election.owned_elections(DB_FNAME, 'gstein')
 
     ### for now
-    election = [ edict(eid='123', title='test election') ]
-    owned = [ edict(eid='456', title='another', authz=None, closed=None) ]
+    def new_test_election():
+        return edict(
+            eid=steve.crypto.create_id(),
+            title=f'Title blah:{steve.crypto.create_id()}',
+            owner_pid='alice',
+            authz=None,
+            closed=None,
+            open_at=None,
+            close_at=None,
+            )
+    election = [ new_test_election() ]
+    owned = [ new_test_election() ]
 
     result = await signin_info()
     result.title = 'Voting'

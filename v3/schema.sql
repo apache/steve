@@ -90,6 +90,17 @@ CREATE TABLE election (
        opened). 1 for closed (implies it was formerly-opened).  */
     closed  INTEGER  CHECK (closed IS NULL OR closed IN (0, 1)),
 
+    /* The approximate times this Election will be opened and closed,
+       if known. NULL if unknown. These are purely advisory, for humans,
+       and have no effect upon the actual Election operation. Look
+       to OPENED_KEY and CLOSED for the current Election state.
+
+       Note: the "prevent_open_close_update" trigger will prevent these
+       two values from changing once an election is closed. They never
+       need to be set, but once an election is closed: they are fixed.  */
+    open_at  INTEGER,  /* seconds since epoch  */
+    close_at  INTEGER,  /* seconds since epoch  */
+
 
     /* Enforce/declare/document relationships.  */
     FOREIGN KEY (owner_pid) REFERENCES person(pid)
@@ -97,6 +108,15 @@ CREATE TABLE election (
     ON UPDATE NO ACTION
 
     ) STRICT;
+
+/* For posterity, do not allow changes to the time fields, once closed.  */
+CREATE TRIGGER prevent_open_close_update
+BEFORE UPDATE OF open_at, close_at ON election
+FOR EACH ROW
+WHEN OLD.closed = 1
+BEGIN
+    SELECT RAISE(ABORT, 'Cannot modify open_at or close_at when election is closed');
+END;
 
 /* --------------------------------------------------------------------- */
 

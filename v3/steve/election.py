@@ -366,15 +366,19 @@ class Election:
         return j and json.loads(j)
 
     @classmethod
-    def create(cls, db_fname, title, owner_pid, authz=None):
+    def create(cls, db_fname, title, owner_pid,
+               authz=None, open_at=None, close_at=None):
         # Open in autocommit
         conn = sqlite3.connect(db_fname, isolation_level=None)
         while True:
             eid = crypto.create_id()
             try:
-                conn.execute('INSERT INTO election (eid, title, owner_pid, authz)'
-                             ' VALUES (?, ?, ?, ?)',
-                             (eid, title, owner_pid, authz, ))
+                conn.execute('INSERT INTO election'
+                             ' (eid, title, owner_pid,'
+                             '  authz, open_at, close_at)'
+                             ' VALUES (?, ?, ?, ?, ?, ?)',
+                             (eid, title, owner_pid,
+                              authz, open_at, close_at))
                 break
             except sqlite3.IntegrityError:
                 _LOGGER.debug('EID conflict(!!) ... trying again.')

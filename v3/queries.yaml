@@ -85,8 +85,11 @@ election:
     #     the ORDER BY. However, with few revotes, that sort is not
     #     expensive. Collect some data. Or maybe people can lobby.
 
+    # Which elections are open for voting by PID?
+    # Note: SALT and OPENED_KEY are never returned.
     q_open_to_me: |
-        SELECT DISTINCT e.eid, e.title
+        SELECT DISTINCT e.eid, e.title, e.owner_pid, e.authz, e.closed,
+                        e.open_at, e.close_at
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid
         JOIN election e ON i.eid = e.eid
@@ -94,8 +97,10 @@ election:
           AND e.salt IS NOT NULL
           AND (e.closed IS NULL OR e.closed = 0)
         ORDER BY e._ROWID_
+
+    # Which elections were created by PID?
     q_owned: |
-        SELECT eid, title, authz, closed
+        SELECT eid, title, authz, closed, open_at, close_at
         FROM election WHERE owner_pid = ?
 
 
