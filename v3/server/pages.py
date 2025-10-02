@@ -86,7 +86,7 @@ async def voter_page():
             return None
         # 66% days, then: 50% hours or minutes each
         if random.randrange(3):
-            delta = random.randint(10, 50) * 24 * 60 * 60  # days
+            delta = random.randint(5, 20) * 24 * 60 * 60  # days
         elif random.randrange(2):
             delta = random.randint(5, 40) * 60 * 60  # hours
         else:
@@ -185,10 +185,10 @@ def format_datetime(dt):
     delta = dt.timestamp() - datetime.datetime.now().timestamp()
     if 0 < delta < SOON_CUTOFF:
         if delta < SOON_1HOUR:
-            return f'about {int(delta / 60)} minutes'
-        return f'about {int(delta / 60 / 60)} hours'
+            return f'in about {int(delta / 60)} minutes'
+        return f'in about {int(delta / 60 / 60)} hours'
 
-    return dt.strftime(FMT_DATE)  # short format
+    return f'on {dt.strftime(FMT_DATE)}'  # short format
 
 
 def postprocess_election(e):

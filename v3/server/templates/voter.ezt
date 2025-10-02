@@ -21,18 +21,26 @@
                             </p>
                         </div>
                         <div class="card-footer text-muted">
-                            <div>
-                            OPEN:
-                                [election.open_at]
-                                [election.fmt_open_at]
-                                [election.fmt_open_at_full]
-                            </div>
-                            <div>
-                            CLOSE:
-                                [election.close_at]
-                                [election.fmt_close_at]
-                                [election.fmt_close_at_full]
-                            </div>
+                            [if-any election.closed]
+                                Closed on
+                                <span title="[election.fmt_close_at_full]">[election.fmt_close_at]</span>
+                            [else]
+                                already open?
+                                [if-any election.open_at]
+                                    <br/>
+                                    Opening
+                                    <span title="[election.fmt_open_at_full]"
+                                        style="border-bottom: 1px dotted #007bff;"
+                                        >[election.fmt_open_at]</span>
+                                [end]
+                                [if-any election.close_at]
+                                    <br/>
+                                    Closing
+                                    <span title="[election.fmt_close_at_full]"
+                                        style="border-bottom: 1px dotted #007bff;"
+                                        >[election.fmt_close_at]</span>
+                                [end]
+                            [end]
                         </div>
                     </div>
                 </a>
