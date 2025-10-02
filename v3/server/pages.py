@@ -24,12 +24,14 @@
 
 import sys
 import pathlib
+import datetime
 
 from easydict import EasyDict as edict
 import asfpy.stopwatch
 import quart
 import asfquart.session
 from asfquart.auth import Requirements as R
+import ezt
 
 APP = asfquart.APP
 
@@ -39,6 +41,12 @@ DB_FNAME = THIS_DIR / APP.cfg.db
 sys.path.insert(0, str(THIS_DIR.parent))
 import steve.election
 import steve.crypto
+
+# Formatted values to inject into templates.
+FMT_DATE = '%b %d'
+FMT_DATE_FULL = '%Y-%m-%d %H:%M'
+SOON_1HOUR = 60 * 60
+SOON_CUTOFF = 48 * SOON_1HOUR  # 48 hours, in seconds
 
 
 async def signin_info():
@@ -70,6 +78,23 @@ async def voter_page():
         owned = steve.election.Election.owned_elections(DB_FNAME, 'gstein')
 
     ### for now
+    def some_future():
+        import random
+
+        # 50% no time
+        if random.randrange(2):
+            return None
+        # 66% days, then: 50% hours or minutes each
+        if random.randrange(3):
+            delta = random.randint(10, 50) * 24 * 60 * 60  # days
+        elif random.randrange(2):
+            delta = random.randint(5, 40) * 60 * 60  # hours
+        else:
+            delta = random.randint(10, 50) * 60  # minutes
+
+        return (datetime.datetime.now() + datetime.timedelta(seconds=delta)
+                ).timestamp()
+
     def new_test_election():
         return edict(
             eid=steve.crypto.create_id(),
@@ -77,17 +102,17 @@ async def voter_page():
             owner_pid='alice',
             authz=None,
             closed=None,
-            open_at=None,
-            close_at=None,
+            open_at=some_future(),
+            close_at=some_future(),
             )
-    election = [ new_test_election() ]
-    owned = [ new_test_election() ]
+    election = [ new_test_election() for i in range(10) ]
+    owned = [ new_test_election() for i in range(10) ]
 
     result = await signin_info()
     result.title = 'Voting'
 
-    result.election = election
-    result.owned = owned
+    result.election = [ postprocess_election(e) for e in election ]
+    result.owned = [ postprocess_election(e) for e in owned ]
 
     return result
 
@@ -148,3 +173,36 @@ async def about_page():
 @APP.route('/static/<path:filename>')
 async def serve_static(filename):
     return await quart.send_from_directory('static', filename)
+
+
+def format_datetime(dt):
+    "Format a datetime as absolute or relative."
+
+    # Carry through an absent datetime.
+    if not dt:
+        return None
+
+    delta = dt.timestamp() - datetime.datetime.now().timestamp()
+    if 0 < delta < SOON_CUTOFF:
+        if delta < SOON_1HOUR:
+            return f'about {int(delta / 60)} minutes'
+        return f'about {int(delta / 60 / 60)} hours'
+
+    return dt.strftime(FMT_DATE)  # short format
+
+
+def postprocess_election(e):
+    "Post-process attributes in an Election, as an EasyDict."
+
+    # Anything but 1 means the Election is Open.
+    e.closed = ezt.boolean(e.closed == 1)
+
+    # Format dates, if present.
+    dt_open = e.open_at and datetime.datetime.fromtimestamp(e.open_at)
+    e.fmt_open_at = format_datetime(dt_open)
+    e.fmt_open_at_full = dt_open and dt_open.strftime(FMT_DATE_FULL)
+    dt_close = e.close_at and datetime.datetime.fromtimestamp(e.close_at)
+    e.fmt_close_at = format_datetime(dt_close)
+    e.fmt_close_at_full = dt_close and dt_close.strftime(FMT_DATE_FULL)
+
+    return e

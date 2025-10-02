@@ -1,14 +1,50 @@
 [include "header.ezt"]
     <div class="container">
         <h1>[title]</h1>
-        <p>
+
           [for election]
-            [election.eid] [election.title]
+            <div class="col-md-5 mb-4">
+                <a href="#" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">[election.title]</h5>
+                            <p class="card-text">
+                                something about the election?
+                                <br/>
+                                eid: [election.eid]
+                                <br/>
+                                created by: [election.owner_pid]
+                                <br/>
+                                authz: [election.authz]
+                                <br/>
+                                closed: [election.closed]
+                            </p>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <div>
+                            OPEN:
+                                [election.open_at]
+                                [election.fmt_open_at]
+                                [election.fmt_open_at_full]
+                            </div>
+                            <div>
+                            CLOSE:
+                                [election.close_at]
+                                [election.fmt_close_at]
+                                [election.fmt_close_at_full]
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
           [end]
-        </p>
+
         <p>
           [for owned]
-            [owned.eid] [owned.title] [owned.authz] [owned.closed]
+            [owned.eid] [owned.title] [owned.owner_pid]
+            [owned.authz] [owned.closed]
+            [owned.open_at] [owned.fmt_open_at] [owned.fmt_open_at_full]
+            [owned.close_at] [owned.fmt_close_at] [owned.fmt_close_at_full]
           [end]
         </p>
     </div>
