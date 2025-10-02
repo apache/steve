@@ -8,8 +8,8 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">[election.title][#
-                              ][if-any election.is_opened] (open)[else][#
-                              ][if-any election.closed] (closed)[end][end]</h5>
+                              ][if-any election.closed] (closed)[else][#
+                              ][if-any election.is_opened] (open)[end][end]</h5>
                             <p class="card-text">
                                 something about the election?
                                 <br/>
@@ -24,7 +24,7 @@
                         </div>
                         <div class="card-footer text-muted">
                             [if-any election.closed]
-                                Closed on
+                                Closed
                                 <span title="[election.fmt_close_at_full]">[election.fmt_close_at]</span>
                             [else]
                                 [if-any election.open_at]
