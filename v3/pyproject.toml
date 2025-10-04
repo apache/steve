@@ -30,6 +30,8 @@ asfquart = ">=0.1.12"
 ### not sure about this. not needed for server operation.
 ### let the import fail, and the user can do a pip install.
 #python-ldap = "^3.0.0"
+### same. let this fail, if the user needs it.
+#faker = "^37.8.0"
 
 [tool.poetry.extras]
 server = ["asfquart", ]  # Core dependencies for apache-steve[server]
