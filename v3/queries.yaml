@@ -38,8 +38,8 @@ election:
     c_add_vote: INSERT INTO vote VALUES (NULL, ?, ?)
     c_add_mayvote: INSERT INTO mayvote (pid, iid, salt) VALUES (?, ?, NULL)
     c_add_mayvote_all: |
-        INSERT INTO mayvote (pid, iid, salt)
-        SELECT ?, iid, NULL FROM issue WHERE eid = ?
+        INSERT INTO mayvote (pid, iid)
+        SELECT ?, iid FROM issue WHERE eid = ?
     c_delete_mayvote: |
         DELETE FROM mayvote
         WHERE iid IN (
