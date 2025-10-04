@@ -35,7 +35,9 @@ election:
             type=excluded.type,
             kv=excluded.kv
     c_delete_issue: DELETE FROM issue WHERE iid = ?
-    c_add_vote: INSERT INTO vote VALUES (NULL, ?, ?)
+    c_add_vote: |
+        INSERT INTO vote (vote_token, ciphertext)
+        VALUES (?, ?)
     c_add_mayvote: INSERT INTO mayvote (pid, iid) VALUES (?, ?)
     c_add_mayvote_all: |
         INSERT INTO mayvote (pid, iid)
