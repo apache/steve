@@ -27,6 +27,9 @@ types-aiofiles = "^24.1.0"
 
 [tool.poetry.group.server.dependencies]
 asfquart = ">=0.1.12"
+### not sure about this. not needed for server operation.
+### let the import fail, and the user can do a pip install.
+#python-ldap = "^3.0.0"
 
 [tool.poetry.extras]
 server = ["asfquart", ]  # Core dependencies for apache-steve[server]
