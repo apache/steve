@@ -1,7 +1,6 @@
 poetry.lock
 
-bin/bs.zip
-
+server/bin/bs.zip
 server/config.yaml
 server/apptoken.txt
 
