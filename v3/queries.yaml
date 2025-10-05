@@ -90,15 +90,17 @@ election:
     # Which elections are open for voting by PID?
     # Note: SALT and OPENED_KEY are never returned.
     q_open_to_me: |
-        SELECT DISTINCT e.eid, e.title, e.owner_pid, e.authz, e.closed,
-                        e.open_at, e.close_at,
-                        (e.opened_key IS NOT NULL) AS is_opened
+        SELECT e.eid, e.title, e.owner_pid, e.authz, e.closed,
+               e.open_at, e.close_at,
+               (e.opened_key IS NOT NULL) AS is_opened,
+               COUNT(i.iid) AS issue_count
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid
         JOIN election e ON i.eid = e.eid
         WHERE m.pid = ?
           AND e.salt IS NOT NULL
           AND (e.closed IS NULL OR e.closed = 0)
+        GROUP BY e.eid
         ORDER BY e._ROWID_
 
     # Which elections were created by PID?

@@ -11,7 +11,7 @@
                               ][if-any election.closed] (closed)[else][#
                               ][if-any election.is_opened] (open)[end][end]</h5>
                             <p class="card-text">
-                                something about the election?
+                                You have [election.issue_count] issues to vote upon.
                                 <br/>
                                 eid: [election.eid]
                                 <br/>
@@ -57,12 +57,7 @@
           [end]
 
         <p>
-          [for owned]
-            [owned.eid] [owned.title] [owned.owner_pid]
-            [owned.authz] [owned.closed]
-            [owned.open_at] [owned.fmt_open_at] [owned.fmt_open_at_full]
-            [owned.close_at] [owned.fmt_close_at] [owned.fmt_close_at_full]
-          [end]
+          You have [len_owned] <a href="/admin">elections to manage</a>.
         </p>
     </div>
 [include "footer.ezt"]

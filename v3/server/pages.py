@@ -72,49 +72,26 @@ async def home_page():
 @asfquart.auth.require({R.committer})  ### need general solution
 @APP.use_template('templates/voter.ezt')
 async def voter_page():
+    pid = 'gstein'  ### get from session
+
     with asfpy.stopwatch.Stopwatch():
         # These are lists of EasyDict instances for each Election.
-        election = steve.election.Election.open_to_pid(DB_FNAME, 'gstein')
-        owned = steve.election.Election.owned_elections(DB_FNAME, 'gstein')
+        election = steve.election.Election.open_to_pid(DB_FNAME, pid)
+        owned = steve.election.Election.owned_elections(DB_FNAME, pid)
 
-    ### for now
-    def some_future():
-        import random
-
-        # 50% no time
-        if random.randrange(2):
-            return None
-        # 66% days, then: 50% hours or minutes each
-        if random.randrange(3):
-            delta = random.randint(5, 20) * 24 * 60 * 60  # days
-        elif random.randrange(2):
-            delta = random.randint(5, 40) * 60 * 60  # hours
-        else:
-            delta = random.randint(10, 50) * 60  # minutes
-
-        return (datetime.datetime.now() + datetime.timedelta(seconds=delta)
-                ).timestamp()
-
-    def new_test_election():
-        import random
-        return edict(
-            eid=steve.crypto.create_id(),
-            title=f'Title blah:{steve.crypto.create_id()}',
-            owner_pid='alice',
-            authz=None,
-            is_opened=(random.randrange(10) < 3),  # open 30%
-            closed=(random.randrange(10) < 3),  # closed 30%
-            open_at=some_future(),
-            close_at=some_future(),
-            )
-    election = [ new_test_election() for i in range(10) ]
-    owned = [ new_test_election() for i in range(10) ]
+    ### should change q_owned to return owner_pid even though it is
+    ### known from the query param. (ie. solve in sql, not python)
+    for e in owned:
+        e.owner_pid = pid
 
     result = await signin_info()
     result.title = 'Voting'
 
     result.election = [ postprocess_election(e) for e in election ]
     result.owned = [ postprocess_election(e) for e in owned ]
+
+    result.len_elections = len(result.election)
+    result.len_owned = len(result.owned)
 
     return result
 
