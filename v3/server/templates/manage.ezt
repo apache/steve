@@ -1,8 +1,10 @@
 [include "header.ezt"]
     <div class="container">
         <h1>[title]</h1>
-        <p>
-            TBD: manage
-        </p>
+        <ul>
+            [for issues]
+                <li>[issues.title]</li>
+            [end]
+        </ul>
     </div>
 [include "footer.ezt"]

@@ -25,6 +25,8 @@
 import sys
 import pathlib
 import datetime
+import functools
+import logging
 
 from easydict import EasyDict as edict
 import asfpy.stopwatch
@@ -34,6 +36,7 @@ from asfquart.auth import Requirements as R
 import ezt
 
 APP = asfquart.APP
+_LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR / APP.cfg.db
@@ -91,30 +94,48 @@ async def voter_page():
     return result
 
 
+def load_election(func):
+    "Decorator to load/pass-argument an Election from EID."
+
+    @functools.wraps(func)
+    async def loader(eid):
+
+        e = steve.election.Election(DB_FNAME, eid)
+        _LOGGER.debug(f'Loaded: {e}')
+
+        try:
+            md = e.get_metadata()
+        except AttributeError:
+            # If the EID is wrong, the fetch fails trying to access metadata.
+            ### YES, very poor way to signal a bad EID. fix this.
+
+            result = await signin_info()
+            result.title = 'Unknown Election'
+            result.eid = eid
+            # Note: result.uid (and friends) are needed for the navbar.
+            raise_404(T_BAD_EID, result)
+            # NOTREACHED
+
+        ### check authz
+
+        return await func(e)
+
+    return loader
+
+
 @APP.get('/vote-on/<eid>')
 @asfquart.auth.require({R.committer})  ### need general solution
+@load_election
 @APP.use_template(TEMPLATES / 'vote-on.ezt')
-async def vote_on_page(eid):
+async def vote_on_page(election):
     result = await signin_info()
     result.title = 'Vote On Election'
 
-    e = steve.election.Election(DB_FNAME, eid)
+    md = election.get_metadata()
+    result.e_title = md[1]
 
-    try:
-        md = e.get_metadata()
-    except AttributeError:
-        # If the EID is wrong, the fetch fails trying to access metadata.
-        ### YES, very poor way to signal a bad EID. fix this.
-        result.title = 'Unknown Election'
-        result.eid = eid
-        # Note: result.uid (and friends) are needed for the navbar.
-        raise_404(T_BAD_EID, result)
-        # NOTREACHED
-
-    ### check authz
-
-    ### rando for now. fetch the issues, and put in a count.
-    result.issue_count = 7
+    result.issues = election.list_issues()
+    result.issue_count = len(result.issues)
 
     return result
 
@@ -141,28 +162,17 @@ async def admin_page():
 
 @APP.get('/manage/<eid>')
 @asfquart.auth.require({R.committer})  ### need general solution
+@load_election
 @APP.use_template(TEMPLATES / 'manage.ezt')
-async def manage_page(eid):
+async def manage_page(election):
     result = await signin_info()
     result.title = 'Manage an Election'
 
-    e = steve.election.Election(DB_FNAME, eid)
+    md = election.get_metadata()
+    result.e_title = md[1]
 
-    try:
-        md = e.get_metadata()
-    except AttributeError:
-        # If the EID is wrong, the fetch fails trying to access metadata.
-        ### YES, very poor way to signal a bad EID. fix this.
-        result.title = 'Unknown Election'
-        result.eid = eid
-        # Note: result.uid (and friends) are needed for the navbar.
-        raise_404(T_BAD_EID, result)
-        # NOTREACHED
-
-    ### check authz
-
-    ### rando for now. fetch the issues, and put in a count.
-    result.issue_count = 7
+    result.issues = election.list_issues()
+    result.issue_count = len(result.issues)
 
     return result
 
