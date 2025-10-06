@@ -139,6 +139,34 @@ async def admin_page():
     return result
 
 
+@APP.get('/manage/<eid>')
+@asfquart.auth.require({R.committer})  ### need general solution
+@APP.use_template(TEMPLATES / 'manage.ezt')
+async def manage_page(eid):
+    result = await signin_info()
+    result.title = 'Manage an Election'
+
+    e = steve.election.Election(DB_FNAME, eid)
+
+    try:
+        md = e.get_metadata()
+    except AttributeError:
+        # If the EID is wrong, the fetch fails trying to access metadata.
+        ### YES, very poor way to signal a bad EID. fix this.
+        result.title = 'Unknown Election'
+        result.eid = eid
+        # Note: result.uid (and friends) are needed for the navbar.
+        raise_404(T_BAD_EID, result)
+        # NOTREACHED
+
+    ### check authz
+
+    ### rando for now. fetch the issues, and put in a count.
+    result.issue_count = 7
+
+    return result
+
+
 @APP.get('/profile')
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template(TEMPLATES / 'profile.ezt')
