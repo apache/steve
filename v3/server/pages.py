@@ -131,11 +131,6 @@ async def admin_page():
         election = steve.election.Election.open_to_pid(DB_FNAME, result.uid)
         owned = steve.election.Election.owned_elections(DB_FNAME, result.uid)
 
-    ### for now. future: adjust query
-    for e in owned:
-        e.issue_count = 5
-        e.owner_pid = result.uid
-
     result.owned = [ postprocess_election(e) for e in owned ]
 
     result.len_election = len(election)
@@ -222,6 +217,14 @@ def postprocess_election(e):
     dt_close = e.close_at and datetime.datetime.fromtimestamp(e.close_at)
     e.fmt_close_at = format_datetime(dt_close)
     e.fmt_close_at_full = dt_close and dt_close.strftime(FMT_DATE_FULL)
+
+    ### temporary. need to adjust input query.
+    if 'owner_pid' not in e:
+        e.owner_pid = 'gstein'  ### fix query. for now, could be result.uid
+    if 'issue_count' not in e:
+        e.issue_count = 5  ### arbitrary. just provide a value
+    if 'owner_name' not in e:
+        e.owner_name = 'Jane Doe'
 
     return e
 

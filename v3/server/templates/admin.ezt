@@ -4,8 +4,8 @@
 
 
           [for owned]
-            <div class="col-md-5 mb-4">
-                <a href="/vote-on/[owned.eid]" class="text-decoration-none">
+            <div class="w-auto mb-4">
+                <a href="/manage/[owned.eid]" class="text-decoration-none">
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">[owned.title][#
@@ -16,14 +16,8 @@
                                 <br/>
                                 eid: [owned.eid]
                                 <br/>
-                                created by: [owned.owner_pid]
-                                <br/>
-                                authz: [owned.authz]
-                                <br/>
                                 closed: [owned.closed]
                             </p>
-                        </div>
-                        <div class="card-footer text-muted">
                             [if-any owned.closed]
                                 Closed
                                 <span title="[owned.fmt_close_at_full]"
@@ -50,6 +44,12 @@
                                         >[owned.fmt_close_at]</span>
                                   </div>
                                 [end]
+                            [end]
+                        </div>
+                        <div class="card-footer text-muted small">
+                            Created by [owned.owner_name] ([owned.owner_pid])
+                            [if-any owned.authz]
+                                (authz: [owned.authz])
                             [end]
                         </div>
                     </div>
