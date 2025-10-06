@@ -37,6 +37,7 @@ APP = asfquart.APP
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR / APP.cfg.db
+TEMPLATES = THIS_DIR / 'templates'
 
 sys.path.insert(0, str(THIS_DIR.parent))
 import steve.election
@@ -47,6 +48,8 @@ FMT_DATE = '%b %d'
 FMT_DATE_FULL = '%Y-%m-%d %H:%M'
 SOON_1HOUR = 60 * 60
 SOON_CUTOFF = 48 * SOON_1HOUR  # 48 hours, in seconds
+
+T_BAD_EID = APP.load_template(TEMPLATES / 'e_bad_eid.ezt')
 
 
 async def signin_info():
@@ -60,7 +63,7 @@ async def signin_info():
 
 
 @APP.get('/')
-@APP.use_template('templates/home.ezt')
+@APP.use_template(TEMPLATES / 'home.ezt')
 async def home_page():
     result = await signin_info()
     result.title = 'Home'
@@ -70,49 +73,80 @@ async def home_page():
 
 @APP.get('/voter')
 @asfquart.auth.require({R.committer})  ### need general solution
-@APP.use_template('templates/voter.ezt')
+@APP.use_template(TEMPLATES / 'voter.ezt')
 async def voter_page():
-    pid = 'gstein'  ### get from session
-
-    with asfpy.stopwatch.Stopwatch():
-        # These are lists of EasyDict instances for each Election.
-        election = steve.election.Election.open_to_pid(DB_FNAME, pid)
-        owned = steve.election.Election.owned_elections(DB_FNAME, pid)
-
-    ### should change q_owned to return owner_pid even though it is
-    ### known from the query param. (ie. solve in sql, not python)
-    for e in owned:
-        e.owner_pid = pid
-
     result = await signin_info()
     result.title = 'Voting'
 
-    result.election = [ postprocess_election(e) for e in election ]
-    result.owned = [ postprocess_election(e) for e in owned ]
+    with asfpy.stopwatch.Stopwatch():
+        # These are lists of EasyDict instances for each Election.
+        election = steve.election.Election.open_to_pid(DB_FNAME, result.uid)
+        owned = steve.election.Election.owned_elections(DB_FNAME, result.uid)
 
-    result.len_elections = len(result.election)
-    result.len_owned = len(result.owned)
+    result.election = [ postprocess_election(e) for e in election ]
+
+    result.len_election = len(election)
+    result.len_owned = len(owned)
 
     return result
 
 
-### NOTE: this is for ASF committers only. Obviously, this is not a
-### general purpose solution. Something for the future, to figure out
-### how we'd like to do configuration authorization for various install
-### scenarios and authn systems.
+@APP.get('/vote-on/<eid>')
+@asfquart.auth.require({R.committer})  ### need general solution
+@APP.use_template(TEMPLATES / 'vote-on.ezt')
+async def vote_on_page(eid):
+    result = await signin_info()
+    result.title = 'Vote On Election'
+
+    e = steve.election.Election(DB_FNAME, eid)
+
+    try:
+        md = e.get_metadata()
+    except AttributeError:
+        # If the EID is wrong, the fetch fails trying to access metadata.
+        ### YES, very poor way to signal a bad EID. fix this.
+        result.title = 'Unknown Election'
+        result.eid = eid
+        # Note: result.uid (and friends) are needed for the navbar.
+        raise_404(T_BAD_EID, result)
+        # NOTREACHED
+
+    ### check authz
+
+    ### rando for now. fetch the issues, and put in a count.
+    result.issue_count = 7
+
+    return result
+
+
 @APP.get('/admin')
 @asfquart.auth.require({R.committer})  ### need general solution
-@APP.use_template('templates/admin.ezt')
+@APP.use_template(TEMPLATES / 'admin.ezt')
 async def admin_page():
     result = await signin_info()
     result.title = 'Administration'
+
+    with asfpy.stopwatch.Stopwatch():
+        # These are lists of EasyDict instances for each Election.
+        election = steve.election.Election.open_to_pid(DB_FNAME, result.uid)
+        owned = steve.election.Election.owned_elections(DB_FNAME, result.uid)
+
+    ### for now. future: adjust query
+    for e in owned:
+        e.issue_count = 5
+        e.owner_pid = result.uid
+
+    result.owned = [ postprocess_election(e) for e in owned ]
+
+    result.len_election = len(election)
+    result.len_owned = len(owned)
 
     return result
 
 
 @APP.get('/profile')
 @asfquart.auth.require  # Bare decorator means just require a valid session
-@APP.use_template('templates/profile.ezt')
+@APP.use_template(TEMPLATES / 'profile.ezt')
 async def profile_page():
     result = await signin_info()
     result.title = 'Profile'
@@ -122,7 +156,7 @@ async def profile_page():
 
 @APP.get('/settings')
 @asfquart.auth.require  # Bare decorator means just require a valid session
-@APP.use_template('templates/settings.ezt')
+@APP.use_template(TEMPLATES / 'settings.ezt')
 async def settings_page():
     result = await signin_info()
     result.title = 'Settings'
@@ -131,7 +165,7 @@ async def settings_page():
 
 
 @APP.get('/privacy')
-@APP.use_template('templates/privacy.ezt')
+@APP.use_template(TEMPLATES / 'privacy.ezt')
 async def privacy_page():
     result = await signin_info()
     result.title = 'Privacy'
@@ -140,7 +174,7 @@ async def privacy_page():
 
 
 @APP.get('/about')
-@APP.use_template('templates/about.ezt')
+@APP.use_template(TEMPLATES / 'about.ezt')
 async def about_page():
     result = await signin_info()
     result.title = 'About'
@@ -190,3 +224,8 @@ def postprocess_election(e):
     e.fmt_close_at_full = dt_close and dt_close.strftime(FMT_DATE_FULL)
 
     return e
+
+
+def raise_404(template, data):
+    content = asfquart.utils.render(template, data)
+    quart.abort(quart.Response(content, status=404, mimetype='text/html'))

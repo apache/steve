@@ -1,0 +1,9 @@
+[include "header.ezt"]
+    <div class="container">
+        <h1>[title]</h1>
+        <p>
+            The Election ID ([eid]) does not exist,
+            or you have no issues to vote in that Election.
+        </p>
+    </div>
+[include "footer.ezt"]

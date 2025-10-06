@@ -1,0 +1,11 @@
+[include "header.ezt"]
+    <div class="container">
+        <h1>[title]</h1>
+        <p>
+            You have [issue_count] issues to vote upon, in this election.
+        </p>
+        <p>
+            TBD: list
+        </p>
+    </div>
+[include "footer.ezt"]

@@ -1,8 +1,64 @@
 [include "header.ezt"]
     <div class="container">
         <h1>[title]</h1>
+
+
+          [for owned]
+            <div class="col-md-5 mb-4">
+                <a href="/vote-on/[owned.eid]" class="text-decoration-none">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">[owned.title][#
+                              ][if-any owned.closed] (closed)[else][#
+                              ][if-any owned.is_opened] (open)[end][end]</h5>
+                            <p class="card-text">
+                                This election currently has [owned.issue_count] issues.
+                                <br/>
+                                eid: [owned.eid]
+                                <br/>
+                                created by: [owned.owner_pid]
+                                <br/>
+                                authz: [owned.authz]
+                                <br/>
+                                closed: [owned.closed]
+                            </p>
+                        </div>
+                        <div class="card-footer text-muted">
+                            [if-any owned.closed]
+                                Closed
+                                <span title="[owned.fmt_close_at_full]"
+                                        style="border-bottom: 1px dotted #007bff;"
+                                        >[owned.fmt_close_at]</span>
+                            [else]
+                                [if-any owned.open_at]
+                                  <div>
+                                    [if-any owned.is_opened]
+                                        Opened
+                                    [else]
+                                        Opening
+                                    [end]
+                                    <span title="[owned.fmt_open_at_full]"
+                                        style="border-bottom: 1px dotted #007bff;"
+                                        >[owned.fmt_open_at]</span>
+                                  </div>
+                                [end]
+                                [if-any owned.close_at]
+                                  <div>
+                                    Closing
+                                    <span title="[owned.fmt_close_at_full]"
+                                        style="border-bottom: 1px dotted #007bff;"
+                                        >[owned.fmt_close_at]</span>
+                                  </div>
+                                [end]
+                            [end]
+                        </div>
+                    </div>
+                </a>
+            </div>
+          [end]
+
         <p>
-            TBD
+          You have [len_election] election(s) <a href="/voter">to vote upon</a>.
         </p>
     </div>
 [include "footer.ezt"]
