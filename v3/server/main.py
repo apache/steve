@@ -65,6 +65,7 @@ def main():
     if app.cfg.server.certfile:
         kwargs['certfile'] = CERTS_DIR / app.cfg.server.certfile
         kwargs['keyfile'] = CERTS_DIR / app.cfg.server.keyfile
+        extra_files.update((kwargs['certfile'], kwargs['keyfile']))
 
     # Spool up the app!
     app.runx(port=app.cfg.server.port,
