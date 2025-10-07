@@ -201,6 +201,43 @@ async def manage_page(election):
     return result
 
 
+@APP.get('/do-open/<eid>')
+@asfquart.auth.require({R.committer})  ### need general solution
+@load_election
+async def do_open_endpoint(election):
+    result = await signin_info()
+
+    ### check authz
+
+    _LOGGER.info(f'Opening election[E:{election.eid}]')
+
+    ### should open/keep a PersonDB instance in the APP
+    pdb = steve.persondb.PersonDB(DB_FNAME)
+
+    # Open the Election.
+    election.open(pdb)
+
+    # Return to the management page for this Election.
+    return quart.redirect(f'/manage/{election.eid}')
+
+
+@APP.get('/do-close/<eid>')
+@asfquart.auth.require({R.committer})  ### need general solution
+@load_election
+async def do_close_endpoint(election):
+    result = await signin_info()
+
+    ### check authz
+
+    _LOGGER.info(f'Closing election[E:{election.eid}]')
+
+    # Close the Election.
+    election.close()
+
+    # Return to the management page for this Election.
+    return quart.redirect(f'/manage/{election.eid}')
+
+
 @APP.get('/profile')
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template(TEMPLATES / 'profile.ezt')
