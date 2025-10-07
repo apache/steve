@@ -1,10 +1,176 @@
 [include "header.ezt"]
+
+    <style>
+        .state-diagram {
+            display: grid;
+            grid-template-columns: auto auto auto auto auto; /* State1 Arrow1 State2 Arrow2 State3 */
+            grid-template-rows: auto auto; /* States row, Buttons row */
+            gap: 10px;
+            justify-items: center;
+            align-items: center;
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        .state {
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .current {
+            font-weight: bold;
+            background-color: #fff3cd; /* Bootstrap warning light */
+            border: 1px solid #ffca2c;
+        }
+
+        .arrow {
+            font-size: 1.2em;
+            color: #6c757d; /* Bootstrap secondary */
+        }
+
+        .action-button {
+            grid-row: 2;
+            font-weight: bold;
+        }
+
+        .open-button {
+            grid-column: 3; /* Aligned under State2 (Open for voting) */
+        }
+
+        .close-button {
+            grid-column: 5; /* Aligned under State3 (Closed) */
+        }
+    </style>
+
     <div class="container">
         <h1>[title]</h1>
+        <div class="sticky-top">
+            <h2>[e_title]</h2>
+        </div>
+
+    <div class="state-diagram">
+        <div id="state-editing" class="state">Editing</div>
+        <div id="arrow1" class="arrow">→</div>
+        <div id="state-open" class="state">Open for Voting</div>
+        <div id="arrow2" class="arrow">→</div>
+        <div id="state-closed" class="state">Closed</div>
+
+        <button id="open-btn" class="btn btn-success action-button open-button">Open</button>
+        <button id="close-btn" class="btn btn-danger action-button close-button d-none">Close</button>
+    </div>
+
+    <!-- Open Confirmation Modal -->
+    <div class="modal fade" id="openConfirmModal" tabindex="-1" aria-labelledby="openConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="openConfirmModalLabel">Confirm Open Election</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Opening this election will allow voting and is irreversible. Are you sure?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="confirm-open">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Close Confirmation Modal -->
+    <div class="modal fade" id="closeConfirmModal" tabindex="-1" aria-labelledby="closeConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="closeConfirmModalLabel">Confirm Close Election</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Closing this election will end voting permanently. Are you sure?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-close">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
         <ul>
             [for issues]
                 <li>[issues.title]</li>
             [end]
         </ul>
     </div>
+
 [include "footer.ezt"]
+
+<script>
+        let currentState = 'editing'; // Initial state: 'editing', 'open', 'closed'
+
+        const states = {
+            editing: document.getElementById('state-editing'),
+            open: document.getElementById('state-open'),
+            closed: document.getElementById('state-closed')
+        };
+
+        const openBtn = document.getElementById('open-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const openModal = new bootstrap.Modal(document.getElementById('openConfirmModal'));
+        const closeModal = new bootstrap.Modal(document.getElementById('closeConfirmModal'));
+        const confirmOpen = document.getElementById('confirm-open');
+        const confirmClose = document.getElementById('confirm-close');
+
+        function updateUI() {
+            // Remove current class from all
+            Object.values(states).forEach(state => state.classList.remove('current'));
+
+            // Highlight current
+            [# careful! opening bracket here, within ezt syntax ]
+            states[[]currentState].classList.add('current');
+
+            // Show/hide buttons
+            if (currentState === 'editing') {
+                openBtn.classList.remove('d-none');
+                closeBtn.classList.add('d-none');
+            } else if (currentState === 'open') {
+                openBtn.classList.add('d-none');
+                closeBtn.classList.remove('d-none');
+            } else { // closed
+                openBtn.classList.add('d-none');
+                closeBtn.classList.add('d-none');
+            }
+        }
+
+        openBtn.addEventListener('click', () => {
+            openModal.show();
+        });
+
+        confirmOpen.addEventListener('click', () => {
+            currentState = 'open';
+            updateUI();
+            openModal.hide();
+            // Here, you would call your backend API to update the election state
+        });
+
+        closeBtn.addEventListener('click', () => {
+            closeModal.show();
+        });
+
+        confirmClose.addEventListener('click', () => {
+            currentState = 'closed';
+            updateUI();
+            closeModal.hide();
+            // Here, you would call your backend API to update the election state
+        });
+
+        // Initial update
+        updateUI();
+    </script>
