@@ -6,14 +6,21 @@
         </div>
 
     <div class="state-diagram">
-        <div id="state-editing" class="state">Editing</div>
+        <div id="state-editing"
+           class="state [is e_state "editable"]current[end]">Editing</div>
         <div id="arrow1" class="arrow">→</div>
-        <div id="state-open" class="state">Open for Voting</div>
+        <div id="state-open"
+           class="state [is e_state "open"]current[end]">Open for Voting</div>
         <div id="arrow2" class="arrow">→</div>
-        <div id="state-closed" class="state">Closed</div>
+        <div id="state-closed"
+           class="state [is e_state "closed"]current[end]">Closed</div>
 
-        <button id="open-btn" class="btn btn-success action-button open-button">Open</button>
-        <button id="close-btn" class="btn btn-danger action-button close-button d-none">Close</button>
+        [is e_state "editable"]
+            <button id="open-btn" class="btn btn-success action-button open-button">Open</button>
+        [end]
+        [is e_state "open"]
+            <button id="close-btn" class="btn btn-danger action-button close-button">Close</button>
+        [end]
     </div>
 
     <!-- Open Confirmation Modal -->
@@ -74,64 +81,30 @@
 [include "footer.ezt"]
 
 <script>
-        let currentState = 'editing'; // Initial state: 'editing', 'open', 'closed'
-
-        const states = {
-            editing: document.getElementById('state-editing'),
-            open: document.getElementById('state-open'),
-            closed: document.getElementById('state-closed')
-        };
-
-        const openBtn = document.getElementById('open-btn');
-        const closeBtn = document.getElementById('close-btn');
         const openModal = new bootstrap.Modal(document.getElementById('openConfirmModal'));
         const closeModal = new bootstrap.Modal(document.getElementById('closeConfirmModal'));
+
+        [is e_state "editable"]
+            const openBtn = document.getElementById('open-btn');
+            openBtn.addEventListener('click', () => {
+                openModal.show();
+            });
+        [end]
         const confirmOpen = document.getElementById('confirm-open');
-        const confirmClose = document.getElementById('confirm-close');
-
-        function updateUI() {
-            // Remove current class from all
-            Object.values(states).forEach(state => state.classList.remove('current'));
-
-            // Highlight current
-            [# careful! opening bracket here, within ezt syntax ]
-            states[[]currentState].classList.add('current');
-
-            // Show/hide buttons
-            if (currentState === 'editing') {
-                openBtn.classList.remove('d-none');
-                closeBtn.classList.add('d-none');
-            } else if (currentState === 'open') {
-                openBtn.classList.add('d-none');
-                closeBtn.classList.remove('d-none');
-            } else { // closed
-                openBtn.classList.add('d-none');
-                closeBtn.classList.add('d-none');
-            }
-        }
-
-        openBtn.addEventListener('click', () => {
-            openModal.show();
-        });
-
         confirmOpen.addEventListener('click', () => {
-            currentState = 'open';
-            updateUI();
             openModal.hide();
-            // Here, you would call your backend API to update the election state
+            window.location.href = '/do-open/[eid]';
         });
 
-        closeBtn.addEventListener('click', () => {
-            closeModal.show();
-        });
-
+        [is e_state "open"]
+            const closeBtn = document.getElementById('close-btn');
+            closeBtn.addEventListener('click', () => {
+                closeModal.show();
+            });
+        [end]
+        const confirmClose = document.getElementById('confirm-close');
         confirmClose.addEventListener('click', () => {
-            currentState = 'closed';
-            updateUI();
             closeModal.hide();
-            // Here, you would call your backend API to update the election state
+            window.location.href = '/do-close/[eid]';
         });
-
-        // Initial update
-        updateUI();
-    </script>
+</script>

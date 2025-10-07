@@ -187,6 +187,7 @@ async def admin_page():
 async def manage_page(election):
     result = await signin_info()
     result.title = 'Manage an Election'
+    result.eid = election.eid
 
     md = election.get_metadata()
     result.e_title = md[1]
