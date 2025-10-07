@@ -1,52 +1,4 @@
 [include "header.ezt"]
-
-    <style>
-        .state-diagram {
-            display: grid;
-            grid-template-columns: auto auto auto auto auto; /* State1 Arrow1 State2 Arrow2 State3 */
-            grid-template-rows: auto auto; /* States row, Buttons row */
-            gap: 10px;
-            justify-items: center;
-            align-items: center;
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-        }
-
-        .state {
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 1rem;
-        }
-
-        .current {
-            font-weight: bold;
-            background-color: #fff3cd; /* Bootstrap warning light */
-            border: 1px solid #ffca2c;
-        }
-
-        .arrow {
-            font-size: 1.2em;
-            color: #6c757d; /* Bootstrap secondary */
-        }
-
-        .action-button {
-            grid-row: 2;
-            font-weight: bold;
-        }
-
-        .open-button {
-            grid-column: 3; /* Aligned under State2 (Open for voting) */
-        }
-
-        .close-button {
-            grid-column: 5; /* Aligned under State3 (Closed) */
-        }
-    </style>
-
     <div class="container">
         <h1>[title]</h1>
         <div class="sticky-top">
@@ -103,6 +55,15 @@
     </div>
 
 
+        <div>
+            State: [e_state]
+        </div>
+        <div>
+            Estimate to open: <input type="date">
+        </div>
+        <div class="mb-3">
+            Estimate to close: <input type="date">
+        </div>
         <ul>
             [for issues]
                 <li>[issues.title]</li>

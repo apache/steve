@@ -191,6 +191,9 @@ async def manage_page(election):
     md = election.get_metadata()
     result.e_title = md[1]
 
+    state = election.get_state()
+    result.e_state = state
+
     result.issues = election.list_issues()
     result.issue_count = len(result.issues)
 
