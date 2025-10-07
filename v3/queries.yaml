@@ -93,10 +93,12 @@ election:
         SELECT e.eid, e.title, e.owner_pid, e.authz, e.closed,
                e.open_at, e.close_at,
                (e.opened_key IS NOT NULL) AS is_opened,
-               COUNT(i.iid) AS issue_count
+               COUNT(i.iid) AS issue_count,
+               p.name AS owner_name
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid
         JOIN election e ON i.eid = e.eid
+        INNER JOIN person p ON e.owner_pid = p.pid
         WHERE m.pid = ?
           AND e.salt IS NOT NULL
           AND (e.closed IS NULL OR e.closed = 0)

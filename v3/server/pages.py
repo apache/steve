@@ -45,6 +45,7 @@ TEMPLATES = THIS_DIR / 'templates'
 sys.path.insert(0, str(THIS_DIR.parent))
 import steve.election
 import steve.crypto
+import steve.persondb
 
 # Formatted values to inject into templates.
 FMT_DATE = '%b %d'
@@ -154,6 +155,25 @@ async def admin_page():
 
     result.owned = [ postprocess_election(e) for e in owned ]
 
+    ### owned.owner_name should be based on OWNER_PID. That might not be
+    ### "me" because of authz access to manage issues.
+
+    ### should open/keep a PersonDB instance in the APP
+    pdb = steve.persondb.PersonDB(DB_FNAME)
+    try:
+        me = pdb.get_person(result.uid)
+    except AttributeError:
+        ### the committer is not in "person"
+        ### this is a terrible way to signal this. return None?
+        ### what kind of error/page to raise?
+        raise
+
+    ### the query for OWNED is just for "me", so this is the correct
+    ### name at the moment. When authz kicks in ... Nope.
+    # me is (name, email)
+    for e in result.owned:
+        e.owner_name = me[0]
+
     result.len_election = len(election)
     result.len_owned = len(owned)
 
@@ -261,8 +281,6 @@ def postprocess_election(e):
         e.owner_pid = 'gstein'  ### fix query. for now, could be result.uid
     if 'issue_count' not in e:
         e.issue_count = 5  ### arbitrary. just provide a value
-    if 'owner_name' not in e:
-        e.owner_name = 'Jane Doe'
 
     return e
 
