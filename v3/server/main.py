@@ -16,6 +16,7 @@
 # limitations under the License.
 #
 
+import sys
 import logging
 import pathlib
 
@@ -51,13 +52,24 @@ def main():
     import pages  # pylint: disable=unused-import
     import api  # pylint: disable=unused-import
 
+    # Note: "pages" imports "steve.election". Pull that package into
+    # our local namespace.
+    steve = sys.modules['steve']
+
+    # There are other things to watch, and cause a reload.
+    extra_files = {
+        steve.election.QUERIES,
+        }
+
     kwargs = { }
     if app.cfg.server.certfile:
         kwargs['certfile'] = CERTS_DIR / app.cfg.server.certfile
         kwargs['keyfile'] = CERTS_DIR / app.cfg.server.keyfile
 
     # Spool up the app!
-    app.runx(port=app.cfg.server.port, **kwargs)
+    app.runx(port=app.cfg.server.port,
+             extra_files=extra_files,
+             **kwargs)
 
     #print('LOGGERS:', sorted(_LOGGER.manager.loggerDict.keys()))
     #print(_LOGGER.manager.loggerDict['sslproto'])
