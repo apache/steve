@@ -131,6 +131,7 @@ def load_election(func):
 async def vote_on_page(election):
     result = await signin_info()
     result.title = 'Vote On Election'
+    result.eid = election.eid
 
     md = election.get_metadata()
     result.e_title = md[1]

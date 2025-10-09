@@ -4,8 +4,134 @@
         <p>
             You have [issue_count] issues to vote upon, in this election.
         </p>
-        <p>
-            TBD: list
-        </p>
+
+    <!-- Bulk Vote and Clear Controls -->
+    <div class="mb-4">
+      <h5>Bulk Vote (applies to unvoted issues only)</h5>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary" onclick="bulkVote('y')">Fill Yes</button>
+        <button type="button" class="btn btn-outline-primary" onclick="bulkVote('n')">Fill No</button>
+        <button type="button" class="btn btn-outline-primary" onclick="bulkVote('a')">Fill Abstain</button>
+      </div>
+      <button type="button" class="btn btn-outline-danger ms-2" onclick="clearAllVotes()">Clear All</button>
+      <button type="button" class="btn btn-outline-secondary ms-2" onclick="toggleAllDescriptions()">
+        <span id="toggle-all-text">Expand All</span>
+      </button>
+    </div>
+
+    <div id="issues-list" class="list-group">
+    [for issues]
+      <div class="list-group-item issue-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="twiddle bi bi-caret-right-fill me-2" onclick="toggleDescription('[issues.iid]')"></span>
+            <strong>[issues.title]</strong>
+          </div>
+          <div class="vote-radio">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="vote-1" id="yes-[issues.iid]" value="y">
+              <label class="form-check-label" for="yes-1">Yes</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="vote-1" id="no-[issues.iid]" value="n">
+              <label class="form-check-label" for="no-1">No</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="vote-1" id="abstain-[issues.iid]" value="a">
+              <label class="form-check-label" for="abstain-1">Abstain</label>
+            </div>
+          </div>
+        </div>
+        <div id="description-[issues.iid]" class="description mt-2">[issues.description]</div>
+      </div>
+    [end]
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mt-4">
+      <button type="button" class="btn btn-primary" onclick="submitVotes()">Submit Votes</button>
+    </div>
+  </div>
+
     </div>
 [include "footer.ezt"]
+
+  <!-- Bootstrap JS and Popper -->
+  <script>
+    // Toggle individual description
+    function toggleDescription(issueId) {
+      const desc = document.getElementById('description-${issueId}');
+      const twiddle = desc.previousElementSibling.querySelector('.twiddle');
+      desc.classList.toggle('show');
+      twiddle.classList.toggle('bi-caret-right-fill');
+      twiddle.classList.toggle('bi-caret-down-fill');
+    }
+
+    // Expand/Collapse All descriptions
+    let allExpanded = false;
+    function toggleAllDescriptions() {
+      allExpanded = !allExpanded;
+      document.querySelectorAll('.description').forEach(desc => {
+        desc.classList.toggle('show', allExpanded);
+      });
+      document.querySelectorAll('.twiddle').forEach(twiddle => {
+        twiddle.classList.toggle('bi-caret-right-fill', !allExpanded);
+        twiddle.classList.toggle('bi-caret-down-fill', allExpanded);
+      });
+      document.getElementById('toggle-all-text').textContent = allExpanded ? 'Collapse All' : 'Expand All';
+    }
+
+    // Bulk vote (only on unvoted issues)
+    function bulkVote(value) {
+      document.querySelectorAll('.issue-item').forEach(item => {
+        const radios = item.querySelectorAll('input[[]type="radio"]');
+        const isVoted = Array.from(radios).some(r => r.checked);
+        if (!isVoted) {
+          const radioToCheck = item.querySelector('input[[]value="${value}"]');
+          if (radioToCheck) radioToCheck.checked = true;
+        }
+      });
+    }
+
+    // Clear all votes
+    function clearAllVotes() {
+      document.querySelectorAll('.vote-radio input[[]type="radio"]').forEach(radio => {
+        radio.checked = false;
+      });
+    }
+
+    // Submit votes
+    function submitVotes() {
+      const votes = {};
+      [# careful! be wary of open-brackets within ezt ]
+      document.querySelectorAll('.vote-radio input[[]type="radio"]:checked').forEach(radio => {
+        const issueId = radio.name.split('-')[[]1];
+        votes[[]issueId] = radio.value;
+      });
+
+      if (Object.keys(votes).length === 0) {
+        alert('No votes selected!');
+        return;
+      }
+
+      fetch('/do_vote/[eid]', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(votes),
+      })
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          alert('Votes submitted successfully!');
+          console.log('Server response:', data);
+        })
+        .catch(error => {
+          alert('Error submitting votes: ' + error.message);
+          console.error('Error:', error);
+        });
+    }
+  </script>
