@@ -29,16 +29,16 @@
           </div>
           <div class="vote-radio">
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="vote-1" id="yes-[issues.iid]" value="y">
-              <label class="form-check-label" for="yes-1">Yes</label>
+              <input class="form-check-input" type="radio" name="vote-[issues.iid]" id="yes-[issues.iid]" value="y">
+              <label class="form-check-label" for="yes-[issues.iid]">Yes</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="vote-1" id="no-[issues.iid]" value="n">
-              <label class="form-check-label" for="no-1">No</label>
+              <input class="form-check-input" type="radio" name="vote-[issues.iid]" id="no-[issues.iid]" value="n">
+              <label class="form-check-label" for="no-[issues.iid]">No</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="vote-1" id="abstain-[issues.iid]" value="a">
-              <label class="form-check-label" for="abstain-1">Abstain</label>
+              <input class="form-check-input" type="radio" name="vote-[issues.iid]" id="abstain-[issues.iid]" value="a">
+              <label class="form-check-label" for="abstain-[issues.iid]">Abstain</label>
             </div>
           </div>
         </div>
@@ -87,7 +87,7 @@
         const radios = item.querySelectorAll('input[[]type="radio"]');
         const isVoted = Array.from(radios).some(r => r.checked);
         if (!isVoted) {
-          const radioToCheck = item.querySelector('input[[]value="${value}"]');
+          const radioToCheck = item.querySelector(`input[[]value="${value}"]`);
           if (radioToCheck) radioToCheck.checked = true;
         }
       });
