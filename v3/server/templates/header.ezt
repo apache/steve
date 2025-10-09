@@ -6,6 +6,7 @@
     <title>Apache STeVe: [title]</title>
     <link href="/static/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9">
+    <link href="/static/css/bootstrap-icons.css" rel="stylesheet">
     <link href="/static/css/steve.css" rel="stylesheet">
 </head>
 <body>
