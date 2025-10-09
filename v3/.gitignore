@@ -1,6 +1,8 @@
+steve.db
 poetry.lock
 
 server/bin/bs.zip
+server/bin/icons.zip
 server/bin/bind.txt
 server/config.yaml
 server/apptoken.txt

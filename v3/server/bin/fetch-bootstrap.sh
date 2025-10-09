@@ -24,9 +24,18 @@ VERSION="5.3.1"
 DIST="bootstrap-${VERSION}-dist"
 B_URL="https://github.com/twbs/bootstrap/releases/download/v${VERSION}/${DIST}.zip"
 
+I_VERSION="1.13.1"
+I_DIST="bootstrap-icons-${I_VERSION}"
+I_URL="https://github.com/twbs/icons/releases/download/v${I_VERSION}/${I_DIST}.zip"
+
 THIS_DIR=$(/bin/dirname "`realpath $0`")
 PARENT_DIR=$(/bin/dirname "$THIS_DIR")
-STATIC_DIR="${PARENT_DIR}/server/static"
+STATIC_DIR="${PARENT_DIR}/static"
+
+# --------------------
+#
+# Grab the Bootstrap package (CSS and JS)
+#
 
 ZIPFILE="${THIS_DIR}/bs.zip"
 
@@ -48,6 +57,23 @@ echo "bootstrap.min.css:"
 echo -n "sha384-" ; openssl dgst -sha384 -binary "${STATIC_DIR}/css/bootstrap.min.css" | openssl base64 -A ; echo ""
 echo "bootstrap.bundle.min.js:"
 echo -n "sha384-" ; openssl dgst -sha384 -binary "${STATIC_DIR}/js/bootstrap.bundle.min.js" | openssl base64 -A ; echo ""
+echo ""
+
+# --------------------
+#
+# Grab the Bootstrap icons package.
+#
+I_ZIPFILE="${THIS_DIR}/icons.zip"
+
+echo "Fetching: ${I_URL}"
+curl -q --location "${I_URL}" --output "${I_ZIPFILE}"
+
+echo "Extracting: bootstrap-icons.css"
+unzip -joq "${I_ZIPFILE}" "${I_DIST}/bootstrap-icons.css" -d "${STATIC_DIR}/css"
+
+# --------------------
 
 echo ""
-echo "NOTE: zip can now be removed: ${ZIPFILE}"
+echo "NOTE: zip files can now be removed:"
+echo "  ${ZIPFILE}"
+echo "  ${I_ZIPFILE}"
