@@ -71,6 +71,11 @@ curl -q --location "${I_URL}" --output "${I_ZIPFILE}"
 echo "Extracting: bootstrap-icons.css"
 unzip -joq "${I_ZIPFILE}" "${I_DIST}/bootstrap-icons.css" -d "${STATIC_DIR}/css"
 
+echo "Extracting: fonts/bootstrap-icons.woff2"
+unzip -joq "${I_ZIPFILE}" "${I_DIST}/fonts/bootstrap-icons.woff2" -d "${STATIC_DIR}/css/fonts"
+echo "Extracting: fonts/bootstrap-icons.woff"
+unzip -joq "${I_ZIPFILE}" "${I_DIST}/fonts/bootstrap-icons.woff" -d "${STATIC_DIR}/css/fonts"
+
 # --------------------
 
 echo ""
