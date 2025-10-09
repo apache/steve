@@ -210,7 +210,7 @@ async def do_open_endpoint(election):
 
     ### check authz
 
-    _LOGGER.info(f'Opening election[E:{election.eid}]')
+    _LOGGER.info(f'User[U:{result.uid}] opened election[E:{election.eid}]')
 
     ### should open/keep a PersonDB instance in the APP
     pdb = steve.persondb.PersonDB(DB_FNAME)
@@ -230,7 +230,7 @@ async def do_close_endpoint(election):
 
     ### check authz
 
-    _LOGGER.info(f'Closing election[E:{election.eid}]')
+    _LOGGER.info(f'User[U:{result.uid}] closed election[E:{election.eid}]')
 
     # Close the Election.
     election.close()
