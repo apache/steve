@@ -49,3 +49,10 @@
 #state-open { grid-column: 3; grid-row: 1; }
 #arrow2 { grid-column: 4; grid-row: 1; }
 #state-closed { grid-column: 5; grid-row: 1; }
+
+/* vote-on.ezt  */
+.issue-item { margin-bottom: 1rem; }
+.vote-radio { margin-left: 1rem; }
+.description { display: none; }
+.description.show { display: block; }
+.twiddle { cursor: pointer; }
