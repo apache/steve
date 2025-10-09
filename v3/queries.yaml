@@ -25,8 +25,14 @@
 
 election:
     c_salt_mayvote: UPDATE mayvote SET salt = ? WHERE _ROWID_ = ?
-    c_open: UPDATE election SET salt = ?, opened_key = ? WHERE eid = ?
-    c_close: UPDATE election SET closed = 1 WHERE eid = ?
+    c_open: |
+        UPDATE election
+        SET salt = ?, opened_key = ?, open_at = unixepoch('now')
+        WHERE eid = ?
+    c_close: |
+        UPDATE election
+        SET closed = 1, close_at = unixepoch('now')
+        WHERE eid = ?
     c_add_issue: |
         INSERT INTO issue VALUES (?, ?, ?, ?, ?, ?)
         ON CONFLICT DO UPDATE SET
