@@ -60,7 +60,7 @@
   <script>
     // Toggle individual description
     function toggleDescription(issueId) {
-      const desc = document.getElementById('description-${issueId}');
+      const desc = document.getElementById(`description-${issueId}`);
       const twiddle = desc.previousElementSibling.querySelector('.twiddle');
       desc.classList.toggle('show');
       twiddle.classList.toggle('bi-caret-right-fill');
