@@ -280,6 +280,9 @@ async def about_page():
 @APP.route('/static/<path:filename>')
 async def serve_static(filename):
     return await quart.send_from_directory('static', filename)
+@APP.route('/favicon.ico')
+async def serve_favicon():
+    return await quart.send_from_directory('static', 'favicon.ico')
 
 
 def format_datetime(dt):
