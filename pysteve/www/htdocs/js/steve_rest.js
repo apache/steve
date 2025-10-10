@@ -834,7 +834,7 @@ function displayElection(code, response, el) {
     if (code == 200) {
         window.setTimeout(el[2], 100, response, el);
     } else {
-        document.getElementById('preloaderWrapper').innerHTML = "<h1>Sorry, an error occured while fetching election data:</h1><h2>" + response.message + "</h2>"
+        document.getElementById('preloaderWrapper').innerHTML = "<h1>Sorry, an error occurred while fetching election data:</h1><h2>" + response.message + "</h2>"
         if (code == 403) {
             document.getElementById('preloaderWrapper').innerHTML += "<p>If this is an open election, you may request a voter ID sent to you by following <a href='/request_link.html?" + el[0] + "'>this link</a>.</p>"
         }
