@@ -239,6 +239,57 @@ async def do_close_endpoint(election):
     return quart.redirect(f'/manage/{election.eid}')
 
 
+@APP.post('/do-add-issue/<eid>')
+@asfquart.auth.require({R.committer})  ### need general solution
+@load_election
+async def do_add_issue_endpoint(election):
+    result = await signin_info()
+
+    ### check authz
+
+    ### do stuff
+
+    _LOGGER.info(f'User[U:{result.uid}] added issue[I:{iid}]'
+                 f' to election[E:{election.eid}]')
+
+    # Return to the management page for this Election.
+    return quart.redirect(f'/manage/{election.eid}')
+
+
+@APP.post('/do-edit-issue/<eid>/<iid>')
+@asfquart.auth.require({R.committer})  ### need general solution
+###@load_election_issue
+async def do_edit_issue_endpoint(election, issue):
+    result = await signin_info()
+
+    ### check authz
+
+    ### do stuff
+
+    _LOGGER.info(f'User[U:{result.uid}] edited issue[I:{issue.iid}]'
+                 f' in election[E:{election.eid}]')
+
+    # Return to the management page for this Election.
+    return quart.redirect(f'/manage/{election.eid}')
+
+
+@APP.delete('/do-delete-issue/<eid>/<iid>')
+@asfquart.auth.require({R.committer})  ### need general solution
+###@load_election_issue
+async def do_delete_issue_endpoint(election, issue):
+    result = await signin_info()
+
+    ### check authz
+
+    ### do stuff
+
+    _LOGGER.info(f'User[U:{result.uid}] deleted issue[I:{issue.iid}]'
+                 f' from election[E:{election.eid}]')
+
+    # Return to the management page for this Election.
+    return quart.redirect(f'/manage/{election.eid}')
+
+
 @APP.get('/profile')
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template(TEMPLATES / 'profile.ezt')
