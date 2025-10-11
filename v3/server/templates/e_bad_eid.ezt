@@ -8,5 +8,8 @@
             you have no issues to vote in that Election,
             or you are not allowed to manage that Election.
         </p>
+        <p>
+            <a href="/">Return to the home page</a>
+        </p>
     </div>
 [include "footer.ezt"]

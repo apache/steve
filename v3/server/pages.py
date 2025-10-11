@@ -101,21 +101,17 @@ def load_election(func):
     @functools.wraps(func)
     async def loader(eid):
 
-        e = steve.election.Election(DB_FNAME, eid)
-        _LOGGER.debug(f'Loaded: {e}')
-
         try:
-            md = e.get_metadata()
-        except AttributeError:
-            # If the EID is wrong, the fetch fails trying to access metadata.
-            ### YES, very poor way to signal a bad EID. fix this.
-
+            e = steve.election.Election(DB_FNAME, eid)
+        except steve.election.ElectionNotFound:
             result = await signin_info()
             result.title = 'Unknown Election'
             result.eid = eid
             # Note: result.uid (and friends) are needed for the navbar.
             raise_404(T_BAD_EID, result)
             # NOTREACHED
+
+        _LOGGER.debug(f'Loaded: {e}')
 
         ### check authz
 
