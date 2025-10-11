@@ -55,6 +55,9 @@ class Election:
         self.db = self.open_database(db_fname)
         self.eid = eid
 
+        if not_found(self.q_check_election, eid):
+            raise ElectionNotFound(eid)
+
     def __getattr__(self, name):
         "Proxy the cursors."
         return self.__dict__.get(name, getattr(self.db, name))
@@ -65,6 +68,7 @@ class Election:
         # Can't delete if it has been opened (even if later closed).
         assert self.is_editable()
 
+        # Normally, we are in auto-commit mode. Switch to transactional.
         self.db.conn.execute('BEGIN TRANSACTION')
 
         # Order these things because of referential integrity.
@@ -111,7 +115,7 @@ class Election:
 
         # NOTE: all assembly of rows must use a repeatable ordering.
 
-        md = self.q_metadata.first_row(self.eid)
+        md = self._all_metadata()
         mdata = md.eid + md.title
 
         self.q_issues.perform(self.eid)
@@ -143,7 +147,10 @@ class Election:
 
         # Use Q_ALL_ISSUES to iterate over all Person/Issue mappings
         # in this Election (specified by EID).
+
+        # Normally, we are in auto-commit mode. Switch to transactional.
         self.db.conn.execute('BEGIN TRANSACTION')
+
         self.q_all_issues.perform(self.eid)
         for mayvote in self.q_all_issues.fetchall():
             # MAYVOTE is a 1-tuple: _ROWID_
@@ -155,21 +162,48 @@ class Election:
 
         self.db.conn.execute('COMMIT')
 
+    def _disappeared(self):
+        "The Election disappeared in the database. Disable SELF."
+
+        # Disable this instance.
+        self.db.conn.close()
+        self.db = None
+
+        # The caller may want to inform this EID no longer exists.
+        return ElectionNotFound(self.eid)
+
+    def _all_metadata(self, required_state=None):
+        "INTERNAL ONLY: return all metadata about this Election."
+
+        # NOTE: this returns the SALE and OPENED_KEY columns. This
+        # API is not for public use.
+        md = self.q_metadata.first_row(self.eid)
+        if not md:
+            raise self._disappeared()
+
+        if required_state:
+            state = self._compute_state(md)
+            if state != required_state:
+                raise ElectionBadState(state, required_state)
+
+        return md
+
     def get_metadata(self):
         "Return basic metadata about this Election."
 
-        md = self.q_metadata.first_row(self.eid)
-        # NOTE: do not return the SALT
-        # note: likely: never return opened_key
+        md = self._all_metadata()
+        # NOTE: do not return the SALT or OPENED_KEY
 
-        return md.eid, md.title, self.get_state()
+        return md.eid, md.title, self._compute_state(md)
 
     def get_issue(self, iid):
         "Return TITLE, DESCRIPTION, TYPE, and KV for issue IID."
 
-        # NEVER return issue.salt
         issue = self.q_get_issue.first_row(iid)
+        if not issue:
+            raise IssueNotFound(iid)
 
+        # NEVER return issue.salt
         return (issue.title, issue.description, issue.type,
                 self.json2kv(issue.kv))
 
@@ -190,6 +224,11 @@ class Election:
         assert self.is_editable()
 
         self.c_delete_issue.perform(iid)
+
+        # If the issue didn't exist, we deleted nothing.
+        if self.c_delete_issue.rowcount == 0:
+            raise IssueNotFound(iid)
+        # else .rowcount == 1
 
     def list_issues(self):
         "Return ordered EasyDicgt<IID, TITLE, DESCRIPTION, TYPE, KV> for all ISSUES."
@@ -220,9 +259,7 @@ class Election:
         "Add VOTESTRING as the (latest) vote by PID for IID."
 
         # The Election should be open.
-        assert self.is_open()
-
-        md = self.q_metadata.first_row(self.eid)
+        md = self._all_metadata(self.S_OPEN)
 
         ### validate VOTESTRING for ISSUE.TYPE voting
 
@@ -246,9 +283,7 @@ class Election:
         """
 
         # The Election should be closed.
-        assert self.is_closed()
-
-        md = self.q_metadata.first_row(self.eid)
+        md = self._all_metadata(self.S_CLOSED)
 
         # Need the issue TYPE
         issue = self.q_get_issue.first_row(iid)
@@ -286,9 +321,7 @@ class Election:
         "Return {ISSUE-ID: BOOL} stating what has been voted upon."
 
         # The Election should be open.
-        assert self.is_open()
-
-        md = self.q_metadata.first_row(self.eid)
+        md = self._all_metadata(self.S_OPEN)
 
         voted_upon = { }
 
@@ -311,9 +344,7 @@ class Election:
     def is_tampered(self, pdb):
 
         # The Election should be open.
-        assert self.is_open()
-
-        md = self.q_metadata.first_row(self.eid)
+        md = self._all_metadata(self.S_OPEN)
 
         # Compute an opened_key based on the current data.
         edata = self.gather_election_data(pdb)
@@ -341,18 +372,23 @@ class Election:
     def get_state(self):
         "Derive our election state from the METADATA table."
 
-        md = self.q_metadata.first_row(self.eid)
+        return self._compute_state(self._all_metadata())
+
+    @classmethod
+    def _compute_state(cls, md):
+        "Compute Election state, given all metadata."
+
         if md.closed == 1:
             assert md.salt is not None and md.opened_key is not None
-            return self.S_CLOSED
+            return cls.S_CLOSED
         assert md.closed in (None, 0)
 
         if md.salt is None:
             assert md.opened_key is None
-            return self.S_EDITABLE
+            return cls.S_EDITABLE
         assert md.opened_key is not None
 
-        return self.S_OPEN
+        return cls.S_OPEN
 
     @staticmethod
     def kv2json(kv):
@@ -413,3 +449,37 @@ class Election:
         # Run the generator to get all rows. Returned as EasyDicts.
         db.q_owned.perform(pid,)
         return [ row for row in db.q_owned.fetchall() ]
+
+
+def not_found(cursor, id):
+    row = cursor.first_row(id)
+    return row is None
+
+
+class ElectionNotFound(Exception):
+    def __init__(self, eid):
+        self.eid = eid
+        super().__init__(str(self))
+
+    def __str__(self):
+        return f'Election[E:{self.eid}] not found'
+
+
+class ElectionBadState(Exception):
+    def __init__(self, current, required):
+        self.current = current
+        self.required = required
+        super().__init__(str(self))
+
+    def __str__(self):
+        return (f'Election[E:{self.eid}]'
+                f' is "{self.current}" but should be "{self.required}"')
+
+
+class IssueNotFound(Exception):
+    def __init__(self, iid):
+        self.iid = iid
+        super().__init__(str(self))
+
+    def __str__(self):
+        return f'Issue[I:{self.iid}] not found'

@@ -58,6 +58,9 @@ election:
     c_delete_issues: DELETE FROM issue WHERE eid = ?
     c_delete_election: DELETE FROM election WHERE eid = ?
 
+    # Fast check to see if the Election exists. No data returned.
+    q_check_election: SELECT 1 FROM election WHERE eid = ?
+
     q_metadata: SELECT * FROM election WHERE eid = ?
     q_issues: SELECT * FROM issue WHERE eid = ? ORDER BY iid
     q_get_issue: SELECT * FROM issue WHERE iid = ?
