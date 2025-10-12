@@ -58,12 +58,39 @@ T_BAD_EID = APP.load_template(TEMPLATES / 'e_bad_eid.ezt')
 
 async def signin_info():
     "Return EZT template data for the Sign-In, in the upper right."
+
+    ### debug/test
+    await flash_primary('hello there')
+    await flash_danger('and another')
+
+    basic = edict()
+
+    # Flashes are stored in the Session. Fetch and turn each flash into
+    # EasyDict objects for use by templates.
+    # NOTE: .flash() is called with (message, category), but the
+    #   .get_flashed_messages() returns tuples of (category, message)
+    basic.flashes = [ edict(message=f[1], category=f[0])
+                      for f in quart.get_flashed_messages(with_categories=True) ]
+
     s = await asfquart.session.read()
     if s:
-        return edict(uid=s['uid'], name=s['fullname'], email=s['email'],)
+        basic.update(uid=s['uid'], name=s['fullname'], email=s['email'],)
+    else:
+        # No session.
+        basic.update(uid=None, name=None, email=None,)
 
-    # No session.
-    return edict(uid=None, name=None, email=None,)
+    return basic
+
+
+# Define a bunch of helpers for recording "flash" messages in the session.
+# Each helper function is:
+#    async def flash_FOO(message)
+# where FOO is one of the eight Bootstrap alert classes. See:
+#    https://getbootstrap.com/docs/5.0/components/alerts/#examples
+for _cat in ('primary', 'secondary', 'success', 'danger',
+             'warning', 'info', 'light', 'dark', ):
+    globals()[f'flash_{_cat}'] = functools.partial(quart.flash, category=_cat)
+del _cat
 
 
 @APP.get('/')

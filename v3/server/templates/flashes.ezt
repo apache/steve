@@ -1,0 +1,6 @@
+[for flashes]
+    <div class="alert alert-[flashes.category] alert-dismissible fade show" role="alert">
+        [flashes.message]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+[end]

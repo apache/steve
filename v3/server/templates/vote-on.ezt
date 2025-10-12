@@ -1,6 +1,8 @@
 [include "header.ezt"]
     <div class="container">
         <h1>[title]</h1>
+        [include "flashes.ezt"]
+
         <p>
             You have [issue_count] issues to vote upon, in this election.
         </p>

@@ -1,7 +1,7 @@
 [include "header.ezt"]
     <div class="container">
         <h1>[title]</h1>
-
+        [include "flashes.ezt"]
 
           [for owned]
             <div class="w-auto mb-4">
