@@ -56,12 +56,8 @@ SOON_CUTOFF = 48 * SOON_1HOUR  # 48 hours, in seconds
 T_BAD_EID = APP.load_template(TEMPLATES / 'e_bad_eid.ezt')
 
 
-async def signin_info():
-    "Return EZT template data for the Sign-In, in the upper right."
-
-    ### debug/test
-    await flash_primary('hello there')
-    await flash_danger('and another')
+async def basic_info():
+    "Return base-level EZT template data."
 
     basic = edict()
 
@@ -96,7 +92,7 @@ del _cat
 @APP.get('/')
 @APP.use_template(TEMPLATES / 'home.ezt')
 async def home_page():
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'Home'
 
     return result
@@ -106,7 +102,7 @@ async def home_page():
 @asfquart.auth.require({R.committer})  ### need general solution
 @APP.use_template(TEMPLATES / 'voter.ezt')
 async def voter_page():
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'Voting'
 
     with asfpy.stopwatch.Stopwatch():
@@ -131,7 +127,7 @@ def load_election(func):
         try:
             e = steve.election.Election(DB_FNAME, eid)
         except steve.election.ElectionNotFound:
-            result = await signin_info()
+            result = await basic_info()
             result.title = 'Unknown Election'
             result.eid = eid
             # Note: result.uid (and friends) are needed for the navbar.
@@ -152,7 +148,7 @@ def load_election(func):
 @load_election
 @APP.use_template(TEMPLATES / 'vote-on.ezt')
 async def vote_on_page(election):
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'Vote On Election'
     result.eid = election.eid
 
@@ -169,7 +165,7 @@ async def vote_on_page(election):
 @asfquart.auth.require({R.committer})  ### need general solution
 @APP.use_template(TEMPLATES / 'admin.ezt')
 async def admin_page():
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'Administration'
 
     with asfpy.stopwatch.Stopwatch():
@@ -209,7 +205,7 @@ async def admin_page():
 @load_election
 @APP.use_template(TEMPLATES / 'manage.ezt')
 async def manage_page(election):
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'Manage an Election'
     result.eid = election.eid
 
@@ -229,7 +225,7 @@ async def manage_page(election):
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
 async def do_open_endpoint(election):
-    result = await signin_info()
+    result = await basic_info()
 
     ### check authz
 
@@ -249,7 +245,7 @@ async def do_open_endpoint(election):
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
 async def do_close_endpoint(election):
-    result = await signin_info()
+    result = await basic_info()
 
     ### check authz
 
@@ -266,7 +262,7 @@ async def do_close_endpoint(election):
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
 async def do_add_issue_endpoint(election):
-    result = await signin_info()
+    result = await basic_info()
 
     ### check authz
 
@@ -283,7 +279,7 @@ async def do_add_issue_endpoint(election):
 @asfquart.auth.require({R.committer})  ### need general solution
 ###@load_election_issue
 async def do_edit_issue_endpoint(election, issue):
-    result = await signin_info()
+    result = await basic_info()
 
     ### check authz
 
@@ -300,7 +296,7 @@ async def do_edit_issue_endpoint(election, issue):
 @asfquart.auth.require({R.committer})  ### need general solution
 ###@load_election_issue
 async def do_delete_issue_endpoint(election, issue):
-    result = await signin_info()
+    result = await basic_info()
 
     ### check authz
 
@@ -317,7 +313,7 @@ async def do_delete_issue_endpoint(election, issue):
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template(TEMPLATES / 'profile.ezt')
 async def profile_page():
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'Profile'
 
     return result
@@ -327,7 +323,7 @@ async def profile_page():
 @asfquart.auth.require  # Bare decorator means just require a valid session
 @APP.use_template(TEMPLATES / 'settings.ezt')
 async def settings_page():
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'Settings'
 
     return result
@@ -336,7 +332,7 @@ async def settings_page():
 @APP.get('/privacy')
 @APP.use_template(TEMPLATES / 'privacy.ezt')
 async def privacy_page():
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'Privacy'
 
     return result
@@ -345,7 +341,7 @@ async def privacy_page():
 @APP.get('/about')
 @APP.use_template(TEMPLATES / 'about.ezt')
 async def about_page():
-    result = await signin_info()
+    result = await basic_info()
     result.title = 'About'
 
     return result
