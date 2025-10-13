@@ -6,9 +6,8 @@
         <p>
             [# we could be more specific. simpler to re-use. ]
 
-            The Election ID ([eid]) does not exist,
-            you have no issues to vote in that Election,
-            or you are not allowed to manage that Election.
+            The Issue ID ([iid]) does not exist, or you do not
+            have access to vote or manage that issue.
         </p>
         <p>
             <a href="/">Return to the home page</a>

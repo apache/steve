@@ -54,6 +54,8 @@ SOON_1HOUR = 60 * 60
 SOON_CUTOFF = 48 * SOON_1HOUR  # 48 hours, in seconds
 
 T_BAD_EID = APP.load_template(TEMPLATES / 'e_bad_eid.ezt')
+T_BAD_IID = APP.load_template(TEMPLATES / 'e_bad_iid.ezt')
+T_BAD_PID = APP.load_template(TEMPLATES / 'e_bad_pid.ezt')
 
 
 async def basic_info():
@@ -182,11 +184,15 @@ async def admin_page():
     pdb = steve.persondb.PersonDB(DB_FNAME)
     try:
         me = pdb.get_person(result.uid)
-    except AttributeError:
-        ### the committer is not in "person"
-        ### this is a terrible way to signal this. return None?
-        ### what kind of error/page to raise?
-        raise
+    except steve.persondb.PersonNotFound:
+        ### the authn'd committer is not in "person"
+
+        result = await basic_info()
+        result.title = 'Unknown Person'
+        result.pid = pid
+        # Note: result.uid (and friends) are needed for the navbar.
+        raise_404(T_BAD_PID, result)
+        # NOTREACHED
 
     ### the query for OWNED is just for "me", so this is the correct
     ### name at the moment. When authz kicks in ... Nope.
@@ -387,7 +393,8 @@ def postprocess_election(e):
     # Anything but 1 means the Election is not open.
     e.is_opened = ezt.boolean(e.is_opened == 1)
 
-    # note: an election has an Edit state: not open, not closed.
+    # note: an election has a third Edit state: not open, not closed;
+    # this is called "editable" (S_EDITABLE)
 
     # Format dates, if present.
     dt_open = e.open_at and datetime.datetime.fromtimestamp(e.open_at)
