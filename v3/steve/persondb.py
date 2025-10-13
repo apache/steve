@@ -42,6 +42,9 @@ class PersonDB:
 
         # NEVER return person.salt
         person = self.q_get_person.first_row(pid)
+        if not person:
+            raise PersonNotFound(pid)
+
         return person.name, person.email
 
     def add_person(self, pid, name, email):
@@ -62,6 +65,11 @@ class PersonDB:
 
         self.c_delete_person.perform(pid)
 
+        # If the Person didn't exist, we deleted nothing.
+        if self.c_delete_person.rowcount == 0:
+            raise PersonNotFound(pid)
+        # else .rowcount == 1
+
     def list_persons(self):
         "Return ordered EasyDict<PID, NAME, EMAIL> for each Person."
 
@@ -70,3 +78,12 @@ class PersonDB:
         # Run the query to completion, and return the entire list of Persons.
         self.q_person.perform()
         return list(self.q_person.fetchall())  # asfpy.db.DB uses EasyDict
+
+
+class PersonNotFound(Exception):
+    def __init__(self, pid):
+        self.pid = pid
+        super().__init__(str(self))
+
+    def __str__(self):
+        return f'Person[P:{self.pid}] not found'
