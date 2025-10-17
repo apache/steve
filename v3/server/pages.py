@@ -145,6 +145,42 @@ def load_election(func):
     return loader
 
 
+def load_election_issue(func):
+    "Decorator to load/pass-argument an Election from EID."
+
+    @functools.wraps(func)
+    async def loader(eid, iid):
+
+        try:
+            e = steve.election.Election(DB_FNAME, eid)
+        except steve.election.ElectionNotFound:
+            result = await basic_info()
+            result.title = 'Unknown Election'
+            result.eid = eid
+            # Note: result.uid (and friends) are needed for the navbar.
+            raise_404(T_BAD_EID, result)
+            # NOTREACHED
+
+        _LOGGER.debug(f'Loaded: {e}')
+
+        ### check authz
+
+        try:
+            i = e.get_issue(iid)
+        except steve.election.IssueNotFound:
+            result = await basic_info()
+            result.title = 'Unknown Issue'
+            result.eid = eid
+            result.iid = iid
+            # Note: result.uid (and friends) are needed for the navbar.
+            raise_404(T_BAD_IID, result)
+            # NOTREACHED
+
+        return await func(e, i)
+
+    return loader
+
+
 @APP.get('/vote-on/<eid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
@@ -289,7 +325,7 @@ async def do_add_issue_endpoint(election):
 
 @APP.post('/do-edit-issue/<eid>/<iid>')
 @asfquart.auth.require({R.committer})  ### need general solution
-###@load_election_issue
+@load_election_issue
 async def do_edit_issue_endpoint(election, issue):
     result = await basic_info()
 
@@ -306,7 +342,7 @@ async def do_edit_issue_endpoint(election, issue):
 
 @APP.delete('/do-delete-issue/<eid>/<iid>')
 @asfquart.auth.require({R.committer})  ### need general solution
-###@load_election_issue
+@load_election_issue
 async def do_delete_issue_endpoint(election, issue):
     result = await basic_info()
 
