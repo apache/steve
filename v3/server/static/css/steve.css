@@ -52,6 +52,7 @@
 
 /* vote-on.ezt  */
 .issue-item { margin-bottom: 1rem; }
+.action-buttons { margin-left: 1rem; }
 .vote-radio { margin-left: 1rem; }
 .description { display: none; }
 .description.show { display: block; }

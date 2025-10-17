@@ -176,7 +176,10 @@ def load_election_issue(func):
             raise_404(T_BAD_IID, result)
             # NOTREACHED
 
-        return await func(e, i)
+        ### get_issue() should return an edict. fix it here.
+        issue = edict(iid=iid, title=i[0], description=i[1], type=i[2], kv=i[3])
+
+        return await func(e, issue)
 
     return loader
 
@@ -283,7 +286,7 @@ async def do_open_endpoint(election):
     await flash_success(f'Opened election: {title}')
 
     # Return to the management page for this Election.
-    return quart.redirect(f'/manage/{election.eid}')
+    return quart.redirect(f'/manage/{election.eid}', code=303)
 
 
 @APP.get('/do-close/<eid>')
@@ -303,7 +306,7 @@ async def do_close_endpoint(election):
     await flash_success(f'Closed election: {title}')
 
     # Return to the management page for this Election.
-    return quart.redirect(f'/manage/{election.eid}')
+    return quart.redirect(f'/manage/{election.eid}', code=303)
 
 
 @APP.post('/do-add-issue/<eid>')
@@ -320,7 +323,7 @@ async def do_add_issue_endpoint(election):
                  f' to election[E:{election.eid}]')
 
     # Return to the management page for this Election.
-    return quart.redirect(f'/manage/{election.eid}')
+    return quart.redirect(f'/manage/{election.eid}', code=303)
 
 
 @APP.post('/do-edit-issue/<eid>/<iid>')
@@ -337,7 +340,7 @@ async def do_edit_issue_endpoint(election, issue):
                  f' in election[E:{election.eid}]')
 
     # Return to the management page for this Election.
-    return quart.redirect(f'/manage/{election.eid}')
+    return quart.redirect(f'/manage/{election.eid}', code=303)
 
 
 @APP.delete('/do-delete-issue/<eid>/<iid>')
@@ -354,7 +357,7 @@ async def do_delete_issue_endpoint(election, issue):
                  f' from election[E:{election.eid}]')
 
     # Return to the management page for this Election.
-    return quart.redirect(f'/manage/{election.eid}')
+    return quart.redirect(f'/manage/{election.eid}', code=303)
 
 
 @APP.get('/profile')
