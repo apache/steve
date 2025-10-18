@@ -317,10 +317,20 @@ async def do_add_issue_endpoint(election):
 
     ### check authz
 
-    ### do stuff
+    data = edict(await quart.request.get_json())
+    print('FORM:', data)
 
-    _LOGGER.info(f'User[U:{result.uid}] added issue[I:{iid}]'
+    ### do stuff
+    ### add_issue(iid, title, description, vtype, kv)
+    ### the IID should be created by add_issue. Do this for now.
+    issue = edict(iid=steve.crypto.create_id(),
+                  title='<placeholder>')
+
+    _LOGGER.info(f'User[U:{result.uid}] added issue[I:{issue.iid}]'
                  f' to election[E:{election.eid}]')
+
+    ### fill in the real title from the form data
+    await flash_success(f'Issue "{issue.title}" has been added.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -334,16 +344,23 @@ async def do_edit_issue_endpoint(election, issue):
 
     ### check authz
 
+    data = edict(await quart.request.get_json())
+    print('FORM:', data)
+
     ### do stuff
+    ### add_issue(iid, title, description, vtype, kv)
 
     _LOGGER.info(f'User[U:{result.uid}] edited issue[I:{issue.iid}]'
                  f' in election[E:{election.eid}]')
+
+    ### this is old title. switch to new title.
+    await flash_success(f'Issue "{issue.title}" has been updated.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
 
 
-@APP.delete('/do-delete-issue/<eid>/<iid>')
+@APP.get('/do-delete-issue/<eid>/<iid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election_issue
 async def do_delete_issue_endpoint(election, issue):
@@ -351,10 +368,13 @@ async def do_delete_issue_endpoint(election, issue):
 
     ### check authz
 
-    ### do stuff
+    # Issue exists, and was loaded. No errors to handle?
+    election.delete_issue(issue.iid)
 
     _LOGGER.info(f'User[U:{result.uid}] deleted issue[I:{issue.iid}]'
                  f' from election[E:{election.eid}]')
+
+    await flash_success(f'Issue "{issue.title}" has been deleted.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
