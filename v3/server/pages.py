@@ -77,6 +77,9 @@ async def basic_info():
         # No session.
         basic.update(uid=None, name=None, email=None,)
 
+    ### generate a real token and store in the session
+    basic.csrf_token = 'placeholder'
+
     return basic
 
 
@@ -360,7 +363,7 @@ async def do_edit_issue_endpoint(election, issue):
     return quart.redirect(f'/manage/{election.eid}', code=303)
 
 
-@APP.get('/do-delete-issue/<eid>/<iid>')
+@APP.post('/do-delete-issue/<eid>/<iid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election_issue
 async def do_delete_issue_endpoint(election, issue):
