@@ -30,7 +30,7 @@ CERTS_DIR = THIS_DIR / 'certs'
 def main():
     logging.basicConfig(level=logging.DEBUG,
                         style='{',
-                        format='[{asctime}|{levelname}|{module}] {message}',
+                        format='[{asctime}|{levelname}|{name}] {message}',
                         datefmt=DATE_FORMAT,
                         )
 
@@ -38,6 +38,9 @@ def main():
     logging.getLogger('selector_events').setLevel(logging.INFO)
     logging.getLogger('hpack').setLevel(logging.INFO)
     logging.getLogger('sslproto').setLevel(logging.INFO)
+    ### above is good, but leaks stuff. This quiets things. too much?
+    ### other way to approach: what in asyncio do we need to observe?
+    logging.getLogger('asyncio').setLevel(logging.INFO)
 
     ### is this really needed right now?
     # Avoid OIDC
