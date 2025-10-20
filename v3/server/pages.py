@@ -180,7 +180,7 @@ def load_election_issue(func):
             # NOTREACHED
 
         ### get_issue() should return an edict. fix it here.
-        issue = edict(iid=iid, title=i[0], description=i[1], type=i[2], kv=i[3])
+        issue = edict(iid=iid, title=i[0], description=i[1], vtype=i[2], kv=i[3])
 
         return await func(e, issue)
 
@@ -320,19 +320,20 @@ async def do_add_issue_endpoint(election):
 
     ### check authz
 
-    data = edict(await quart.request.get_json())
-    print('FORM:', data)
+    form = edict(await quart.request.form)
+    print('FORM:', form)
 
     ### do stuff
     ### add_issue(iid, title, description, vtype, kv)
     ### the IID should be created by add_issue. Do this for now.
+    ### does add_issue() return an edict for the added issue?
     issue = edict(iid=steve.crypto.create_id(),
-                  title='<placeholder>')
+                  title=form.title,
+                  )
 
     _LOGGER.info(f'User[U:{result.uid}] added issue[I:{issue.iid}]'
                  f' to election[E:{election.eid}]')
 
-    ### fill in the real title from the form data
     await flash_success(f'Issue "{issue.title}" has been added.')
 
     # Return to the management page for this Election.
@@ -347,17 +348,19 @@ async def do_edit_issue_endpoint(election, issue):
 
     ### check authz
 
-    data = edict(await quart.request.get_json())
-    print('FORM:', data)
+    form = edict(await quart.request.form)
+    print('FORM:', form)
 
-    ### do stuff
-    ### add_issue(iid, title, description, vtype, kv)
+    # Update the title/description.
+    ### for now, no way to update the vtype or KV pairs.
+    election.add_issue(issue.iid, form.title, form.description,
+                       issue.vtype, issue.kv)
 
     _LOGGER.info(f'User[U:{result.uid}] edited issue[I:{issue.iid}]'
                  f' in election[E:{election.eid}]')
 
-    ### this is old title. switch to new title.
-    await flash_success(f'Issue "{issue.title}" has been updated.')
+    # Use the new TITLE for this.
+    await flash_success(f'Issue "{form.title}" has been updated.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
