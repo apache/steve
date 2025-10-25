@@ -451,8 +451,8 @@ class Election:
         return [ row for row in db.q_owned.fetchall() ]
 
 
-def not_found(cursor, eid):
-    row = cursor.first_row(eid)
+def not_found(cursor, key):
+    row = cursor.first_row(key)
     return row is None
 
 
