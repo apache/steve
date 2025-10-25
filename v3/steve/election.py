@@ -184,7 +184,7 @@ class Election:
         if required_state:
             state = self._compute_state(md)
             if state != required_state:
-                raise ElectionBadState(state, required_state)
+                raise ElectionBadState(self.eid, state, required_state)
 
         return md
 
@@ -451,8 +451,8 @@ class Election:
         return [ row for row in db.q_owned.fetchall() ]
 
 
-def not_found(cursor, id):
-    row = cursor.first_row(id)
+def not_found(cursor, eid):
+    row = cursor.first_row(eid)
     return row is None
 
 
@@ -466,7 +466,8 @@ class ElectionNotFound(Exception):
 
 
 class ElectionBadState(Exception):
-    def __init__(self, current, required):
+    def __init__(self, eid, current, required):
+        self.eid = eid
         self.current = current
         self.required = required
         super().__init__(str(self))
