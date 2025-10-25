@@ -231,7 +231,7 @@ async def admin_page():
 
         result = await basic_info()
         result.title = 'Unknown Person'
-        result.pid = pid
+        result.pid = result.uid
         # Note: result.uid (and friends) are needed for the navbar.
         raise_404(T_BAD_PID, result)
         # NOTREACHED
