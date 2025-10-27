@@ -17,8 +17,9 @@
 
 # Load a bunch of fake data into the database, for stuff to work with.
 
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+
 import sys
-import sqlite3
 import pathlib
 import logging
 
@@ -39,19 +40,15 @@ import steve.crypto
 FAKE = faker.Faker()
 
 
-def main(count=10, owner_pid=None):
+def main(owner, count=10):
     for _ in range(count):
-        gen_election(owner_pid)
+        gen_election(owner)
 
 
-def gen_election(owner_pid=None, issue_count=10):
+def gen_election(owner, issue_count=10):
     title = FAKE.sentence()
-    if not owner_pid:
-        owner_pid = random_owner()
-        #owner_pid = 'gstein'
-    e = steve.election.Election.create(DB_FNAME, title, owner_pid)
-    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}",'
-                 f' by owner "{owner_pid}"')
+    e = steve.election.Election.create(DB_FNAME, title, owner)
+    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}", by owner "{owner}"')
 
     for _ in range(issue_count):
         title = FAKE.sentence()
@@ -65,17 +62,12 @@ def gen_election(owner_pid=None, issue_count=10):
         _LOGGER.info(f'[E:{e.eid}]: created issue[I:{iid}]: "{title}"')
 
 
-def random_owner():
-    "Pick a random PID from those available."
-
-    conn = sqlite3.connect(DB_FNAME)
-    cursor = conn.execute('SELECT pid FROM person ORDER BY RANDOM() LIMIT 1')
-    pid = cursor.fetchone()[0]
-    conn.close()
-
-    return pid
-
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    main()
+
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--owner', type=str, required=True,
+                        help="The owner's Apache ID to use for created elections.")
+    args = parser.parse_args()
+
+    main(owner=args.owner)

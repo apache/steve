@@ -6,7 +6,6 @@ In the `config.yaml` file under the `server` category are two values
 that point to your server's certificate:
 
 ```yaml
-
 server:
     certfile: server.crt
     keyfile: server.key
@@ -60,4 +59,5 @@ The certificate is at "./localhost.apache.org+3.pem" and the key at "./localhost
 It will expire on 29 December 2027 🗓
 ```
 
-Adjust the `config.yaml` to refer to these new files.
+Adjust the `config.yaml` to refer to these new files. The default `config.yaml.example`
+config assumes the generated files are moved under the `server/certs` directory.
