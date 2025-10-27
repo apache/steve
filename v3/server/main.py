@@ -48,7 +48,7 @@ def main():
     asfquart.generics.OAUTH_URL_INIT = "https://oauth.apache.org/auth?state=%s&redirect_uri=%s"
     asfquart.generics.OAUTH_URL_CALLBACK = "https://oauth.apache.org/token?code=%s"
 
-    app = asfquart.construct('steve')
+    app = asfquart.construct('steve', app_dir=THIS_DIR, static_folder=None)
 
     # Now that we have an APP, import modules that will add page
     # and API endpoints into the APP.

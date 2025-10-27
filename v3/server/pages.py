@@ -41,6 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR / APP.cfg.db
 TEMPLATES = THIS_DIR / 'templates'
+STATICDIR = THIS_DIR / 'static'
 
 sys.path.insert(0, str(THIS_DIR.parent))
 import steve.election
@@ -425,12 +426,12 @@ async def about_page():
 
 
 # Route to serve static files (CSS and JS)
-@APP.route('/static/<path:filename>')
+@APP.get('/static/<path:filename>')
 async def serve_static(filename):
-    return await quart.send_from_directory(THIS_DIR / 'static', filename)
-@APP.route('/favicon.ico')
+    return await quart.send_from_directory(STATICDIR, filename)
+@APP.get('/favicon.ico')
 async def serve_favicon():
-    return await quart.send_from_directory(THIS_DIR / 'static', 'favicon.ico')
+    return await quart.send_from_directory(STATICDIR, 'favicon.ico')
 
 
 def format_datetime(dt):
