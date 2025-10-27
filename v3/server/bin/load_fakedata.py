@@ -17,8 +17,9 @@
 
 # Load a bunch of fake data into the database, for stuff to work with.
 
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
+import argparse
+import sqlite3
 import sys
 import pathlib
 import logging
@@ -40,15 +41,16 @@ import steve.crypto
 FAKE = faker.Faker()
 
 
-def main(owner, count=10):
+def main(owner_pid, count=10):
     for _ in range(count):
-        gen_election(owner)
+        gen_election(owner_pid)
 
 
-def gen_election(owner, issue_count=10):
+def gen_election(owner_pid, issue_count=10):
     title = FAKE.sentence()
-    e = steve.election.Election.create(DB_FNAME, title, owner)
-    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}", by owner "{owner}"')
+    e = steve.election.Election.create(DB_FNAME, title, owner_pid)
+    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}",'
+                 f' by owner "{owner_pid}"')
 
     for _ in range(issue_count):
         title = FAKE.sentence()
@@ -62,12 +64,28 @@ def gen_election(owner, issue_count=10):
         _LOGGER.info(f'[E:{e.eid}]: created issue[I:{iid}]: "{title}"')
 
 
+def random_owner():
+    "Pick a random PID from those available."
+
+    conn = sqlite3.connect(DB_FNAME)
+    cursor = conn.execute('SELECT pid FROM person ORDER BY RANDOM() LIMIT 1')
+    pid = cursor.fetchone()[0]
+    conn.close()
+
+    return pid
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--owner', type=str, required=True,
-                        help="The owner's Apache ID to use for created elections.")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--owner-pid', type=str, required=False,
+                        help="The owner's Apache ID to use for created elections."
+                        " If not set, pick a random existing person.")
     args = parser.parse_args()
 
-    main(owner=args.owner)
+    owner_pid = args.owner_pid
+    if not owner_pid:
+        owner_pid = random_owner()
+
+    main(owner_pid=owner_pid)
