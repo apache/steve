@@ -17,8 +17,10 @@
 
 # Load a bunch of fake data into the database, for stuff to work with.
 
-import sys
+
+import argparse
 import sqlite3
+import sys
 import pathlib
 import logging
 
@@ -39,16 +41,13 @@ import steve.crypto
 FAKE = faker.Faker()
 
 
-def main(count=10, owner_pid=None):
+def main(owner_pid, count=10):
     for _ in range(count):
         gen_election(owner_pid)
 
 
-def gen_election(owner_pid=None, issue_count=10):
+def gen_election(owner_pid, issue_count=10):
     title = FAKE.sentence()
-    if not owner_pid:
-        owner_pid = random_owner()
-        #owner_pid = 'gstein'
     e = steve.election.Election.create(DB_FNAME, title, owner_pid)
     _LOGGER.info(f'Created election[E:{e.eid}]: "{title}",'
                  f' by owner "{owner_pid}"')
@@ -78,4 +77,15 @@ def random_owner():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    main()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--owner-pid', type=str, required=False,
+                        help="The owner's Apache ID to use for created elections."
+                        " If not set, pick a random existing person.")
+    args = parser.parse_args()
+
+    owner_pid = args.owner_pid
+    if not owner_pid:
+        owner_pid = random_owner()
+
+    main(owner_pid=owner_pid)
