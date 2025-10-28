@@ -117,7 +117,7 @@ election:
     # Which elections were created by PID?
     q_owned: |
         SELECT eid, title, authz, closed, open_at, close_at,
-               (opened_key IS NOT NULL) AS is_opened
+               owner_pid, (opened_key IS NOT NULL) AS is_opened
         FROM election WHERE owner_pid = ?
 
 
