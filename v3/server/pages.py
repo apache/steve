@@ -471,8 +471,6 @@ def postprocess_election(e):
     e.fmt_close_at_full = dt_close and dt_close.strftime(FMT_DATE_FULL)
 
     ### temporary. need to adjust input query.
-    if 'owner_pid' not in e:
-        e.owner_pid = 'gstein'  ### fix query. for now, could be result.uid
     if 'issue_count' not in e:
         e.issue_count = 5  ### arbitrary. just provide a value
 
