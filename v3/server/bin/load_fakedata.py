@@ -46,18 +46,17 @@ def main(args):
     if not owner_pid:
         owner_pid = random_owner()
 
-    elections, issues = args.elections, args.issues
-    for _ in range(elections):
-        gen_election(owner_pid, issues)
+    for _ in range(args.elections):
+        gen_election(owner_pid, args.issues)
 
 
-def gen_election(owner_pid, issues):
+def gen_election(owner_pid, issue_count=10):
     title = FAKE.sentence()
     e = steve.election.Election.create(DB_FNAME, title, owner_pid)
     _LOGGER.info(f'Created election[E:{e.eid}]: "{title}",'
                  f' by owner "{owner_pid}"')
 
-    for _ in range(issues):
+    for _ in range(issue_count):
         title = FAKE.sentence()
         description = FAKE.paragraph()
         vtype = 'yna'  ### something else?
