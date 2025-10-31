@@ -41,7 +41,12 @@ import steve.crypto
 FAKE = faker.Faker()
 
 
-def main(owner_pid, count=10):
+def main(args):
+    count = args.count
+    owner_pid = args.owner_pid
+    if not owner_pid:
+        owner_pid = random_owner()
+
     for _ in range(count):
         gen_election(owner_pid)
 
@@ -65,7 +70,7 @@ def gen_election(owner_pid, issue_count=10):
 
 
 def random_owner():
-    "Pick a random PID from those available."
+    """Pick a random PID from those available."""
 
     conn = sqlite3.connect(DB_FNAME)
     cursor = conn.execute('SELECT pid FROM person ORDER BY RANDOM() LIMIT 1')
@@ -78,14 +83,11 @@ def random_owner():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--count', type=int, required=False, default=10,
+                        help="The number of elections to create.")
     parser.add_argument('--owner-pid', type=str, required=False,
                         help="The owner's Apache ID to use for created elections."
                         " If not set, pick a random existing person.")
-    args = parser.parse_args()
 
-    owner_pid = args.owner_pid
-    if not owner_pid:
-        owner_pid = random_owner()
-
-    main(owner_pid=owner_pid)
+    main(parser.parse_args())
