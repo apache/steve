@@ -84,6 +84,28 @@ async def basic_info():
     return basic
 
 
+# Define a bunch of helpers for recording "flash" messages in the session.
+# Each helper function is:
+#    async def flash_FOO(message)
+# where FOO is one of the eight Bootstrap alert classes. See:
+#    https://getbootstrap.com/docs/5.0/components/alerts/#examples
+async def flash_primary(message):
+    await quart.flash(message, category='primary')
+async def flash_secondary(message):
+    await quart.flash(message, category='secondary')
+async def flash_success(message):
+    await quart.flash(message, category='success')
+async def flash_danger(message):
+    await quart.flash(message, category='danger')
+async def flash_warning(message):
+    await quart.flash(message, category='warning')
+async def flash_info(message):
+    await quart.flash(message, category='info')
+async def flash_light(message):
+    await quart.flash(message, category='light')
+async def flash_dark(message):
+    await quart.flash(message, category='dark')
+
 @APP.get('/')
 @APP.use_template(TEMPLATES / 'home.ezt')
 async def home_page():
@@ -276,7 +298,7 @@ async def do_open_endpoint(election):
     _LOGGER.info(f'User[U:{result.uid}] opened election[E:{election.eid}]')
 
     _, title, _ = election.get_metadata()
-    await quart.flash(f'Opened election: {title}', category='success')
+    await flash_success(f'Opened election: {title}')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -296,7 +318,7 @@ async def do_close_endpoint(election):
     _LOGGER.info(f'User[U:{result.uid}] closed election[E:{election.eid}]')
 
     _, title, _ = election.get_metadata()
-    await quart.flash(f'Closed election: {title}', category='success')
+    await flash_success(f'Closed election: {title}')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -322,7 +344,7 @@ async def do_add_issue_endpoint(election):
     _LOGGER.info(f'User[U:{result.uid}] added issue[I:{issue.iid}]'
                  f' to election[E:{election.eid}]')
 
-    await quart.flash(f'Issue "{issue.title}" has been added.', category='success')
+    await flash_success(f'Issue "{issue.title}" has been added.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -348,7 +370,7 @@ async def do_edit_issue_endpoint(election, issue):
                  f' in election[E:{election.eid}]')
 
     # Use the new TITLE for this.
-    await quart.flash(f'Issue "{form.title}" has been updated.', category='success')
+    await flash_success(f'Issue "{form.title}" has been updated.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -368,7 +390,7 @@ async def do_delete_issue_endpoint(election, issue):
     _LOGGER.info(f'User[U:{result.uid}] deleted issue[I:{issue.iid}]'
                  f' from election[E:{election.eid}]')
 
-    await quart.flash(f'Issue "{issue.title}" has been deleted.', category='success')
+    await flash_success(f'Issue "{issue.title}" has been deleted.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
