@@ -89,22 +89,15 @@ async def basic_info():
 #    async def flash_FOO(message)
 # where FOO is one of the eight Bootstrap alert classes. See:
 #    https://getbootstrap.com/docs/5.0/components/alerts/#examples
-async def flash_primary(message):
-    await quart.flash(message, category='primary')
-async def flash_secondary(message):
-    await quart.flash(message, category='secondary')
-async def flash_success(message):
-    await quart.flash(message, category='success')
-async def flash_danger(message):
-    await quart.flash(message, category='danger')
-async def flash_warning(message):
-    await quart.flash(message, category='warning')
-async def flash_info(message):
-    await quart.flash(message, category='info')
-async def flash_light(message):
-    await quart.flash(message, category='light')
-async def flash_dark(message):
-    await quart.flash(message, category='dark')
+flash_primary = functools.partial(quart.flash, category='primary')
+flash_secondary = functools.partial(quart.flash, category='secondary')
+flash_success = functools.partial(quart.flash, category='success')
+flash_danger = functools.partial(quart.flash, category='danger')
+flash_warning = functools.partial(quart.flash, category='warning')
+flash_info = functools.partial(quart.flash, category='info')
+flash_light = functools.partial(quart.flash, category='light')
+flash_dark = functools.partial(quart.flash, category='dark')
+
 
 @APP.get('/')
 @APP.use_template(TEMPLATES / 'home.ezt')
