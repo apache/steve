@@ -60,7 +60,7 @@ T_BAD_PID = APP.load_template(TEMPLATES / 'e_bad_pid.ezt')
 
 
 async def basic_info():
-    "Return base-level EZT template data."
+    """Return base-level EZT template data."""
 
     basic = edict()
 
@@ -89,10 +89,14 @@ async def basic_info():
 #    async def flash_FOO(message)
 # where FOO is one of the eight Bootstrap alert classes. See:
 #    https://getbootstrap.com/docs/5.0/components/alerts/#examples
-for _cat in ('primary', 'secondary', 'success', 'danger',
-             'warning', 'info', 'light', 'dark', ):
-    globals()[f'flash_{_cat}'] = functools.partial(quart.flash, category=_cat)
-del _cat
+flash_primary = functools.partial(quart.flash, category='primary')
+flash_secondary = functools.partial(quart.flash, category='secondary')
+flash_success = functools.partial(quart.flash, category='success')
+flash_danger = functools.partial(quart.flash, category='danger')
+flash_warning = functools.partial(quart.flash, category='warning')
+flash_info = functools.partial(quart.flash, category='info')
+flash_light = functools.partial(quart.flash, category='light')
+flash_dark = functools.partial(quart.flash, category='dark')
 
 
 @APP.get('/')
@@ -125,7 +129,7 @@ async def voter_page():
 
 
 def load_election(func):
-    "Decorator to load/pass-argument an Election from EID."
+    """Decorator to load/pass-argument an Election from EID."""
 
     @functools.wraps(func)
     async def loader(eid):
@@ -150,7 +154,7 @@ def load_election(func):
 
 
 def load_election_issue(func):
-    "Decorator to load/pass-argument an Election from EID."
+    """Decorator to load/pass-argument an Election from EID."""
 
     @functools.wraps(func)
     async def loader(eid, iid):
@@ -328,9 +332,7 @@ async def do_add_issue_endpoint(election):
     ### add_issue(iid, title, description, vtype, kv)
     ### the IID should be created by add_issue. Do this for now.
     ### does add_issue() return an edict for the added issue?
-    issue = edict(iid=steve.crypto.create_id(),
-                  title=form.title,
-                  )
+    issue = edict(iid=steve.crypto.create_id(), title=form.title)
 
     _LOGGER.info(f'User[U:{result.uid}] added issue[I:{issue.iid}]'
                  f' to election[E:{election.eid}]')
