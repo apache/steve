@@ -60,7 +60,7 @@ T_BAD_PID = APP.load_template(TEMPLATES / 'e_bad_pid.ezt')
 
 
 async def basic_info():
-    "Return base-level EZT template data."
+    """Return base-level EZT template data."""
 
     basic = edict()
 
@@ -82,17 +82,6 @@ async def basic_info():
     basic.csrf_token = 'placeholder'
 
     return basic
-
-
-# Define a bunch of helpers for recording "flash" messages in the session.
-# Each helper function is:
-#    async def flash_FOO(message)
-# where FOO is one of the eight Bootstrap alert classes. See:
-#    https://getbootstrap.com/docs/5.0/components/alerts/#examples
-for _cat in ('primary', 'secondary', 'success', 'danger',
-             'warning', 'info', 'light', 'dark', ):
-    globals()[f'flash_{_cat}'] = functools.partial(quart.flash, category=_cat)
-del _cat
 
 
 @APP.get('/')
@@ -125,7 +114,7 @@ async def voter_page():
 
 
 def load_election(func):
-    "Decorator to load/pass-argument an Election from EID."
+    """Decorator to load/pass-argument an Election from EID."""
 
     @functools.wraps(func)
     async def loader(eid):
@@ -150,7 +139,7 @@ def load_election(func):
 
 
 def load_election_issue(func):
-    "Decorator to load/pass-argument an Election from EID."
+    """Decorator to load/pass-argument an Election from EID."""
 
     @functools.wraps(func)
     async def loader(eid, iid):
@@ -287,7 +276,7 @@ async def do_open_endpoint(election):
     _LOGGER.info(f'User[U:{result.uid}] opened election[E:{election.eid}]')
 
     _, title, _ = election.get_metadata()
-    await flash_success(f'Opened election: {title}')
+    await quart.flash(f'Opened election: {title}', category='success')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -307,7 +296,7 @@ async def do_close_endpoint(election):
     _LOGGER.info(f'User[U:{result.uid}] closed election[E:{election.eid}]')
 
     _, title, _ = election.get_metadata()
-    await flash_success(f'Closed election: {title}')
+    await quart.flash(f'Closed election: {title}', category='success')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -328,14 +317,12 @@ async def do_add_issue_endpoint(election):
     ### add_issue(iid, title, description, vtype, kv)
     ### the IID should be created by add_issue. Do this for now.
     ### does add_issue() return an edict for the added issue?
-    issue = edict(iid=steve.crypto.create_id(),
-                  title=form.title,
-                  )
+    issue = edict(iid=steve.crypto.create_id(), title=form.title)
 
     _LOGGER.info(f'User[U:{result.uid}] added issue[I:{issue.iid}]'
                  f' to election[E:{election.eid}]')
 
-    await flash_success(f'Issue "{issue.title}" has been added.')
+    await quart.flash(f'Issue "{issue.title}" has been added.', category='success')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -361,7 +348,7 @@ async def do_edit_issue_endpoint(election, issue):
                  f' in election[E:{election.eid}]')
 
     # Use the new TITLE for this.
-    await flash_success(f'Issue "{form.title}" has been updated.')
+    await quart.flash(f'Issue "{form.title}" has been updated.', category='success')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -381,7 +368,7 @@ async def do_delete_issue_endpoint(election, issue):
     _LOGGER.info(f'User[U:{result.uid}] deleted issue[I:{issue.iid}]'
                  f' from election[E:{election.eid}]')
 
-    await flash_success(f'Issue "{issue.title}" has been deleted.')
+    await quart.flash(f'Issue "{issue.title}" has been deleted.', category='success')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
