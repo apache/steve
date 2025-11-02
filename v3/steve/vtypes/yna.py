@@ -20,8 +20,18 @@
 #
 
 # The votestring will be lower-cased. What is the result?
-YES = { 'y', 'yes', '1', 'true', }
-NO = { 'n', 'no', '0', 'false', }
+YES = {
+    'y',
+    'yes',
+    '1',
+    'true',
+}
+NO = {
+    'n',
+    'no',
+    '0',
+    'false',
+}
 # "abstain" is any other (non-affirmative) value.
 
 
@@ -35,9 +45,13 @@ def tally(votestrings, _kv):
         else:
             a += 1
 
-    human = f'''\
+    human = f"""\
 Yes:     {y:#4}
 No:      {n:#4}
-Abstain: {a:#4}'''
+Abstain: {a:#4}"""
 
-    return human, {'y': y, 'n': n, 'a': a,}
+    return human, {
+        'y': y,
+        'n': n,
+        'a': a,
+    }

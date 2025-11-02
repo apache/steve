@@ -16,5 +16,5 @@
 #
 
 import asfquart
-APP = asfquart.APP
 
+APP = asfquart.APP

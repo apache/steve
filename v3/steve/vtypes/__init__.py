@@ -16,7 +16,7 @@
 #
 
 # NOTE: not using a dynamic system. Just define/import what we know.
-TYPES = { 'yna', 'stv' }
+TYPES = {'yna', 'stv'}
 
 from . import yna
 from . import stv

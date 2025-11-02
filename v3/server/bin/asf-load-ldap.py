@@ -45,13 +45,14 @@ def main():
     pdb.db.conn.execute('BEGIN TRANSACTION')
 
     client = ldap.initialize(LDAP_URL)
-    binddn, bindpw = [ s.strip()
-                       for s in open(THIS_DIR / 'bind.txt').readlines()[:2] ]
-    #print('BIND:', binddn, bindpw)
+    binddn, bindpw = [s.strip() for s in open(THIS_DIR / 'bind.txt').readlines()[:2]]
+    # print('BIND:', binddn, bindpw)
     client.simple_bind_s(binddn, bindpw)
 
     with asfpy.stopwatch.Stopwatch('run LDAP full scan'):
-        results = client.search_s(LDAP_DN, ldap.SCOPE_SUBTREE, 'uid=*', attrlist=None) #[LDAP_ATTR,])
+        results = client.search_s(
+            LDAP_DN, ldap.SCOPE_SUBTREE, 'uid=*', attrlist=None
+        )  # [LDAP_ATTR,])
 
     count = 0
     for r in results:
