@@ -14,22 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import pathlib
 import logging
 
-import ldap  # pip3 install python-ldap
-import asfpy.db
+import ldap
 import asfpy.stopwatch
+import steve.persondb
 from easydict import EasyDict as edict
 
-_LOGGER = logging.getLogger(__name__)
-
+LOGGER = logging.getLogger(__name__)
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR.parent / 'steve.db'
-
-sys.path.insert(0, str(THIS_DIR.parent.parent))
-import steve.persondb
 
 # The ASF's LDAP server, available for read-only for finding potential voters.
 LDAP_URL = 'ldaps://ldap-us.apache.org/'
@@ -46,13 +41,12 @@ def main():
 
     client = ldap.initialize(LDAP_URL)
     binddn, bindpw = [s.strip() for s in open(THIS_DIR / 'bind.txt').readlines()[:2]]
-    # print('BIND:', binddn, bindpw)
     client.simple_bind_s(binddn, bindpw)
 
     with asfpy.stopwatch.Stopwatch('run LDAP full scan'):
         results = client.search_s(
             LDAP_DN, ldap.SCOPE_SUBTREE, 'uid=*', attrlist=None
-        )  # [LDAP_ATTR,])
+        )
 
     count = 0
     for r in results:
@@ -70,7 +64,7 @@ def main():
     # Reach into the CONN and do the commit.
     pdb.db.conn.execute('COMMIT')
 
-    _LOGGER.info(f'Loaded {count} persons into {DB_FNAME}')
+    LOGGER.info(f'Loaded {count} persons into {DB_FNAME}')
 
 
 if __name__ == '__main__':

@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,12 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# ----
-#
-# ### TBD: DOCCO
-#
-#
 
 import logging
 import json
@@ -31,7 +24,7 @@ import easydict
 from . import crypto
 from . import vtypes
 
-_LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 QUERIES = THIS_DIR.parent / 'queries.yaml'
@@ -48,7 +41,7 @@ class Election:
         return asfpy.db.DB(db_fname, yaml_fname=QUERIES, yaml_section='election')
 
     def __init__(self, db_fname, eid):
-        _LOGGER.debug(f'Opening election ID "{eid}"')
+        LOGGER.debug(f'Opening election ID "{eid}"')
 
         self.db = self.open_database(db_fname)
         self.eid = eid
@@ -426,7 +419,7 @@ class Election:
                 )
                 break
             except sqlite3.IntegrityError:
-                _LOGGER.debug('EID conflict(!!) ... trying again.')
+                LOGGER.debug('EID conflict(!!) ... trying again.')
         conn.close()
 
         return cls(db_fname, eid)

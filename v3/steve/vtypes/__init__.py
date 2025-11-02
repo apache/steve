@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,17 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
+from . import yna as yna
+from . import stv as stv
 
 # NOTE: not using a dynamic system. Just define/import what we know.
 TYPES = {'yna', 'stv'}
 
-from . import yna
-from . import stv
-
-
 def vtype_module(vtype):
     "Return the vote type's module."
     assert vtype in TYPES
-
     return globals()[vtype]

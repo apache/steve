@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,13 +14,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 import sys
 import logging
 import pathlib
 
-_LOGGER = logging.getLogger(__name__)
 DATE_FORMAT = '%m/%d %H:%M'
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
@@ -56,8 +54,8 @@ def main():
 
     # Now that we have an APP, import modules that will add page
     # and API endpoints into the APP.
-    import pages  # pylint: disable=unused-import
-    import api  # pylint: disable=unused-import
+    import pages  # noqa: F401
+    import api  # noqa: F401
 
     # Note: "pages" imports "steve.election". Pull that package into
     # our local namespace.
@@ -76,9 +74,6 @@ def main():
 
     # Spool up the app!
     app.runx(port=app.cfg.server.port, extra_files=extra_files, **kwargs)
-
-    # print('LOGGERS:', sorted(_LOGGER.manager.loggerDict.keys()))
-    # print(_LOGGER.manager.loggerDict['sslproto'])
 
 
 if __name__ == '__main__':

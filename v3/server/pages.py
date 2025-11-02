@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 ###
 ### NOTE: the voting handlers require login for ASF committers only.
@@ -22,7 +20,6 @@
 ### authorization for various install scenarios and authn systems.
 ###
 
-import sys
 import pathlib
 import datetime
 import functools
@@ -35,18 +32,18 @@ import asfquart.session
 from asfquart.auth import Requirements as R
 import ezt
 
+import steve.election
+import steve.crypto
+import steve.persondb
+
 APP = asfquart.APP
-_LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR / APP.cfg.db
 TEMPLATES = THIS_DIR / 'templates'
 STATICDIR = THIS_DIR / 'static'
 
-sys.path.insert(0, str(THIS_DIR.parent))
-import steve.election
-import steve.crypto
-import steve.persondb
 
 # Formatted values to inject into templates.
 FMT_DATE = '%b %d'
@@ -153,7 +150,7 @@ def load_election(func):
             raise_404(T_BAD_EID, result)
             # NOTREACHED
 
-        _LOGGER.debug(f'Loaded: {e}')
+        LOGGER.debug(f'Loaded: {e}')
 
         ### check authz
 
@@ -177,7 +174,7 @@ def load_election_issue(func):
             raise_404(T_BAD_EID, result)
             # NOTREACHED
 
-        _LOGGER.debug(f'Loaded: {e}')
+        LOGGER.debug(f'Loaded: {e}')
 
         ### check authz
 
@@ -296,7 +293,7 @@ async def do_open_endpoint(election):
     # Open the Election.
     election.open(pdb)
 
-    _LOGGER.info(f'User[U:{result.uid}] opened election[E:{election.eid}]')
+    LOGGER.info(f'User[U:{result.uid}] opened election[E:{election.eid}]')
 
     _, title, _ = election.get_metadata()
     await flash_success(f'Opened election: {title}')
@@ -316,7 +313,7 @@ async def do_close_endpoint(election):
     # Close the Election.
     election.close()
 
-    _LOGGER.info(f'User[U:{result.uid}] closed election[E:{election.eid}]')
+    LOGGER.info(f'User[U:{result.uid}] closed election[E:{election.eid}]')
 
     _, title, _ = election.get_metadata()
     await flash_success(f'Closed election: {title}')
@@ -342,7 +339,7 @@ async def do_add_issue_endpoint(election):
     ### does add_issue() return an edict for the added issue?
     issue = edict(iid=steve.crypto.create_id(), title=form.title)
 
-    _LOGGER.info(
+    LOGGER.info(
         f'User[U:{result.uid}] added issue[I:{issue.iid}] to election[E:{election.eid}]'
     )
 
@@ -367,7 +364,7 @@ async def do_edit_issue_endpoint(election, issue):
     ### for now, no way to update the vtype or KV pairs.
     election.add_issue(issue.iid, form.title, form.description, issue.vtype, issue.kv)
 
-    _LOGGER.info(
+    LOGGER.info(
         f'User[U:{result.uid}] edited issue[I:{issue.iid}]'
         f' in election[E:{election.eid}]'
     )
@@ -390,7 +387,7 @@ async def do_delete_issue_endpoint(election, issue):
     # Issue exists, and was loaded. No errors to handle?
     election.delete_issue(issue.iid)
 
-    _LOGGER.info(
+    LOGGER.info(
         f'User[U:{result.uid}] deleted issue[I:{issue.iid}]'
         f' from election[E:{election.eid}]'
     )

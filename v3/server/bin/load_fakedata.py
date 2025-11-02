@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,29 +14,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 # Load a bunch of fake data into the database, for stuff to work with.
 
-
 import argparse
 import sqlite3
-import sys
 import pathlib
 import logging
 
-import faker  # pip3 install faker
-
-_LOGGER = logging.getLogger(__name__)
-
-THIS_DIR = pathlib.Path(__file__).resolve().parent
-DB_FNAME = THIS_DIR.parent / 'steve.db'
-
-sys.path.insert(0, str(THIS_DIR.parent.parent))
+import faker
 import steve.election
-
 ### we shouldn't need this. do so, for now.
 import steve.crypto
+
+LOGGER = logging.getLogger(__name__)
+THIS_DIR = pathlib.Path(__file__).resolve().parent
+DB_FNAME = THIS_DIR.parent / 'steve.db'
 
 # Do we need individual instances? Use a singleton for now.
 FAKE = faker.Faker()
@@ -53,7 +47,7 @@ def main(args):
 def gen_election(owner_pid, issue_count=10):
     title = FAKE.sentence()
     e = steve.election.Election.create(DB_FNAME, title, owner_pid)
-    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}", by owner "{owner_pid}"')
+    LOGGER.info(f'Created election[E:{e.eid}]: "{title}", by owner "{owner_pid}"')
 
     for _ in range(issue_count):
         title = FAKE.sentence()
@@ -64,7 +58,7 @@ def gen_election(owner_pid, issue_count=10):
         ### grr. this should be internal
         iid = steve.crypto.create_id()
         e.add_issue(iid, title, description, vtype, kv)
-        _LOGGER.info(f'[E:{e.eid}]: created issue[I:{iid}]: "{title}"')
+        LOGGER.info(f'[E:{e.eid}]: created issue[I:{iid}]: "{title}"')
 
 
 def random_owner():
