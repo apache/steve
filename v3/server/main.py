@@ -52,8 +52,8 @@ def main():
 
     # Now that we have an APP, import modules that will add page
     # and API endpoints into the APP.
-    import pages  # pylint: disable=unused-import
-    import api  # pylint: disable=unused-import
+    import pages  # noqa: F401
+    import api  # noqa: F401
 
     # Note: "pages" imports "steve.election". Pull that package into
     # our local namespace.

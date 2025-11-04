@@ -32,10 +32,10 @@ THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR.parent / 'steve.db'
 
 sys.path.insert(0, str(THIS_DIR.parent.parent))
-import steve.election
+import steve.election  # noqa: E402
 
 ### we shouldn't need this. do so, for now.
-import steve.crypto
+import steve.crypto  # noqa: E402
 
 # Do we need individual instances? Use a singleton for now.
 FAKE = faker.Faker()
