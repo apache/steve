@@ -2,13 +2,13 @@ name: Type Tests
 
 on:
   push:
-    branches: [ trunk ]
     paths:
       - 'v3/**/*.py'
       - '**/type-tests.yml'
       - 'v3/pyproject.toml'
+
   pull_request:
-    branches: [ trunk ]
+
   workflow_dispatch:
 
 permissions:
@@ -16,15 +16,20 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        python-version: [3.12]
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@master
       with:
         persist-credentials: false
-    - name: Set up Python
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        python-version-file: v3/pyproject.toml
+        python-version: ${{ matrix.python-version }}
     - name: Cache Poetry dependencies
       uses: actions/cache@v4
       with:

@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import yna as yna
-from . import stv as stv
-
 # NOTE: not using a dynamic system. Just define/import what we know.
 TYPES = { 'yna', 'stv' }
+
+from . import yna  # noqa: E402,F401
+from . import stv  # noqa: E402,F401
 
 
 def vtype_module(vtype):
