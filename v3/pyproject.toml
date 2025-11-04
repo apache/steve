@@ -34,8 +34,8 @@ asfquart = ">=0.1.12"
 #faker = "^37.8.0"
 
 [tool.poetry.extras]
-server = ["asfquart"]         # Core dependencies for apache-steve[server]
-test = ["coverage", "pylint"] # Core dependencies for apache-steve[test]
+server = ["asfquart"]  # Core dependencies for apache-steve[server]
+test = ["coverage", "pylint"]  # Core dependencies for apache-steve[test]
 
 [build-system]
 requires = ["poetry-core"]
