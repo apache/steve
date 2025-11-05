@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,22 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 import pathlib
 import logging
 
-import ldap  # pip3 install python-ldap
-import asfpy.db
+import ldap
 import asfpy.stopwatch
 from easydict import EasyDict as edict
+
+import steve.persondb
 
 _LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR.parent / 'steve.db'
-
-sys.path.insert(0, str(THIS_DIR.parent.parent))
-import steve.persondb  # noqa: E402
 
 # The ASF's LDAP server, available for read-only for finding potential voters.
 LDAP_URL = 'ldaps://ldap-us.apache.org/'
