@@ -1,5 +1,6 @@
 steve.db
 poetry.lock
+uv.lock
 
 server/bin/bs.zip
 server/bin/icons.zip
