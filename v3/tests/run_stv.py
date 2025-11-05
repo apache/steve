@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,20 +16,14 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
-# ----
-#
-# ### TBD: DOCCO
-# USAGE: run_stv.py .../Meetings/yyyymmdd
-#
+
+
+# USAGE: uv run run_stv.py .../Meetings/yyyymmdd
 
 import sys
 import os.path
 
-# Ensure that we can import the "steve" package.
-THIS_DIR = os.path.realpath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.dirname(THIS_DIR))
-import steve.vtypes.stv  # noqa: E402
+import steve.vtypes.stv
 
 # The stv module loads the stv_tool module. Tweak it.
 stv_tool = steve.vtypes.stv.stv_tool
