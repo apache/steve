@@ -29,7 +29,7 @@ import os.path
 # Ensure that we can import the "steve" package.
 THIS_DIR = os.path.realpath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.dirname(THIS_DIR))
-import steve.vtypes.stv
+import steve.vtypes.stv  # noqa: E402
 
 # The stv module loads the stv_tool module. Tweak it.
 stv_tool = steve.vtypes.stv.stv_tool

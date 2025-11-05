@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,13 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 # NOTE: not using a dynamic system. Just define/import what we know.
 TYPES = { 'yna', 'stv' }
 
-from . import yna
-from . import stv
+from . import yna  # noqa: E402,F401
+from . import stv  # noqa: E402,F401
 
 
 def vtype_module(vtype):

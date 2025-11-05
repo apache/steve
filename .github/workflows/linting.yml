@@ -4,8 +4,7 @@ on:
   push:
     paths:
       - 'v3/**/*.py'
-      - '**/linting.yml'
-      - 'pylintrc'
+      - '**/ruff.toml'
       - 'v3/pyproject.toml'
 
   pull_request:
@@ -45,7 +44,7 @@ jobs:
       working-directory: v3  # Set the working directory to v3 where pyproject.toml is located
       run: |
         poetry install --with test,server
-    - name: Testing with pylint
-      working-directory: v3  # Ensure pylint runs in the correct directory
+    - name: Testing with ruff
+      working-directory: v3  # Ensure ruff runs in the correct directory
       run: |
-        poetry run pylint . --rcfile=../pylintrc  # Run within the poetry venv
+        poetry run ruff check

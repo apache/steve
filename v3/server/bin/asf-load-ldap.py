@@ -29,7 +29,7 @@ THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR.parent / 'steve.db'
 
 sys.path.insert(0, str(THIS_DIR.parent.parent))
-import steve.persondb
+import steve.persondb  # noqa: E402
 
 # The ASF's LDAP server, available for read-only for finding potential voters.
 LDAP_URL = 'ldaps://ldap-us.apache.org/'

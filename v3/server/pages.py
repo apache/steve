@@ -44,9 +44,9 @@ TEMPLATES = THIS_DIR / 'templates'
 STATICDIR = THIS_DIR / 'static'
 
 sys.path.insert(0, str(THIS_DIR.parent))
-import steve.election
-import steve.crypto
-import steve.persondb
+import steve.election  # noqa: E402
+import steve.crypto  # noqa: E402
+import steve.persondb  # noqa: E402
 
 # Formatted values to inject into templates.
 FMT_DATE = '%b %d'
