@@ -11,7 +11,8 @@ server:
     keyfile: server.key
 ```
 
-These files are relative to the `main.py` server script, or may be
+These files are relative to the `certs` sub-directory where the
+`main.py` server script, or the files may be
 absolute paths.
 
 ## Certificate Creation
@@ -53,6 +54,7 @@ my Chromebook)  The certificate appears to have a pattern like
 Next is the creation of the server's certificate:
 
 ```sh
+$ cd server/certs
 $ mkcert localhost.apache.org localhost 127.0.0.1 ::1
 Note: the local CA is not installed in the Firefox and/or Chrome/Chromium trust store.
 Run "mkcert -install" for certificates to be trusted automatically ⚠️
