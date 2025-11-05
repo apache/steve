@@ -1,42 +1,47 @@
-[tool.poetry]
+[project]
 name = "apache-steve"
 version = "3.0.0"
+
+authors = [{ name = "Apache STeVe Community", email = "dev@steve.apache.org" }]
 description = "The Apache STeVe voting system."
-authors = ["Apache STeVe Community <dev@steve.apache.org>"]
 license = "Apache-2.0"
 readme = "README.md"
-repository = "https://github.com/apache/steve"
-packages = [{ include = "steve" }]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-asfpy = ">=0.56"
-ezt = "^1.1"
-easydict = "^1.13"
-passlib = "^1.7.4"
-cryptography = "^44.0.3"
-argon2-cffi = "^25.1.0"
+dependencies = [
+    "asfpy>=0.56",
+    "asfquart>=0.1.12",
+    "ezt>=1.1",
+    "easydict>=1.13",
+    "passlib>=1.7.4,<2",
+    "cryptography>=44.0.3,<45",
+    "argon2-cffi>=25.1.0,<26",
+]
+requires-python = ">=3.10"
 
-[tool.poetry.group.test.dependencies]
-coverage = "^7.10.6"
-mypy = "^1.18.2"
-ruff = "^0.14.3"
-types-PyYAML = "^6.0.12"
-types-requests = "^2.32.4"
-types-aiofiles = "^24.1.0"
+[project.urls]
+Homepage = "https://steve.apache.org/"
+Repository = "https://github.com/apache/steve"
+Issues = "https://github.com/apache/steve/issues"
 
-[tool.poetry.group.server.dependencies]
-asfquart = ">=0.1.12"
-### not sure about this. not needed for server operation.
-### let the import fail, and the user can do a pip install.
-#python-ldap = "^3.0.0"
-### same. let this fail, if the user needs it.
-#faker = "^37.8.0"
+[dependency-groups]
+lint = [
+    "coverage>=7.10.6,<8",
+    "ruff>=0.14.3",
+    "mypy>=1.18.2,<2",
+    "types-PyYAML>=6.0.12,<7",
+    "types-requests>=2.32.4,<3",
+    "types-aiofiles>=24.1.0,<25",
+]
 
-[tool.poetry.extras]
-server = ["asfquart"]  # Core dependencies for apache-steve[server]
-test = ["coverage", "pylint"]  # Core dependencies for apache-steve[test]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv]
+default-groups = "all"
+
+# see https://docs.astral.sh/uv/reference/settings/#build-backend_module-name
+[tool.uv.build-backend]
+module-root = ""
+module-name = "steve"

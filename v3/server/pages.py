@@ -22,7 +22,6 @@
 ### authorization for various install scenarios and authn systems.
 ###
 
-import sys
 import pathlib
 import datetime
 import functools
@@ -35,6 +34,10 @@ import asfquart.session
 from asfquart.auth import Requirements as R
 import ezt
 
+import steve.election
+import steve.crypto
+import steve.persondb
+
 APP = asfquart.APP
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,11 +45,6 @@ THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR / APP.cfg.db
 TEMPLATES = THIS_DIR / 'templates'
 STATICDIR = THIS_DIR / 'static'
-
-sys.path.insert(0, str(THIS_DIR.parent))
-import steve.election  # noqa: E402
-import steve.crypto  # noqa: E402
-import steve.persondb  # noqa: E402
 
 # Formatted values to inject into templates.
 FMT_DATE = '%b %d'
