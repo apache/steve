@@ -68,6 +68,8 @@ def tally(votestrings, kv, names=None):
     human = '\n'.join(
         f'{c.name:40}{" " if c.status == stv_tool.ELECTED else " not "}elected'
         for c in results.l
-        )
-    data = { 'raw': results, }
+    )
+    data = {
+        'raw': results,
+    }
     return human, data

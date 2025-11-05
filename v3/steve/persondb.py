@@ -28,10 +28,8 @@ QUERIES = THIS_DIR.parent / 'queries.yaml'
 
 
 class PersonDB:
-
     def __init__(self, db_fname):
-        self.db = asfpy.db.DB(db_fname,
-                              yaml_fname=QUERIES, yaml_section='person')
+        self.db = asfpy.db.DB(db_fname, yaml_fname=QUERIES, yaml_section='person')
 
     def __getattr__(self, name):
         "Proxy the cursors."

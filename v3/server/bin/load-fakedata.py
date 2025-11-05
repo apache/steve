@@ -25,6 +25,7 @@ import logging
 import faker
 
 import steve.election
+
 ### we shouldn't need this. do so, for now.
 import steve.crypto
 
@@ -49,8 +50,7 @@ def main(args):
 def gen_election(owner_pid, issue_count=10):
     title = FAKE.sentence()
     e = steve.election.Election.create(DB_FNAME, title, owner_pid)
-    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}",'
-                 f' by owner "{owner_pid}"')
+    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}", by owner "{owner_pid}"')
 
     for _ in range(issue_count):
         title = FAKE.sentence()
@@ -78,13 +78,28 @@ def random_owner():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--elections', type=int, required=False, default=10,
-                        help="The number of elections to create.")
-    parser.add_argument('--issues', type=int, required=False, default=10,
-                        help="The number of issues per election to create.")
-    parser.add_argument('--owner-pid', type=str, required=False,
-                        help="The owner's Apache ID to use for created elections."
-                        " If not set, pick a random existing person.")
-
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        '--elections',
+        type=int,
+        required=False,
+        default=10,
+        help='The number of elections to create.',
+    )
+    parser.add_argument(
+        '--issues',
+        type=int,
+        required=False,
+        default=10,
+        help='The number of issues per election to create.',
+    )
+    parser.add_argument(
+        '--owner-pid',
+        type=str,
+        required=False,
+        help="The owner's Apache ID to use for created elections."
+        ' If not set, pick a random existing person.',
+    )
     main(parser.parse_args())

@@ -56,7 +56,7 @@ def _b64_vote_key(vote_token: bytes, salt: bytes) -> bytes:
         algorithm=hashes.SHA256(),
         length=32,  # 32-byte key for XChaCha20-Poly1305
         salt=salt,
-        info=b"xchacha20_key"
+        info=b'xchacha20_key',
     )
     vote_key = keymaker.derive(vote_token)
     return base64.urlsafe_b64encode(vote_key)
@@ -70,9 +70,7 @@ def create_vote(vote_token: bytes, salt: bytes, votestring: str) -> bytes:
     return f.encrypt(votestring.encode())
 
 
-def decrypt_votestring(vote_token: bytes,
-                       salt: bytes,
-                       ciphertext: bytes) -> str:
+def decrypt_votestring(vote_token: bytes, salt: bytes, ciphertext: bytes) -> str:
     "Decrypt CIPHERTEXT into a VOTESTRING."
 
     b64key = _b64_vote_key(vote_token, salt)
@@ -94,7 +92,7 @@ def shuffle(x):
     # cryptographically-safe (aka unpredictable) shuffling of elements.
 
     # Count backwards, "fixing" a chosen element into place.
-    for i in range(len(x)-1, 0, -1):
+    for i in range(len(x) - 1, 0, -1):
         # Choose element to fix from remaining pool.
         j = secrets.randbelow(i + 1)
 

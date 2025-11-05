@@ -46,7 +46,7 @@ def main(mtgdir):
     kv = {
         'labelmap': labelmap,
         'seats': 9,
-        }
+    }
 
     # NOTE: for backwards-compat, the tally() function accepts a
     # list of names with caller-defined sorting.
