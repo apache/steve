@@ -1,22 +1,19 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# ### TBD docco
-#
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 import base64
 import secrets
@@ -56,7 +53,7 @@ def _b64_vote_key(vote_token: bytes, salt: bytes) -> bytes:
         algorithm=hashes.SHA256(),
         length=32,  # 32-byte key for XChaCha20-Poly1305
         salt=salt,
-        info=b"xchacha20_key"
+        info=b'xchacha20_key',
     )
     vote_key = keymaker.derive(vote_token)
     return base64.urlsafe_b64encode(vote_key)
@@ -70,9 +67,7 @@ def create_vote(vote_token: bytes, salt: bytes, votestring: str) -> bytes:
     return f.encrypt(votestring.encode())
 
 
-def decrypt_votestring(vote_token: bytes,
-                       salt: bytes,
-                       ciphertext: bytes) -> str:
+def decrypt_votestring(vote_token: bytes, salt: bytes, ciphertext: bytes) -> str:
     "Decrypt CIPHERTEXT into a VOTESTRING."
 
     b64key = _b64_vote_key(vote_token, salt)
@@ -94,7 +89,7 @@ def shuffle(x):
     # cryptographically-safe (aka unpredictable) shuffling of elements.
 
     # Count backwards, "fixing" a chosen element into place.
-    for i in range(len(x)-1, 0, -1):
+    for i in range(len(x) - 1, 0, -1):
         # Choose element to fix from remaining pool.
         j = secrets.randbelow(i + 1)
 

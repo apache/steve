@@ -1,26 +1,24 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
-###
 ### NOTE: the voting handlers require login for ASF committers only.
 ### Obviously, this is not a general purpose solution. Something for
 ### the future, to figure out how we'd like to do configuration
 ### authorization for various install scenarios and authn systems.
-###
 
 import pathlib
 import datetime
@@ -66,15 +64,25 @@ async def basic_info():
     # EasyDict objects for use by templates.
     # NOTE: .flash() is called with (message, category), but the
     #   .get_flashed_messages() returns tuples of (category, message)
-    basic.flashes = [ edict(message=f[1], category=f[0])
-                      for f in quart.get_flashed_messages(with_categories=True) ]
+    basic.flashes = [
+        edict(message=f[1], category=f[0])
+        for f in quart.get_flashed_messages(with_categories=True)
+    ]
 
     s = await asfquart.session.read()
     if s:
-        basic.update(uid=s['uid'], name=s['fullname'], email=s['email'],)
+        basic.update(
+            uid=s['uid'],
+            name=s['fullname'],
+            email=s['email'],
+        )
     else:
         # No session.
-        basic.update(uid=None, name=None, email=None,)
+        basic.update(
+            uid=None,
+            name=None,
+            email=None,
+        )
 
     ### generate a real token and store in the session
     basic.csrf_token = 'placeholder'
@@ -118,7 +126,7 @@ async def voter_page():
         election = steve.election.Election.open_to_pid(DB_FNAME, result.uid)
         owned = steve.election.Election.owned_elections(DB_FNAME, result.uid)
 
-    result.election = [ postprocess_election(e) for e in election ]
+    result.election = [postprocess_election(e) for e in election]
 
     result.len_election = len(election)
     result.len_owned = len(owned)
@@ -131,7 +139,6 @@ def load_election(func):
 
     @functools.wraps(func)
     async def loader(eid):
-
         try:
             e = steve.election.Election(DB_FNAME, eid)
         except steve.election.ElectionNotFound:
@@ -156,7 +163,6 @@ def load_election_issue(func):
 
     @functools.wraps(func)
     async def loader(eid, iid):
-
         try:
             e = steve.election.Election(DB_FNAME, eid)
         except steve.election.ElectionNotFound:
@@ -220,7 +226,7 @@ async def admin_page():
         election = steve.election.Election.open_to_pid(DB_FNAME, result.uid)
         owned = steve.election.Election.owned_elections(DB_FNAME, result.uid)
 
-    result.owned = [ postprocess_election(e) for e in owned ]
+    result.owned = [postprocess_election(e) for e in owned]
 
     ### owned.owner_name should be based on OWNER_PID. That might not be
     ### "me" because of authz access to manage issues.
@@ -332,8 +338,9 @@ async def do_add_issue_endpoint(election):
     ### does add_issue() return an edict for the added issue?
     issue = edict(iid=steve.crypto.create_id(), title=form.title)
 
-    _LOGGER.info(f'User[U:{result.uid}] added issue[I:{issue.iid}]'
-                 f' to election[E:{election.eid}]')
+    _LOGGER.info(
+        f'User[U:{result.uid}] added issue[I:{issue.iid}] to election[E:{election.eid}]'
+    )
 
     await flash_success(f'Issue "{issue.title}" has been added.')
 
@@ -354,11 +361,12 @@ async def do_edit_issue_endpoint(election, issue):
 
     # Update the title/description.
     ### for now, no way to update the vtype or KV pairs.
-    election.add_issue(issue.iid, form.title, form.description,
-                       issue.vtype, issue.kv)
+    election.add_issue(issue.iid, form.title, form.description, issue.vtype, issue.kv)
 
-    _LOGGER.info(f'User[U:{result.uid}] edited issue[I:{issue.iid}]'
-                 f' in election[E:{election.eid}]')
+    _LOGGER.info(
+        f'User[U:{result.uid}] edited issue[I:{issue.iid}]'
+        f' in election[E:{election.eid}]'
+    )
 
     # Use the new TITLE for this.
     await flash_success(f'Issue "{form.title}" has been updated.')
@@ -378,8 +386,10 @@ async def do_delete_issue_endpoint(election, issue):
     # Issue exists, and was loaded. No errors to handle?
     election.delete_issue(issue.iid)
 
-    _LOGGER.info(f'User[U:{result.uid}] deleted issue[I:{issue.iid}]'
-                 f' from election[E:{election.eid}]')
+    _LOGGER.info(
+        f'User[U:{result.uid}] deleted issue[I:{issue.iid}]'
+        f' from election[E:{election.eid}]'
+    )
 
     await flash_success(f'Issue "{issue.title}" has been deleted.')
 
@@ -429,6 +439,8 @@ async def about_page():
 @APP.get('/static/<path:filename>')
 async def serve_static(filename):
     return await quart.send_from_directory(STATICDIR, filename)
+
+
 @APP.get('/favicon.ico')
 async def serve_favicon():
     return await quart.send_from_directory(STATICDIR, 'favicon.ico')

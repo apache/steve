@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 # Load a bunch of fake data into the database, for stuff to work with.
 
@@ -25,6 +27,7 @@ import logging
 import faker
 
 import steve.election
+
 ### we shouldn't need this. do so, for now.
 import steve.crypto
 
@@ -49,8 +52,7 @@ def main(args):
 def gen_election(owner_pid, issue_count=10):
     title = FAKE.sentence()
     e = steve.election.Election.create(DB_FNAME, title, owner_pid)
-    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}",'
-                 f' by owner "{owner_pid}"')
+    _LOGGER.info(f'Created election[E:{e.eid}]: "{title}", by owner "{owner_pid}"')
 
     for _ in range(issue_count):
         title = FAKE.sentence()
@@ -78,13 +80,28 @@ def random_owner():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--elections', type=int, required=False, default=10,
-                        help="The number of elections to create.")
-    parser.add_argument('--issues', type=int, required=False, default=10,
-                        help="The number of issues per election to create.")
-    parser.add_argument('--owner-pid', type=str, required=False,
-                        help="The owner's Apache ID to use for created elections."
-                        " If not set, pick a random existing person.")
-
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        '--elections',
+        type=int,
+        required=False,
+        default=10,
+        help='The number of elections to create.',
+    )
+    parser.add_argument(
+        '--issues',
+        type=int,
+        required=False,
+        default=10,
+        help='The number of issues per election to create.',
+    )
+    parser.add_argument(
+        '--owner-pid',
+        type=str,
+        required=False,
+        help="The owner's Apache ID to use for created elections."
+        ' If not set, pick a random existing person.',
+    )
     main(parser.parse_args())

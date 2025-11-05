@@ -28,10 +28,13 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v6
     - name: Install dependencies
-      working-directory: v3  # Set the working directory to v3 where pyproject.toml is located
+      working-directory: v3
       run: |
         sudo apt-get install libldap2-dev libsasl2-dev
         uv sync --all-extras --dev
-    - name: Testing with ruff
-      working-directory: v3  # Ensure ruff runs in the correct directory
+    - name: Check with ruff
+      working-directory: v3
       run: uv run ruff check
+    - name: Format with ruff
+      working-directory: v3
+      run: uv run ruff format --diff

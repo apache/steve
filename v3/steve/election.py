@@ -1,24 +1,19 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# ----
-#
-# ### TBD: DOCCO
-#
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 import logging
 import json
@@ -38,7 +33,6 @@ QUERIES = THIS_DIR.parent / 'queries.yaml'
 
 
 class Election:
-
     # Current state of an election.
     S_EDITABLE = 'editable'
     S_OPEN = 'open'
@@ -46,8 +40,7 @@ class Election:
 
     @staticmethod
     def open_database(db_fname):
-        return asfpy.db.DB(db_fname,
-                           yaml_fname=QUERIES, yaml_section='election')
+        return asfpy.db.DB(db_fname, yaml_fname=QUERIES, yaml_section='election')
 
     def __init__(self, db_fname, eid):
         _LOGGER.debug(f'Opening election ID "{eid}"')
@@ -89,7 +82,6 @@ class Election:
         self.db = None
 
     def open(self, pdb):
-
         # Double-check the Election is in the editing state.
         assert self.is_editable()
 
@@ -120,8 +112,10 @@ class Election:
 
         self.q_issues.perform(self.eid)
         # Use an f-string to render "None" if a column is NULL.
-        idata = ''.join(f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
-                        for i in self.q_issues.fetchall())
+        idata = ''.join(
+            f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
+            for i in self.q_issues.fetchall()
+        )
 
         # Include the PID and EMAIL for each Person.
         ### we don't want all people. Just those who are allowed to
@@ -154,7 +148,7 @@ class Election:
         self.q_all_issues.perform(self.eid)
         for mayvote in self.q_all_issues.fetchall():
             # MAYVOTE is a 1-tuple: _ROWID_
-            #print('COLUMNS:', dir(mayvote))
+            # print('COLUMNS:', dir(mayvote))
 
             # Use a distinct cursor to insert the SALT value.
             salt = crypto.gen_salt()
@@ -204,8 +198,7 @@ class Election:
             raise IssueNotFound(iid)
 
         # NEVER return issue.salt
-        return (issue.title, issue.description, issue.type,
-                self.json2kv(issue.kv))
+        return (issue.title, issue.description, issue.type, self.json2kv(issue.kv))
 
     def add_issue(self, iid, title, description, vtype, kv):
         "Add or update an issue designated by IID."
@@ -214,8 +207,9 @@ class Election:
 
         # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
         # be touched (it should be NULL).
-        self.c_add_issue.perform(iid, self.eid, title, description, vtype,
-                                 self.kv2json(kv))
+        self.c_add_issue.perform(
+            iid, self.eid, title, description, vtype, self.kv2json(kv)
+        )
 
     def delete_issue(self, iid):
         "Delete the Issue designated by IID."
@@ -234,15 +228,16 @@ class Election:
         "Return ordered EasyDicgt<IID, TITLE, DESCRIPTION, TYPE, KV> for all ISSUES."
 
         def extract_issue(row):
-            return easydict.EasyDict(iid=row.iid,
-                                     title=row.title,
-                                     description=row.description,
-                                     type=row.type,
-                                     kv=self.json2kv(row.kv),
-                                     )
+            return easydict.EasyDict(
+                iid=row.iid,
+                title=row.title,
+                description=row.description,
+                type=row.type,
+                kv=self.json2kv(row.kv),
+            )
 
         self.q_issues.perform(self.eid)
-        return [ extract_issue(row) for row in self.q_issues.fetchall() ]
+        return [extract_issue(row) for row in self.q_issues.fetchall()]
 
     def add_voter(self, pid: str, iid: str | None = None) -> None:
         "Add PID (Person) to Issue IID, or to all Issues (None)."
@@ -289,7 +284,7 @@ class Election:
         issue = self.q_get_issue.first_row(iid)
 
         # Accumulate all MOST-RECENT votes for Issue IID.
-        votes = [ ]
+        votes = []
 
         # Use mayvote to determine all potential voters for Issue IID.
         self.q_tally.perform(iid)
@@ -298,13 +293,18 @@ class Election:
 
             # For the given Person PID found, compute a VOTE_TOKEN.
             vote_token = crypto.gen_vote_token(
-                md.opened_key, mayvote.pid, iid, mayvote.salt,
+                md.opened_key,
+                mayvote.pid,
+                iid,
+                mayvote.salt,
             )
 
             # We don't need/want all columns, so only pick CIPHERTEXT.
             row = self.q_recent_vote.first_row(vote_token)
             votestring = crypto.decrypt_votestring(
-                vote_token, mayvote.salt, row.ciphertext,
+                vote_token,
+                mayvote.salt,
+                row.ciphertext,
             )
             votes.append(votestring)
 
@@ -323,26 +323,28 @@ class Election:
         # The Election should be open.
         md = self._all_metadata(self.S_OPEN)
 
-        voted_upon = { }
+        voted_upon = {}
 
         self.q_find_issues.perform(pid, self.eid)
         for row in self.q_find_issues.fetchall():
-            #print('COLUMNS:', dir(row))
+            # print('COLUMNS:', dir(row))
 
             # Query is mayvote.* ... so ROW is: PID, IID, SALT
             vote_token = crypto.gen_vote_token(
-                md.opened_key, pid, row.iid, row.salt,
+                md.opened_key,
+                pid,
+                row.iid,
+                row.salt,
             )
 
             # Is any vote present? (wicked fast)
             voted = self.q_has_voted.first_row(vote_token)
 
-            voted_upon[row.iid] = (voted is not None)
+            voted_upon[row.iid] = voted is not None
 
         return voted_upon
 
     def is_tampered(self, pdb):
-
         # The Election should be open.
         md = self._all_metadata(self.S_OPEN)
 
@@ -392,29 +394,31 @@ class Election:
 
     @staticmethod
     def kv2json(kv):
-        'Convert a structured KV into a JSON string for storage.'
+        "Convert a structured KV into a JSON string for storage."
         # Note: avoid serializing None.
         return kv and json.dumps(kv)
 
     @staticmethod
     def json2kv(j):
-        'Convert the KV JSON string back into its structured value.'
+        "Convert the KV JSON string back into its structured value."
         return j and json.loads(j)
 
     @classmethod
-    def create(cls, db_fname, title, owner_pid,
-               authz=None, open_at=None, close_at=None):
+    def create(
+        cls, db_fname, title, owner_pid, authz=None, open_at=None, close_at=None
+    ):
         # Open in autocommit
         conn = sqlite3.connect(db_fname, isolation_level=None)
         while True:
             eid = crypto.create_id()
             try:
-                conn.execute('INSERT INTO election'
-                             ' (eid, title, owner_pid,'
-                             '  authz, open_at, close_at)'
-                             ' VALUES (?, ?, ?, ?, ?, ?)',
-                             (eid, title, owner_pid,
-                              authz, open_at, close_at))
+                conn.execute(
+                    'INSERT INTO election'
+                    ' (eid, title, owner_pid,'
+                    '  authz, open_at, close_at)'
+                    ' VALUES (?, ?, ?, ?, ?, ?)',
+                    (eid, title, owner_pid, authz, open_at, close_at),
+                )
                 break
             except sqlite3.IntegrityError:
                 _LOGGER.debug('EID conflict(!!) ... trying again.')
@@ -434,8 +438,10 @@ class Election:
         db = cls.open_database(db_fname)
 
         # Run the generator to get all rows. Returned as EasyDicts.
-        db.q_open_to_me.perform(pid,)
-        return [ row for row in db.q_open_to_me.fetchall() ]
+        db.q_open_to_me.perform(
+            pid,
+        )
+        return [row for row in db.q_open_to_me.fetchall()]
 
     @classmethod
     def owned_elections(cls, db_fname, pid):
@@ -447,8 +453,10 @@ class Election:
         #       SALT or OPENED_KEY values.
         #
         # Run the generator to get all rows. Returned as EasyDicts.
-        db.q_owned.perform(pid,)
-        return [ row for row in db.q_owned.fetchall() ]
+        db.q_owned.perform(
+            pid,
+        )
+        return [row for row in db.q_owned.fetchall()]
 
 
 def not_found(cursor, key):
@@ -473,8 +481,10 @@ class ElectionBadState(Exception):
         super().__init__(str(self))
 
     def __str__(self):
-        return (f'Election[E:{self.eid}]'
-                f' is "{self.current}" but should be "{self.required}"')
+        return (
+            f'Election[E:{self.eid}]'
+            f' is "{self.current}" but should be "{self.required}"'
+        )
 
 
 class IssueNotFound(Exception):

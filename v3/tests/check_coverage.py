@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,25 +16,18 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
-# ----
-#
-# ### TBD: DOCCO
-#
-
 
 import sys
-import os.path
+import os
 import sqlite3
 import logging
 import pathlib
 
-import coverage  # pip3 install coverage
+import coverage
 
 # Ensure that we can import the "steve" package.
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 PARENT_DIR = THIS_DIR.parent
-sys.path.insert(0, str(PARENT_DIR))
 
 TESTING_DB = THIS_DIR / 'covtest.db'
 SCHEMA_FILE = PARENT_DIR / 'schema.sql'
@@ -76,16 +69,22 @@ def touch_every_line():
     i3 = steve.crypto.create_id()
 
     e.add_issue(i1, 'issue A', None, 'yna', None)
-    e.add_issue(i2, 'issue B', None, 'stv', {
-        'seats': 3,
-        'labelmap': {
-            'a': 'Alice',
-            'b': 'Bob',
-            'c': 'Carlos',
-            'd': 'David',
-            'e': 'Eve',
+    e.add_issue(
+        i2,
+        'issue B',
+        None,
+        'stv',
+        {
+            'seats': 3,
+            'labelmap': {
+                'a': 'Alice',
+                'b': 'Bob',
+                'c': 'Carlos',
+                'd': 'David',
+                'e': 'Eve',
             },
-        })
+        },
+    )
     _ = e.list_issues()
     e.add_issue(i3, 'issue C', None, 'yna', None)
     e.delete_issue(i3)
@@ -127,9 +126,12 @@ def touch_every_line():
 
 def main():
     cov = coverage.Coverage(
-        data_file=None, branch=True, config_file=False,
-        source_pkgs=['steve'], messages=True,
-        )
+        data_file=None,
+        branch=True,
+        config_file=False,
+        source_pkgs=['steve'],
+        messages=True,
+    )
     cov.start()
 
     try:
@@ -143,9 +145,10 @@ def main():
 
 if __name__ == '__main__':
     DATE_FORMAT = '%m/%d %H:%M'
-    logging.basicConfig(level=logging.DEBUG,
-                        style='{',
-                        format='[{asctime}|{levelname}|{module}] {message}',
-                        datefmt=DATE_FORMAT,
-                        )
+    logging.basicConfig(
+        level=logging.DEBUG,
+        style='{',
+        format='[{asctime}|{levelname}|{module}] {message}',
+        datefmt=DATE_FORMAT,
+    )
     main()
