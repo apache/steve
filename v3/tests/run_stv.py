@@ -17,7 +17,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-
 # USAGE: uv run run_stv.py .../Meetings/yyyymmdd
 
 import sys
