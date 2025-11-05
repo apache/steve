@@ -61,3 +61,17 @@ It will expire on 29 December 2027 🗓
 
 Adjust the `config.yaml` to refer to these new files. The default `config.yaml.example`
 config assumes the generated files are moved under the `server/certs` directory.
+
+## Browser Trust
+
+TBD: _more solutions besides Chrome_
+
+### Chrome Browser
+
+This is a self-signed certificate which is usually rejected by the Chrome browser.
+To correct this, select the "Settings" menu option, then "Privacy and Security".
+Within that pane, select "Manage certificates" which will open a new tab.
+Now select the "Import" button for "Trusted Certificates" and choose the `.pem`
+that was just generated. Should be `localhost.apache.org+3.pem` (not the key!).
+
+This should now provide trust to localhost for your dev/test operation.
