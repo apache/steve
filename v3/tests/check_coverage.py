@@ -23,12 +23,11 @@ import sqlite3
 import logging
 import pathlib
 
-import coverage  # pip3 install coverage
+import coverage
 
 # Ensure that we can import the "steve" package.
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 PARENT_DIR = THIS_DIR.parent
-sys.path.insert(0, str(PARENT_DIR))
 
 TESTING_DB = THIS_DIR / 'covtest.db'
 SCHEMA_FILE = PARENT_DIR / 'schema.sql'
