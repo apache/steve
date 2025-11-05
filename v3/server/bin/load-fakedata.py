@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,29 +14,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 # Load a bunch of fake data into the database, for stuff to work with.
 
-
 import argparse
 import sqlite3
-import sys
 import pathlib
 import logging
 
-import faker  # pip3 install faker
+import faker
+
+import steve.election
+### we shouldn't need this. do so, for now.
+import steve.crypto
 
 _LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR.parent / 'steve.db'
-
-sys.path.insert(0, str(THIS_DIR.parent.parent))
-import steve.election  # noqa: E402
-
-### we shouldn't need this. do so, for now.
-import steve.crypto  # noqa: E402
 
 # Do we need individual instances? Use a singleton for now.
 FAKE = faker.Faker()

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,9 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
 # Fetch latest bootstrap, and places files into our git working copy.
-#
 
 #set -x
 
@@ -28,8 +27,8 @@ I_VERSION="1.13.1"
 I_DIST="bootstrap-icons-${I_VERSION}"
 I_URL="https://github.com/twbs/icons/releases/download/v${I_VERSION}/${I_DIST}.zip"
 
-THIS_DIR=$(/bin/dirname "`realpath $0`")
-PARENT_DIR=$(/bin/dirname "$THIS_DIR")
+THIS_DIR=$(dirname "`realpath $0`")
+PARENT_DIR=$(dirname "$THIS_DIR")
 STATIC_DIR="${PARENT_DIR}/static"
 
 # --------------------

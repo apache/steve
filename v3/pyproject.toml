@@ -24,6 +24,7 @@ Repository = "https://github.com/apache/steve"
 Issues = "https://github.com/apache/steve/issues"
 
 [dependency-groups]
+dev = ["faker~=37.8.0", "python-ldap~=3.0.0", { include-group = "lint" }]
 lint = [
     "coverage>=7.10.6,<8",
     "ruff>=0.14.3",
@@ -32,7 +33,6 @@ lint = [
     "types-requests>=2.32.4,<3",
     "types-aiofiles>=24.1.0,<25",
 ]
-
 
 [build-system]
 requires = ["uv_build"]
