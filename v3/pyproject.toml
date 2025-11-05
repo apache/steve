@@ -33,5 +33,15 @@ lint = [
     "types-aiofiles>=24.1.0,<25",
 ]
 
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
 [tool.uv]
 default-groups = "all"
+
+# see https://docs.astral.sh/uv/reference/settings/#build-backend_module-name
+[tool.uv.build-backend]
+module-root = ""
+module-name = "steve"
