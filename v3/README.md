@@ -16,6 +16,11 @@ framework, using more recent technologies for greater leverage.
 For background reference in this README, see the documentation for the
 [database schema](docs/schema.md)
 
+## Getting Started
+
+Read the [Getting Started Guide](docs/quickstart.md) to set up a development
+environment.
+
 ## Data Model
 
 v2 is the initial guide for a data model, to be used by v3.
@@ -44,7 +49,6 @@ no known items to monitor.
 
 The owner/creator of an Election will be given a dashboard to view progress,
 in an anonymized form.
-
 
 ## Hashes and Anonymity
 
@@ -86,14 +90,13 @@ To reveal the votes for computing a final tally of an Issue, the
 the corresponding votes for the tally (only most-recent vote used).
 
 The votes will be decrypted and fed into the issue's tally
-function (based on the vote type (eg. yes/no/abstain, or Single
+function (based on the vote type, eg. yes/no/abstain, or Single
 Transferable Vote).
 
 When a Person loads their ballot, and needs to know which issues have
 not (yet) been voted upon, then we compute a `vote_token` for each
 eligible Issue, then look into the **Votes** table for rows.
-The actual vote does
-not need to be decrypted for this process.
+The actual vote does not need to be decrypted for this process.
 
 ## Implementation
 
@@ -195,14 +198,12 @@ To tally a specific issue:
 3. Decrypt the ciphertext to produce the original `votestring`
 4. Feed these votes into the tally mechanism for the Issue's vote type.
 
-
 ## API Documentation
 
 This is _TBD_
 
 A basic example of using the API is available via the
 [code coverage testing script](test/check_coverage.py).
-
 
 ## Threat Model
 
@@ -211,8 +212,6 @@ records of elections, people, issues, and their votes:
 
 1. **root** on the system
 2. Remote Code Execution (RCE) that can surface necessary rows from the database
-
-
 
 [^fernet]: https://cryptography.io/en/latest/fernet/
 [^argon2]: https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html
