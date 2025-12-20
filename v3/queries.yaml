@@ -25,6 +25,10 @@
 
 election:
     c_salt_mayvote: UPDATE mayvote SET salt = ? WHERE _ROWID_ = ?
+    c_create: |
+        INSERT INTO election
+          (eid, title, owner_pid, authz, open_at, close_at)
+        VALUES (?, ?, ?, ?, ?, ?)
     c_open: |
         UPDATE election
         SET salt = ?, opened_key = ?, open_at = unixepoch('now')

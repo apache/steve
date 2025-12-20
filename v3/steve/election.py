@@ -407,22 +407,17 @@ class Election:
     def create(
         cls, db_fname, title, owner_pid, authz=None, open_at=None, close_at=None
     ):
-        # Open in autocommit
-        conn = sqlite3.connect(db_fname, isolation_level=None)
+        ### Open in autocommit??
+        db = cls.open_database(db_fname)
+
         while True:
             eid = crypto.create_id()
             try:
-                conn.execute(
-                    'INSERT INTO election'
-                    ' (eid, title, owner_pid,'
-                    '  authz, open_at, close_at)'
-                    ' VALUES (?, ?, ?, ?, ?, ?)',
-                    (eid, title, owner_pid, authz, open_at, close_at),
-                )
+                db.c_create.perform(eid, title, owner_pid,
+                                    authz, open_at, close_at)
                 break
             except sqlite3.IntegrityError:
                 _LOGGER.debug('EID conflict(!!) ... trying again.')
-        conn.close()
         _LOGGER.info(f'Created election[E:{eid}]')
 
         return cls(db_fname, eid, op='Opening NEW')
