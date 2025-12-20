@@ -278,7 +278,7 @@ async def manage_page(election):
     return result
 
 
-@APP.get('/do-create')
+@APP.post('/do-create-election')
 @asfquart.auth.require({R.pmc_member})  ### need general solution
 async def do_create_endpoint():
     "Create a new Election."
@@ -290,7 +290,7 @@ async def do_create_endpoint():
     form = edict(await quart.request.form)
 
     # Create the Election.
-    election = steve.election.Election(DB_FNAME, form.title, result.uid)
+    election = steve.election.Election.create(DB_FNAME, form.title, result.uid)
 
     _LOGGER.info(f'User[U:{result.uid}] created election[E:{election.eid}];'
                  f' title: "{form.title}"')
