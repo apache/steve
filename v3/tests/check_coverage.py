@@ -38,7 +38,6 @@ def touch_every_line():
 
     # Do the imports *WITHIN* the coverage test.
     import steve.election
-    import steve.crypto
     import steve.persondb
 
     # Start the election, and open it.
@@ -64,13 +63,8 @@ def touch_every_line():
     pdb.delete_person('david')
     _ = pdb.get_person('alice')
 
-    i1 = steve.crypto.create_id()
-    i2 = steve.crypto.create_id()
-    i3 = steve.crypto.create_id()
-
-    e.add_issue(i1, 'issue A', None, 'yna', None)
-    e.add_issue(
-        i2,
+    i1 = e.add_issue('issue A', None, 'yna', None)
+    i2 = e.add_issue(
         'issue B',
         None,
         'stv',
@@ -86,7 +80,7 @@ def touch_every_line():
         },
     )
     _ = e.list_issues()
-    e.add_issue(i3, 'issue C', None, 'yna', None)
+    i3 = e.add_issue('issue C', None, 'yna', None)
     e.delete_issue(i3)
     _ = e.get_issue(i1)
 
@@ -114,8 +108,7 @@ def touch_every_line():
     e2 = steve.election.Election.create(TESTING_DB, 'E2', 'alice')
     # Provide some data that should get deleted.
     ### note: the referential integrity should to into a test suite.
-    e2i1 = steve.crypto.create_id()
-    e2.add_issue(e2i1, 'issue E2.A', None, 'yna', None)
+    _ = e2.add_issue('issue E2.A', None, 'yna', None)
     e2.add_voter('alice')
     e2.delete()
 

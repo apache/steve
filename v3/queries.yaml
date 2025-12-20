@@ -37,13 +37,11 @@ election:
         UPDATE election
         SET closed = 1, close_at = unixepoch('now')
         WHERE eid = ?
-    c_add_issue: |
-        INSERT INTO issue VALUES (?, ?, ?, ?, ?, ?)
-        ON CONFLICT DO UPDATE SET
-            title=excluded.title,
-            description=excluded.description,
-            type=excluded.type,
-            kv=excluded.kv
+    c_add_issue: INSERT INTO issue VALUES (?, ?, ?, ?, ?, ?)
+    c_edit_issue: |
+        UPDATE issue
+        SET title = ?, description = ?, type = ?, kv = ?
+        WHERE iid = ?
     c_delete_issue: DELETE FROM issue WHERE iid = ?
     c_add_vote: |
         INSERT INTO vote (vote_token, ciphertext)

@@ -354,17 +354,17 @@ async def do_add_issue_endpoint(election):
     form = edict(await quart.request.form)
     print('FORM:', form)
 
-    ### do stuff
-    ### add_issue(iid, title, description, vtype, kv)
-    ### the IID should be created by add_issue. Do this for now.
-    ### does add_issue() return an edict for the added issue?
-    issue = edict(iid=steve.crypto.create_id(), title=form.title)
+    ### do better with these
+    vtype = 'yna'
+    kv = None
+
+    iid = election.add_issue(form.title, form.description, vtype, kv)
 
     _LOGGER.info(
-        f'User[U:{result.uid}] added issue[I:{issue.iid}] to election[E:{election.eid}]'
+        f'User[U:{result.uid}] added issue[I:{iid}] to election[E:{election.eid}]'
     )
 
-    await flash_success(f'Issue "{issue.title}" has been added.')
+    await flash_success(f'Issue "{form.title}" has been added.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -383,7 +383,7 @@ async def do_edit_issue_endpoint(election, issue):
 
     # Update the title/description.
     ### for now, no way to update the vtype or KV pairs.
-    election.add_issue(issue.iid, form.title, form.description, issue.vtype, issue.kv)
+    election.edit_issue(issue.iid, form.title, form.description, issue.vtype, issue.kv)
 
     _LOGGER.info(
         f'User[U:{result.uid}] edited issue[I:{issue.iid}]'

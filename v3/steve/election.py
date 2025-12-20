@@ -200,16 +200,40 @@ class Election:
         # NEVER return issue.salt
         return (issue.title, issue.description, issue.type, self.json2kv(issue.kv))
 
-    def add_issue(self, iid, title, description, vtype, kv):
-        "Add or update an issue designated by IID."
+    def add_issue(self, title, description, vtype, kv):
+        "Add a new issue with a generated unique IID."
         assert self.is_editable()
         assert vtype in vtypes.TYPES
 
-        # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
-        # be touched (it should be NULL).
-        self.c_add_issue.perform(
-            iid, self.eid, title, description, vtype, self.kv2json(kv)
+        while True:
+            iid = crypto.create_id()
+            try:
+                # Pure INSERT - SALT will be NULL until election opens
+                self.c_add_issue.perform(
+                    iid, self.eid, title, description, vtype, self.kv2json(kv)
+                )
+                break
+            except sqlite3.IntegrityError:
+                _LOGGER.debug('IID conflict(!!) ... trying again.')
+
+        _LOGGER.info(f'Created issue[I:{iid}] in election[E:{self.eid}]')
+
+        return iid
+
+    def edit_issue(self, iid, title, description, vtype, kv):
+        "Update an existing issue designated by IID."
+        assert self.is_editable()
+        assert vtype in vtypes.TYPES
+
+        self.c_edit_issue.perform(
+            title, description, vtype, self.kv2json(kv), iid
         )
+
+        # If the issue didn't exist, we updated nothing.
+        if self.c_edit_issue.rowcount == 0:
+            raise IssueNotFound(iid)
+
+        _LOGGER.info(f'Updated issue[I:{iid}] in election[E:{self.eid}]')
 
     def delete_issue(self, iid):
         "Delete the Issue designated by IID."
