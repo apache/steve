@@ -278,6 +278,28 @@ async def manage_page(election):
     return result
 
 
+@APP.get('/do-create')
+@asfquart.auth.require({R.pmc_member})  ### need general solution
+async def do_create_endpoint():
+    "Create a new Election."
+
+    result = await basic_info()
+
+    ### check authz
+
+    form = edict(await quart.request.form)
+
+    # Create the Election.
+    election = steve.election.Election(DB_FNAME, form.title, result.uid)
+
+    _LOGGER.info(f'User[U:{result.uid}] created election[E:{election.eid}];'
+                 f' title: "{form.title}"')
+    await flash_success(f'Created election: {form.title}')
+
+    # Go to the management page for the new Election.
+    return quart.redirect(f'/manage/{election.eid}', code=303)
+
+
 @APP.get('/do-open/<eid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
