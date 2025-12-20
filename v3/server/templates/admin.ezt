@@ -3,7 +3,13 @@
         <h1>[title]</h1>
         [include "flashes.ezt"]
 
-          [for owned]
+        <div class="mb-4">
+            <button type="button" class="btn btn-primary" onclick="openCreateElectionModal()">
+                <i class="bi bi-plus-circle me-1"></i>Create Election
+            </button>
+        </div>
+
+        [for owned]
             <div class="w-auto mb-4">
                 <a href="/manage/[owned.eid]" class="text-decoration-none">
                     <div class="card h-100">
@@ -55,10 +61,61 @@
                     </div>
                 </a>
             </div>
-          [end]
+        [end]
 
         <p>
           You have [len_election] election(s) <a href="/voter">to vote upon</a>.
         </p>
     </div>
+
+    <!-- Create Election Modal -->
+    <div class="modal fade" id="createElectionModal" tabindex="-1" aria-labelledby="createElectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createElectionModalLabel">Create Election</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createElectionForm" method="POST" action="/do-create-election">
+                        <input type="hidden" name="csrf_token" value="[csrf_token]">
+                        <div class="mb-3">
+                            <label for="electionTitle" class="form-label">Election Title</label>
+                            <input type="text" class="form-control" id="electionTitle" name="title" required 
+                                   aria-describedby="electionTitleHelp">
+                            <div id="electionTitleHelp" class="form-text">
+                                Give your election a descriptive title. Issues will define the specific items to vote on.
+                            </div>
+                            <div class="invalid-feedback">Title is required.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="createElectionBtn" onclick="saveElection()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 [include "footer.ezt"]
+
+<script>
+    // Open modal for creating election
+    function openCreateElectionModal() {
+      document.getElementById('electionTitle').value = '';
+      document.getElementById('electionTitle').classList.remove('is-invalid');
+      showModal('createElectionModal');
+    }
+
+    // Save election
+    function saveElection() {
+      const titleInput = document.getElementById('electionTitle');
+      
+      if (!validateRequiredField('electionTitle')) {
+        return;
+      }
+
+      submitFormWithLoading('createElectionForm', 'createElectionBtn', 'Creating...');
+    }
+</script>
