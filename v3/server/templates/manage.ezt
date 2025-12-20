@@ -18,10 +18,14 @@
            class="state [is e_state "closed"]current[end]">Closed</div>
 
         [is e_state "editable"]
-            <button id="open-btn" class="btn btn-success action-button open-button">Open</button>
+            <button id="open-btn" class="btn btn-success action-button open-button">
+                <i class="bi bi-unlock me-1"></i>Open
+            </button>
         [end]
         [is e_state "open"]
-            <button id="close-btn" class="btn btn-danger action-button close-button">Close</button>
+            <button id="close-btn" class="btn btn-danger action-button close-button">
+                <i class="bi bi-lock me-1"></i>Close
+            </button>
         [end]
     </div>
 
@@ -73,21 +77,30 @@
                 </div>
                 <div class="modal-body">
                     <form id="issueForm" method="POST" action="">
+                        <input type="hidden" name="csrf_token" value="[csrf_token]">
                         <input type="hidden" id="issueId" name="issueId" value="">
                         <div class="mb-3">
                             <label for="issueTitle" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="issueTitle" name="title" required>
+                            <input type="text" class="form-control" id="issueTitle" name="title" required
+                                   aria-describedby="issueTitleHelp">
+                            <div id="issueTitleHelp" class="form-text">
+                                A brief title for this issue or ballot item.
+                            </div>
                             <div class="invalid-feedback">Title is required.</div>
                         </div>
                         <div class="mb-3">
                             <label for="issueDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="issueDescription" name="description" rows="4"></textarea>
+                            <textarea class="form-control" id="issueDescription" name="description" rows="4"
+                                      aria-describedby="issueDescriptionHelp"></textarea>
+                            <div id="issueDescriptionHelp" class="form-text">
+                                Optional details about this issue for voters.
+                            </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="saveIssue()">Save</button>
+                    <button type="button" class="btn btn-primary" id="saveIssueBtn" onclick="saveIssue()">Save</button>
                 </div>
             </div>[# modal-content ]
         </div>[# modal-dialog ]
@@ -110,7 +123,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger" form="deleteIssueForm">Confirm</button>
+                    <button type="submit" class="btn btn-danger" form="deleteIssueForm" id="deleteIssueBtn">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </button>
                 </div>
             </div>[# modal-content ]
         </div>[# modal-dialog ]
@@ -127,8 +142,11 @@
         </div>
 
         <div class="mb-4">
-            <button type="button" class="btn btn-primary" onclick="openAddIssueModal()">Add Issue</button>
+            <button type="button" class="btn btn-primary" onclick="openAddIssueModal()">
+                <i class="bi bi-plus-circle me-1"></i>Add Issue
+            </button>
             <button type="button" class="btn btn-outline-secondary ms-2" onclick="toggleAllDescriptions()">
+                <i class="bi bi-arrows-expand me-1"></i>
                 <span id="toggle-all-text">Expand All</span>
             </button>
         </div>
@@ -167,32 +185,32 @@
 [include "footer.ezt"]
 
 <script>
-        const openModal = new bootstrap.Modal(document.getElementById('openConfirmModal'));
-        const closeModal = new bootstrap.Modal(document.getElementById('closeConfirmModal'));
+    const openModal = new bootstrap.Modal(document.getElementById('openConfirmModal'));
+    const closeModal = new bootstrap.Modal(document.getElementById('closeConfirmModal'));
 
-        [is e_state "editable"]
-            const openBtn = document.getElementById('open-btn');
-            openBtn.addEventListener('click', () => {
-                openModal.show();
-            });
-        [end]
-        const confirmOpen = document.getElementById('confirm-open');
-        confirmOpen.addEventListener('click', () => {
-            openModal.hide();
-            window.location.href = '/do-open/[eid]';
+    [is e_state "editable"]
+        const openBtn = document.getElementById('open-btn');
+        openBtn.addEventListener('click', () => {
+            openModal.show();
         });
+    [end]
+    const confirmOpen = document.getElementById('confirm-open');
+    confirmOpen.addEventListener('click', () => {
+        openModal.hide();
+        window.location.href = '/do-open/[eid]';
+    });
 
-        [is e_state "open"]
-            const closeBtn = document.getElementById('close-btn');
-            closeBtn.addEventListener('click', () => {
-                closeModal.show();
-            });
-        [end]
-        const confirmClose = document.getElementById('confirm-close');
-        confirmClose.addEventListener('click', () => {
-            closeModal.hide();
-            window.location.href = '/do-close/[eid]';
+    [is e_state "open"]
+        const closeBtn = document.getElementById('close-btn');
+        closeBtn.addEventListener('click', () => {
+            closeModal.show();
         });
+    [end]
+    const confirmClose = document.getElementById('confirm-close');
+    confirmClose.addEventListener('click', () => {
+        closeModal.hide();
+        window.location.href = '/do-close/[eid]';
+    });
 
     // Toggle individual description
     function toggleDescription(issueId) {
@@ -216,7 +234,17 @@
         twiddle.classList.toggle('bi-caret-right-fill', !allExpanded);
         twiddle.classList.toggle('bi-caret-down-fill', allExpanded);
       });
-      document.getElementById('toggle-all-text').textContent = allExpanded ? 'Collapse All' : 'Expand All';
+      const toggleBtn = document.querySelector('.btn-outline-secondary');
+      const toggleIcon = toggleBtn.querySelector('i');
+      const toggleText = document.getElementById('toggle-all-text');
+      
+      if (allExpanded) {
+        toggleIcon.className = 'bi bi-arrows-collapse me-1';
+        toggleText.textContent = 'Collapse All';
+      } else {
+        toggleIcon.className = 'bi bi-arrows-expand me-1';
+        toggleText.textContent = 'Expand All';
+      }
     }
 
     // Open modal for adding issue
@@ -228,8 +256,7 @@
       document.getElementById('issueTitle').value = '';
       document.getElementById('issueDescription').value = '';
       document.getElementById('issueTitle').classList.remove('is-invalid');
-      const modal = new bootstrap.Modal(document.getElementById('issueModal'));
-      modal.show();
+      showModal('issueModal');
     }
 
     // Open modal for editing issue
@@ -241,8 +268,7 @@
       document.getElementById('issueTitle').value = title;
       document.getElementById('issueDescription').value = description;
       document.getElementById('issueTitle').classList.remove('is-invalid');
-      const modal = new bootstrap.Modal(document.getElementById('issueModal'));
-      modal.show();
+      showModal('issueModal');
     }
 
     // Open modal for deleting issue
@@ -251,24 +277,16 @@
       form.action = `/do-delete-issue/[eid]/${issueId}`;
       document.getElementById('deleteIssueId').value = issueId;
       document.getElementById('deleteIssueMessage').textContent = `Are you sure you want to delete "${title}"?`;
-      const modal = new bootstrap.Modal(document.getElementById('deleteIssueModal'));
-      modal.show();
+      showModal('deleteIssueModal');
     }
 
     // Save issue (add or edit)
     function saveIssue() {
-      const title = document.getElementById('issueTitle').value.trim();
-      const titleInput = document.getElementById('issueTitle');
-
-      // Client-side validation
-      if (!title) {
-        titleInput.classList.add('is-invalid');
+      if (!validateRequiredField('issueTitle')) {
         return;
       }
-      titleInput.classList.remove('is-invalid');
 
-      // Submit the form
-      document.getElementById('issueForm').submit();
+      submitFormWithLoading('issueForm', 'saveIssueBtn', 'Saving...');
     }
 
 </script>
