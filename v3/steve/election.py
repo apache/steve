@@ -42,8 +42,8 @@ class Election:
     def open_database(db_fname):
         return asfpy.db.DB(db_fname, yaml_fname=QUERIES, yaml_section='election')
 
-    def __init__(self, db_fname, eid):
-        _LOGGER.debug(f'Opening election ID "{eid}"')
+    def __init__(self, db_fname, eid, op='Opening'):
+        _LOGGER.debug(f'{op} election ID "{eid}"')
 
         self.db = self.open_database(db_fname)
         self.eid = eid
@@ -423,8 +423,9 @@ class Election:
             except sqlite3.IntegrityError:
                 _LOGGER.debug('EID conflict(!!) ... trying again.')
         conn.close()
+        _LOGGER.info(f'Created election[E:{eid}]')
 
-        return cls(db_fname, eid)
+        return cls(db_fname, eid, op='Opening NEW')
 
     @classmethod
     def delete_by_eid(cls, db_fname, eid):
