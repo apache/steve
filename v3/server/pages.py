@@ -513,6 +513,7 @@ def format_datetime(dt):
 
 def postprocess_election(e):
     "Post-process attributes in an Election, as an EasyDict."
+    # NOTE: side effects. This function manipulates the E argument.
 
     # Anything but 1 means the Election is not closed.
     e.closed = ezt.boolean(e.closed == 1)
