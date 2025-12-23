@@ -205,8 +205,8 @@ async def vote_on_page(election):
     result.title = 'Vote On Election'
     result.eid = election.eid
 
-    md = election.get_metadata()
-    result.e_title = md[1]
+    result.election = election.get_metadata()
+    result.e_title = result.election.title
 
     result.issues = election.list_issues()
     result.issue_count = len(result.issues)
@@ -266,9 +266,9 @@ async def manage_page(election):
     result.title = 'Manage an Election'
     result.eid = election.eid
 
-    md = election.get_metadata()
-    result.e_title = md[1]
-    result.e_state = md[2]
+    result.election = election.get_metadata()
+    result.e_title = result.election.title
+    result.e_state = result.election.state
 
     result.issues = election.list_issues()
     result.issue_count = len(result.issues)
@@ -291,9 +291,9 @@ async def manage_stv_page(election, issue):
     result.eid = election.eid
     result.issue = issue
 
-    md = election.get_metadata()
-    result.e_title = md[1]
-    result.e_state = md[2]
+    result.election = election.get_metadata()
+    result.e_title = result.election.title
+    result.e_state = result.election.state
 
     kv = edict(issue.kv)
     result.seats = kv.seats
@@ -342,7 +342,7 @@ async def do_open_endpoint(election):
 
     _LOGGER.info(f'User[U:{result.uid}] opened election[E:{election.eid}]')
 
-    _, title, _ = election.get_metadata()
+    title = election.get_metadata().title
     await flash_success(f'Opened election: {title}')
 
     # Return to the management page for this Election.
@@ -362,7 +362,7 @@ async def do_close_endpoint(election):
 
     _LOGGER.info(f'User[U:{result.uid}] closed election[E:{election.eid}]')
 
-    _, title, _ = election.get_metadata()
+    title = election.get_metadata().title
     await flash_success(f'Closed election: {title}')
 
     # Return to the management page for this Election.

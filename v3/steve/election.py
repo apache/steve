@@ -21,7 +21,7 @@ import sqlite3
 import pathlib
 
 import asfpy.db
-import easydict
+from easydict import EasyDict as edict
 
 from . import crypto
 from . import vtypes
@@ -188,7 +188,17 @@ class Election:
         md = self._all_metadata()
         # NOTE: do not return the SALT or OPENED_KEY
 
-        return md.eid, md.title, self._compute_state(md)
+        return edict(
+            eid=md.eid,
+            title=md.title,
+            owner_pid=md.owner_pid,
+            authz=md.authz,
+            closed=md.closed,  ### should we process this?
+            open_at=md.open_at,  ### should we process this?
+            close_at=md.close_at,  ### should we process this?
+
+            state=self._compute_state(md),
+        )
 
     def get_issue(self, iid):
         "Return TITLE, DESCRIPTION, TYPE, and KV for issue IID."
@@ -252,7 +262,7 @@ class Election:
         "Return ordered EasyDicgt<IID, TITLE, DESCRIPTION, TYPE, KV> for all ISSUES."
 
         def extract_issue(row):
-            return easydict.EasyDict(
+            return edict(
                 iid=row.iid,
                 title=row.title,
                 description=row.description,
