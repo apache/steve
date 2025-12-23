@@ -169,7 +169,7 @@ class Election:
     def _all_metadata(self, required_state=None):
         "INTERNAL ONLY: return all metadata about this Election."
 
-        # NOTE: this returns the SALE and OPENED_KEY columns. This
+        # NOTE: this returns the SALT and OPENED_KEY columns. This
         # API is not for public use.
         md = self.q_metadata.first_row(self.eid)
         if not md:
