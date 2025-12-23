@@ -268,12 +268,38 @@ async def manage_page(election):
 
     md = election.get_metadata()
     result.e_title = md[1]
-
-    state = election.get_state()
-    result.e_state = state
+    result.e_state = md[2]
 
     result.issues = election.list_issues()
     result.issue_count = len(result.issues)
+
+    return result
+
+
+@APP.get('/manage-stv/<eid>/<iid>')
+@asfquart.auth.require({R.committer})  ### need general solution
+@load_election_issue
+@APP.use_template(TEMPLATES / 'manage-stv.ezt')
+async def manage_stv_page(election, issue):
+    if issue.vtype != 'stv':
+        # This page is just for STV issues. Redirect to the Election
+        # management page.
+        return quart.redirect(f'/manage/{election.eid}', code=303)
+
+    result = await basic_info()
+    result.title = 'Manage an STV Issue'
+    result.eid = election.eid
+    result.issue = issue
+
+    md = election.get_metadata()
+    result.e_title = md[1]
+    result.e_state = md[2]
+
+    kv = edict(issue.kv)
+    result.seats = kv.seats
+
+    ### list of candidates. see KV.LABELMAP
+    #result.count = len(result.candidates)
 
     return result
 
@@ -357,6 +383,7 @@ async def do_add_issue_endpoint(election):
     ### do better with these
     vtype = 'yna'
     kv = None
+    ### for STV, there is a SEATS form parameter. Create empty LABELMAP.
 
     iid = election.add_issue(form.title, form.description, vtype, kv)
 
