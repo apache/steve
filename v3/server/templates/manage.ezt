@@ -132,19 +132,30 @@
     </div>[# id=deleteIssueModal ]
 
         <div>
-            State: [e_state]
-        </div>
-        <div>
+          [is e_state "editable"]
             Estimate to open: <input type="date">
+          [else]
+            Opened: [#fmt_open_at_full]TBD
+          [end]
         </div>
+      
         <div class="mb-3">
+          [is e_state "closed"]
+            Closed: [#fmt_close_at_full]TBD
+          [else]
+            [# can set/extend Close date, until actually closed. ]
             Estimate to close: <input type="date">
+          [end]
         </div>
 
         <div class="mb-4">
+
+        [is e_state "editable"]
             <button type="button" class="btn btn-primary" onclick="openAddIssueModal()">
                 <i class="bi bi-plus-circle me-1"></i>Add Issue
             </button>
+        [end]
+
             <button type="button" class="btn btn-outline-secondary ms-2" onclick="toggleAllDescriptions()">
                 <i class="bi bi-arrows-expand me-1"></i>
                 <span id="toggle-all-text">Expand All</span>
@@ -159,6 +170,8 @@
                         <span class="twiddle bi bi-caret-right-fill me-2" onclick="toggleDescription('[issues.iid]')"></span>
                         <strong>[issues.title]</strong>
                     </div>
+
+        [is e_state "editable"]
                     <div class="action-buttons">
                         <button type="button" class="btn btn-outline-primary btn-sm me-1"
                               onclick="openEditIssueModal('[issues.iid]',
@@ -174,6 +187,8 @@
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
+        [end]
+
                </div>
                <div id="description-[issues.iid]" class="description mt-2">[issues.description]</div>
            </div>
