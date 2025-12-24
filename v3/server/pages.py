@@ -208,6 +208,9 @@ async def vote_on_page(election):
     result.election = election.get_metadata()
     result.e_title = result.election.title
 
+    # Add more stuff into the Election instance.
+    _ = postprocess_election(result.election)
+
     result.issues = election.list_issues()
     result.issue_count = len(result.issues)
 
@@ -270,6 +273,9 @@ async def manage_page(election):
     result.e_title = result.election.title
     result.e_state = result.election.state
 
+    # Add more stuff into the Election instance.
+    _ = postprocess_election(result.election)
+
     result.issues = election.list_issues()
     result.issue_count = len(result.issues)
 
@@ -294,6 +300,9 @@ async def manage_stv_page(election, issue):
     result.election = election.get_metadata()
     result.e_title = result.election.title
     result.e_state = result.election.state
+
+    # Add more stuff into the Election instance.
+    _ = postprocess_election(result.election)
 
     kv = edict(issue.kv)
     result.seats = kv.seats
@@ -518,8 +527,12 @@ def postprocess_election(e):
     # Anything but 1 means the Election is not closed.
     e.closed = ezt.boolean(e.closed == 1)
 
-    # Anything but 1 means the Election is not open.
-    e.is_opened = ezt.boolean(e.is_opened == 1)
+    # Anything but 1 means the Election has not been opened.
+    if 'is_opened' in e:
+        e.is_opened = ezt.boolean(e.is_opened == 1)
+    else:
+        # Sometimes, we get IS_OPENED. Other times, STATE.
+        e.is_opened = ezt.boolean(e.state != steve.election.Election.S_EDITABLE)
 
     # note: an election has a third Edit state: not open, not closed;
     # this is called "editable" (S_EDITABLE)
