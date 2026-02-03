@@ -37,19 +37,19 @@ def main(mtgdir):
     assert os.path.exists(labelfile)
 
     labelmap = stv_tool.read_labelmap(labelfile)
-    votes = stv_tool.read_votefile(rawfile).values()
+    newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
+    votes = stv_tool.read_votefile(rawfile, newformat)
 
-    # Construct a label-sorted list of names from the labelmap.
-    names = [name for _, name in sorted(labelmap.items())]
+    # Rebuild the list of label-lists into a comma-separated votestring
+    # for the STV tally function.
+    votestrings = [ ','.join(v) for v in votes ]
 
     kv = {
+        'version': 1,
         'labelmap': labelmap,
         'seats': 9,
     }
-
-    # NOTE: for backwards-compat, the tally() function accepts a
-    # list of names with caller-defined sorting.
-    human, _ = steve.vtypes.stv.tally(votes, kv, names)
+    human, _ = steve.vtypes.stv.tally(votestrings, kv)
 
     # For the comparison purposes:
     print(human)
