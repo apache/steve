@@ -28,23 +28,23 @@ STV (Single Transferable Vote) testing involves running the STV tally process on
 ### Prerequisites
 
 - Ensure the `stv_tool` module is available at `../../../monitoring/stv_tool.py` (relative to `v3/steve/vtypes/stv.py`).
+- Provide a `Meetings` directory containing subdirectories (e.g., `yyyymmdd`) with the required input files: `raw_board_votes.txt` (raw vote data) and `board_nominations.ini` (label mappings for candidates).
 
 ### Scripts
 
-- `populate_v2_stv.sh`: Generates test data directories with `raw_board_votes.txt` and `board_nominations.ini` files.
+- `populate_v2_stv.sh`: Generates two output directories (`v2-stv-ref` and `v3-stv`) by processing all meeting subdirectories in the provided `Meetings` directory. For each meeting, it runs the reference STV tool to produce output in `v2-stv-ref` and runs `run_stv.py` to produce output in `v3-stv`.
 - `run_stv.py`: Runs the STV tally on a given meeting directory (e.g., `Meetings/yyyymmdd`).
-- `check_stv_outputs.sh`: Compares the sorted outputs from two directories created by `populate_v2_stv.sh`.
+- `check_stv_outputs.sh`: Compares the sorted outputs from the `v2-stv-ref` and `v3-stv` directories created by `populate_v2_stv.sh`.
 
 ### Workflow
 
-1. Run `populate_v2_stv.sh` to create two test data directories (e.g., `dir1` and `dir2`).
-2. For each directory, run `run_stv.py` on the meeting subdirectories to generate outputs.
-3. Use `check_stv_outputs.sh` to verify that the outputs from `dir1` and `dir2` are pairwise equal after sorting.
+1. Run `populate_v2_stv.sh` with the path to the `Meetings` directory (e.g., `populate_v2_stv.sh /path/to/Meetings`). This creates the `v2-stv-ref` and `v3-stv` directories and populates them with outputs for each meeting subdirectory.
+2. Use `check_stv_outputs.sh` to verify that the outputs in `v2-stv-ref` and `v3-stv` are pairwise equal after sorting. It will report mismatches if any.
 
 ### Dependencies
 
-- `raw_board_votes.txt`: Contains the raw vote data.
-- `board_nominations.ini`: Contains the label mappings for candidates.
+- `raw_board_votes.txt`: Contains the raw vote data in each meeting subdirectory.
+- `board_nominations.ini`: Contains the label mappings for candidates in each meeting subdirectory.
 
 ### Importing stv_tool
 
