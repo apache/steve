@@ -37,30 +37,32 @@ def load_stv():
 stv_tool = load_stv()
 
 
-def tally(votestrings, kv, names=None):
-    "Run the STV tally process."
-
-    # NOTE: the NAMES parameter is usually not passed, but is available
-    # to compare operation against custom ordering of NAMES in the
-    # LABELMAP. This function takes a specific approach, which differs
-    # from historical orderings.
-
+def tally(votestrings, kv):
+    """
+    Run the STV tally process.
+    
+    votestrings: List of strings, each representing a voter's preferences as comma-separated labels
+                 (e.g., 'a,b,c' for votes in order of preference). Labels must match keys in kv['labelmap'].
+    kv: Dict containing STV configuration.
+        - 'version': Integer version of the kv format (currently 1).
+        - 'labelmap': Dict mapping single-character labels to candidate names (e.g., {'a': 'Alice'}).
+        - 'seats': Integer number of seats to elect.
+    """
+    
     # kv['labelmap'] should be: LABEL: NAME
     # for example: { 'a': 'John Doe', }
     labelmap = kv['labelmap']
-
+    
     seats = kv['seats']
-
-    # Remap all votestrings from a string sequence of label characters,
-    # into a sequence of NAMEs.
-    votes = [[labelmap[c] for c in v] for v in votestrings]
-
-    # NOTE: it is important that the names are sorted, to create a
-    # reproducible list of names. Callers may specify a custom ordering.
-    if names is None:
-        names = sorted(labelmap.values())
+    
+    # Remap all votestrings from comma-separated label strings into sequences of NAMEs.
+    # Split on commas, strip whitespace, and filter out empty parts.
+    votes = [[labelmap[label.strip()] for label in v.split(',') if label.strip()] for v in votestrings]
+    
+    # Use sorted names for reproducible ordering.
+    names = sorted(labelmap.values())
     results = stv_tool.run_stv(names, votes, seats)
-
+    
     human = '\n'.join(
         f'{c.name:40}{" " if c.status == stv_tool.ELECTED else " not "}elected'
         for c in results.l
