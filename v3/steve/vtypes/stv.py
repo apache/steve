@@ -16,7 +16,7 @@
 # under the License.
 
 import os.path
-import importlib
+import importlib.util
 
 # Where can we find the stv_tool module?
 STV_RELPATH = '../../../monitoring/stv_tool.py'
