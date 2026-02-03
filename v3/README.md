@@ -203,7 +203,11 @@ To tally a specific issue:
 This is _TBD_
 
 A basic example of using the API is available via the
-[code coverage testing script](test/check_coverage.py).
+[code coverage testing script](tests/check_coverage.py).
+
+## Testing
+
+See [tests/README.md](tests/README.md) for details on testing the codebase.
 
 ## Threat Model
 
