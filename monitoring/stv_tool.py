@@ -502,7 +502,7 @@ def main(argv):
     votes_by_label = read_jsonvotes(args.raw_file)
     votes = [[labelmap[l.lower()] for l in vote.split()] for vote in votes_by_label]
   else:
-    newformat = (len(list(labelmap.keys())[0]) > 1)  # keys like "a" or "aa"?
+    newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
     # votes_by_label: [ [L1, L2, ...], [ L1, L2, ... ], ... ]
     votes_by_label = read_votefile(args.raw_file, newformat)
     votes = [[labelmap[label] for label in votelist] for votelist in votes_by_label]
