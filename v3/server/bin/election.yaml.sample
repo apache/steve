@@ -1,0 +1,28 @@
+# Sample YAML file for defining an election to be created via create-election.py
+# Copy this file, edit as needed, and run: python create-election.py <your_file.yaml>
+
+election:
+  title: "Board Election 2024"
+  owner_pid: "alice"  # Apache ID of the election owner
+  authz: "pmc"  # Optional authorization level
+  open_at: "2024-01-01T00:00:00"  # Optional ISO datetime for opening
+  close_at: "2024-01-31T23:59:59"  # Optional ISO datetime for closing
+
+issues:
+  - title: "Approve Budget"
+    description: "Vote yes/no/abstain on the proposed budget."
+    vtype: "yna"  # Yes/No/Abstain vote type
+
+  - title: "Elect Board Members"
+    description: "Rank candidates for board seats using STV."
+    vtype: "stv"  # Single Transferable Vote type
+    kv:
+      version: 1  # KV format version
+      labelmap:
+        a: "Alice"
+        b: "Bob"
+        c: "Carlos"
+        d: "David"
+      seats: 3  # Number of seats to elect
+
+eligible_voters: "members"  # Placeholder: all persons in the database are eligible
