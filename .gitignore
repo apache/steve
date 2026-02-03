@@ -55,3 +55,4 @@ pip-log.txt
 target/
 output/
 .DS_Store
+.aider*
