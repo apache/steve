@@ -28,7 +28,7 @@ function getJSON(theUrl, xstate, callback) {
     }
     xmlHttp.open("GET", theUrl, true);
     xmlHttp.send(null);
-    xmlHttp.onreadystatechange = function(state) {
+    xmlHttp.onreadystatechange = function (state) {
         if (xmlHttp.readyState == 4 && xmlHttp.status && xmlHttp.status >= 200) {
             if (callback) {
                 window.setTimeout(callback, 0.01, xmlHttp.status, (xmlHttp.responseText && xmlHttp.responseText.length > 1) ? JSON.parse(xmlHttp.responseText) : null, xstate);
@@ -38,7 +38,7 @@ function getJSON(theUrl, xstate, callback) {
 }
 
 function generateID() {
-    return parseInt(300000000 + (Math.random()*3800000000)).toString(16).toLowerCase()
+    return parseInt(300000000 + (Math.random() * 3800000000)).toString(16).toLowerCase()
 }
 
 // Posting to the REST API, returns http code + JSON response
@@ -46,17 +46,17 @@ function postREST(url, json, oform, callback, xstate) {
     var form = new FormData(oform)
     var xmlHttp = null;
     if (window.XMLHttpRequest) {
-    xmlHttp = new XMLHttpRequest();
+        xmlHttp = new XMLHttpRequest();
     } else {
-    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
     }
     for (i in json) {
         if (json[i]) form.append(i, json[i])
     }
-    
+
     var response = null
     var code = 500
-    xmlHttp.onreadystatechange = function(state) {
+    xmlHttp.onreadystatechange = function (state) {
         if (xmlHttp.readyState == 4 && xmlHttp.status && xmlHttp.status >= 200) {
             code = xmlHttp.status
             response = (xmlHttp.responseText && xmlHttp.responseText.length > 1) ? JSON.parse(xmlHttp.responseText) : null
@@ -81,7 +81,7 @@ function createElectionCallback(code, response) {
 
 // Create a new election
 function createElection() {
-    
+
     // Fetch data
     var eid = document.getElementById('eid').value;
     var title = document.getElementById('title').value
@@ -90,8 +90,8 @@ function createElection() {
     var owner = document.getElementById('owner').value
     var monitors = document.getElementById('monitors').value
     var open = document.getElementById('open').value
-    
-    
+
+
     // Validate data
     if (!eid || eid.length == 0) {
         eid = generateID()
@@ -99,12 +99,12 @@ function createElection() {
     if (starts && starts.length == 0 | parseInt(starts) == 0) starts = null;
     if (ends && ends.length == 0 | parseInt(ends) == 0) ends = null;
     if (ends) {
-        ends = parseInt($.datepicker.parseDate( "yy-mm-dd", ends).getTime()/1000)
+        ends = parseInt($.datepicker.parseDate("yy-mm-dd", ends).getTime() / 1000)
     }
     if (starts) {
-        starts = parseInt($.datepicker.parseDate( "yy-mm-dd", starts).getTime()/1000)
+        starts = parseInt($.datepicker.parseDate("yy-mm-dd", starts).getTime() / 1000)
     }
-    
+
     // Send request
     var code, response = postREST("/steve/admin/setup/" + eid, {
         owner: owner,
@@ -113,9 +113,9 @@ function createElection() {
         starts: starts,
         ends: ends,
         open: open
-        },
+    },
         undefined,
-        createElectionCallback)    
+        createElectionCallback)
 }
 
 
@@ -123,8 +123,8 @@ function createElection() {
 function renderEditElection(code, response, election) {
     if (code == 200) {
         var c = response.base_data.closed ? " (<font color='red'>CLOSED!</font>)" : ""
-        document.getElementById('title').innerHTML = "Edit election: " + response.base_data.title + " (#" + election  + ")" + c
-        
+        document.getElementById('title').innerHTML = "Edit election: " + response.base_data.title + " (#" + election + ")" + c
+
         if (response.base_data.closed) {
             document.getElementById('invite_btn').setAttribute("style", "pointer-events:none; background: #999 !important; color: #bbb !important;")
             document.getElementById('invite_btn').setAttribute("href", null)
@@ -140,18 +140,18 @@ function renderEditElection(code, response, election) {
         if (response.issues && response.issues.length > 0) {
             obj.innerHTML = "";
         }
-        response.issues.sort(function(a,b) { return (a.title > b.title)? 1 : -1 } )
+        response.issues.sort(function (a, b) { return (a.title > b.title) ? 1 : -1 })
         for (i in response.issues) {
             var issue = response.issues[i]
             s++;
             var outer = document.createElement('li');
             // Set style
             outer.setAttribute("class", "issueListItemWide")
-            
+
             var no = document.createElement('div');
             no.setAttribute("class", "issueNumber")
             no.innerHTML = (s)
-            
+
             // Add issue
             var inner = document.createElement('span')
             inner.innerHTML = issue.id + ": " + issue.title;
@@ -187,7 +187,7 @@ function displayTally(code, response, issue) {
             obj.innerHTML += "</ol>"
         } else if (response.yes != undefined) {
             var largest = Math.max(response.yes, response.no, response.abstain);
-            
+
             obj.innerHTML = "<i>(" + response.votes + " votes cast)</i>\n\n"
             if (largest == response.yes) {
                 obj.innerHTML += "<span style='color: #394;'><b>Yes:             </b>" + response.yes + "</span>\n"
@@ -226,7 +226,7 @@ function readTally(code, response, election) {
     obj.setAttribute("id", "contents")
     obj.innerHTML = ""
     if (code == 200) {
-        response.issues.sort(function(a,b) { return a.title > b.title } )
+        response.issues.sort(function (a, b) { return a.title > b.title })
         for (i in response.issues) {
             var issue = response.issues[i]
             obj.innerHTML += "<h3>" + issue.title + ":</h3>"
@@ -303,7 +303,7 @@ function keyvaluepair(name, text, type, value, locked, onedit) {
         }
         obj.appendChild(input)
     }
-    
+
     return obj
 }
 
@@ -317,7 +317,7 @@ function keyvaluepairText(name, key, value) {
     var val = document.createElement('div')
     val.innerHTML = value
     obj.appendChild(val)
-    
+
     return obj
 }
 
@@ -333,12 +333,12 @@ function saveYNA() {
     var l = document.location.search.substr(1).split('/');
     var election = l[0]
     var issue = l[1]
-    
+
     var title = document.getElementById('ititle').value
     var nominatedby = document.getElementById('nominatedby') ? document.getElementById('nominatedby').value : null
     var seconds = document.getElementById('seconds') ? document.getElementById('seconds').value.split(/,\s*/).join("\n") : null
     var description = document.getElementById('description').value
-    
+
     postREST("/steve/admin/edit/" + election + "/" + issue, {
         title: title,
         nominatedby: nominatedby,
@@ -346,9 +346,9 @@ function saveYNA() {
         description: description,
         candidates: document.getElementById('candidates') ? document.getElementById('candidates').value : null
     },
-    undefined,
-    saveCallback,
-    election)
+        undefined,
+        saveCallback,
+        election)
 }
 
 
@@ -356,10 +356,10 @@ function saveSTV() {
     var l = document.location.search.substr(1).split('/');
     var election = l[0]
     var issue = l[1]
-    
+
     var title = document.getElementById('ititle').value
     var description = document.getElementById('description').value
-    
+
     candidates = []
     statements = []
     seconds = []
@@ -373,7 +373,7 @@ function saveSTV() {
             seconds.push(seconds_txt ? seconds_txt : "")
         }
     }
-    
+
     postREST("/steve/admin/edit/" + election + "/" + issue, {
         title: title,
         description: description,
@@ -381,9 +381,9 @@ function saveSTV() {
         statements: JSON.stringify(statements),
         seconds_txt: JSON.stringify(seconds)
     },
-    undefined,
-    saveCallback,
-    election)
+        undefined,
+        saveCallback,
+        election)
 }
 
 function removeEditCandidate(indice) {
@@ -394,19 +394,19 @@ function removeEditCandidate(indice) {
 function addEditCandidate() {
     var name = window.prompt("Enter name of candidate:")
     if (name) {
-        edit_i.candidates.push( {
+        edit_i.candidates.push({
             name: name,
             statement: "No statement made"
         })
     }
-    
+
     renderEditCandidates()
 }
 
 function renderEditCandidates() {
     var obj = document.getElementById('candidateList')
     obj.innerHTML = "<h3>Candidates (" + edit_i.candidates.length + "):</h3><a href=\"javascript:void(addEditCandidate());\" class='btn-purple'>Add a candidate</a>"
-    
+
     var s = 0
     for (c in edit_i.candidates) {
         s++;
@@ -439,14 +439,14 @@ function renderEditIssue(code, response, issue) {
         }
         else if (edit_i.type == "yna") {
             obj.innerHTML = "<h3>Editing a YNA issue</h3>"
-            
+
             obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
             obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
             obj.appendChild(keyvaluepair("nominatedby", "Nominated by:", "text", edit_i.nominatedby))
             obj.appendChild(keyvaluepair("seconds", "Seconded by:", "text", (edit_i.seconds ? edit_i.seconds : []).join(", ")))
             obj.appendChild(document.createElement('hr'))
             obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
-            
+
             var div = document.createElement('div')
             div.setAttribute("class", "keyvaluepair")
             var btn = document.createElement('input')
@@ -456,17 +456,17 @@ function renderEditIssue(code, response, issue) {
             btn.setAttribute("onclick", "saveYNA();")
             div.appendChild(btn)
             obj.appendChild(div)
-            
+
         } else if (edit_i.type == "ap") {
             obj.innerHTML = "<h3>Editing a Apache PMC Style issue</h3>"
-            
+
             obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
             obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
             obj.appendChild(keyvaluepair("nominatedby", "Nominated by:", "text", edit_i.nominatedby))
             obj.appendChild(keyvaluepair("seconds", "Seconded by:", "text", (edit_i.seconds ? edit_i.seconds : []).join(", ")))
             obj.appendChild(document.createElement('hr'))
             obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
-            
+
             var div = document.createElement('div')
             div.setAttribute("class", "keyvaluepair")
             var btn = document.createElement('input')
@@ -477,20 +477,20 @@ function renderEditIssue(code, response, issue) {
             div.appendChild(btn)
             obj.appendChild(div)
         } else if (edit_i.type.match(/^stv/)) {
-            
+
             // base data
             obj.innerHTML = "<h3>Editing an " + edit_i.type.toUpperCase() + " issue</h3>"
             obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
             obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
             obj.appendChild(keyvaluepair("description", "Description (optional):", "textarea", edit_i.description))
             obj.appendChild(document.createElement('hr'))
-            
+
             // candidates
             var cobj = document.createElement('div')
             cobj.setAttribute("id", "candidateList")
             cobj.setAttribute("class", "candidateEditList")
             obj.appendChild(cobj)
-            
+
             var div = document.createElement('div')
             div.setAttribute("class", "keyvaluepair")
             var btn = document.createElement('input')
@@ -502,20 +502,20 @@ function renderEditIssue(code, response, issue) {
             obj.appendChild(div)
             renderEditCandidates()
         } else if (edit_i.type.match(/^dh/)) {
-            
+
             // base data
             obj.innerHTML = "<h3>Editing a D'Hondt (" + edit_i.type.toUpperCase() + ") issue</h3>"
             obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
             obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
             obj.appendChild(keyvaluepair("description", "Description (optional):", "textarea", edit_i.description))
             obj.appendChild(document.createElement('hr'))
-            
+
             // candidates
             var cobj = document.createElement('div')
             cobj.setAttribute("id", "candidateList")
             cobj.setAttribute("class", "candidateEditList")
             obj.appendChild(cobj)
-            
+
             var div = document.createElement('div')
             div.setAttribute("class", "keyvaluepair")
             var btn = document.createElement('input')
@@ -528,20 +528,20 @@ function renderEditIssue(code, response, issue) {
             renderEditCandidates()
         }
         else if (edit_i.type.match(/^fpp/)) {
-            
+
             // base data
             obj.innerHTML = "<h3>Editing a First Past the Post issue</h3>"
             obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
             obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
             obj.appendChild(keyvaluepair("description", "Description (optional):", "textarea", edit_i.description))
             obj.appendChild(document.createElement('hr'))
-            
+
             // candidates
             var cobj = document.createElement('div')
             cobj.setAttribute("id", "candidateList")
             cobj.setAttribute("class", "candidateEditList")
             obj.appendChild(cobj)
-            
+
             var div = document.createElement('div')
             div.setAttribute("class", "keyvaluepair")
             var btn = document.createElement('input')
@@ -554,20 +554,20 @@ function renderEditIssue(code, response, issue) {
             renderEditCandidates()
         }
         else if (edit_i.type.match(/^mntv/)) {
-            
+
             // base data
             obj.innerHTML = "<h3>Editing a Multiple Non-Transferable Vote (" + edit_i.type.toUpperCase() + ") issue</h3>"
             obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
             obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
             obj.appendChild(keyvaluepair("description", "Description (optional):", "textarea", edit_i.description))
             obj.appendChild(document.createElement('hr'))
-            
+
             // candidates
             var cobj = document.createElement('div')
             cobj.setAttribute("id", "candidateList")
             cobj.setAttribute("class", "candidateEditList")
             obj.appendChild(cobj)
-            
+
             var div = document.createElement('div')
             div.setAttribute("class", "keyvaluepair")
             var btn = document.createElement('input')
@@ -580,20 +580,20 @@ function renderEditIssue(code, response, issue) {
             renderEditCandidates()
         }
         else if (edit_i.type.match(/^fic/)) {
-            
+
             // base data
             obj.innerHTML = "<h3>Editing a First in Class Vote (" + edit_i.type.toUpperCase() + ") issue</h3>"
             obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
             obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
             obj.appendChild(keyvaluepair("description", "Description (optional):", "textarea", edit_i.description))
             obj.appendChild(document.createElement('hr'))
-            
+
             // candidates
             var cobj = document.createElement('div')
             cobj.setAttribute("id", "candidateList")
             cobj.setAttribute("class", "candidateEditList")
             obj.appendChild(cobj)
-            
+
             var div = document.createElement('div')
             div.setAttribute("class", "keyvaluepair")
             var btn = document.createElement('input')
@@ -606,14 +606,14 @@ function renderEditIssue(code, response, issue) {
             renderEditCandidates()
         }
         else if (edit_i.type.match(/^cop/)) {
-            
+
             // base data
             obj.innerHTML = "<h3>Editing a Candidate or Party Vote (" + edit_i.type.toUpperCase() + ") issue</h3>"
             obj.appendChild(keyvaluepair("id", "Issue ID:", "text", edit_i.id, true))
             obj.appendChild(keyvaluepair("ititle", "Issue title:", "text", edit_i.title))
             obj.appendChild(keyvaluepair("description", "Description (optional):", "textarea", edit_i.description))
             obj.appendChild(document.createElement('hr'))
-            
+
             // candidates/parties
             var p = null
             var pletter = null
@@ -627,7 +627,7 @@ function renderEditIssue(code, response, issue) {
                 biglist += c['name'] + "\n"
             }
             obj.appendChild(keyvaluepair("candidates", "Candidate/Party List:", "textarea", biglist))
-            
+
             var div = document.createElement('div')
             div.setAttribute("class", "keyvaluepair")
             var btn = document.createElement('input')
@@ -645,20 +645,20 @@ function renderEditIssue(code, response, issue) {
 
 function renderEditBasedata(code, response, election) {
     if (code == 200) {
-        
+
         var obj = document.getElementById('preloaderWrapper')
         obj.setAttribute("id", "contents")
         obj.innerHTML = ""
-        
+
         document.getElementById('title').innerHTML += response.base_data.title;
-        
+
         obj.appendChild(keyvaluepair("id", "Election ID:", "text", election, true))
         obj.appendChild(keyvaluepair("type", "Open election?:", "text", response.base_data.open, true))
         obj.appendChild(keyvaluepair("etitle", "Election title:", "text", response.base_data.title))
         obj.appendChild(keyvaluepair("etitle", "Monitors:", "text", response.base_data.monitors.join(", "), true))
         obj.appendChild(document.createElement('hr'))
         //obj.appendChild(keyvaluepair("description", "Description/statement:", "textarea", edit_i.description))
-        
+
         var div = document.createElement('div')
         div.setAttribute("class", "keyvaluepair")
         var btn = document.createElement('input')
@@ -684,15 +684,15 @@ function saveElectionCallback(code, response, election) {
 function saveElection() {
     var l = document.location.search.substr(1).split('/');
     var election = l[0]
-    
+
     var title = document.getElementById('etitle').value
-    
+
     postREST("/steve/admin/edit/" + election, {
         title: title
     },
-    undefined,
-    saveElectionCallback,
-    election)
+        undefined,
+        saveElectionCallback,
+        election)
 }
 
 function closeElectionCallback(code, response, election) {
@@ -706,13 +706,13 @@ function closeElectionCallback(code, response, election) {
 function closeElection(reopen) {
     var l = document.location.search.substr(1).split('/');
     var election = l[0]
-    
+
     postREST("/steve/admin/close/" + election, {
         reopen: reopen ? "true" : null
-        },
-    undefined,
-    closeElectionCallback,
-    election)
+    },
+        undefined,
+        closeElectionCallback,
+        election)
 }
 
 
@@ -782,11 +782,11 @@ function createIssue(election, cont) {
     var seconds = document.getElementById('seconds').value
     var nominatedby = document.getElementById('nominatedby').value
     var candidates = document.getElementById('candidates').value
-    
+
     if (!iid || iid.length == 0) {
         iid = generateID()
     }
-    
+
     postREST("/steve/admin/create/" + election + "/" + iid, {
         type: type,
         title: title,
@@ -794,28 +794,28 @@ function createIssue(election, cont) {
         nominatedby: nominatedby,
         seconds: seconds,
         candidates: candidates
-    }, undefined, createIssueCallback, { cont: cont, election: election, issue: iid})
+    }, undefined, createIssueCallback, { cont: cont, election: election, issue: iid })
 }
 
 
 var step = -1;
 var election_data = null
 function loadElection(election, uid, callback) {
-    
+
     var messages = ["Herding cats...", "Shaving yaks...", "Shooing some cows away...", "Fetching election data...", "Loading issues..."]
     if (!election || !uid) {
         var l = document.location.search.substr(1).split("/");
         election = l[0];
-        uid = l.length > 1 ? l[l.length-1] : "";
+        uid = l.length > 1 ? l[l.length - 1] : "";
     }
     if (step == -1) {
-        getJSON("/steve/voter/view/" + election + "?uid=" + uid, [election,uid, callback], displayElection)
+        getJSON("/steve/voter/view/" + election + "?uid=" + uid, [election, uid, callback], displayElection)
     }
-    
+
     var obj = document.getElementById('preloader');
     step++;
     if (!election_data && obj) {
-        if (step % 2 == 1) obj.innerHTML = messages[parseInt(Math.random()*messages.length-0.01)]
+        if (step % 2 == 1) obj.innerHTML = messages[parseInt(Math.random() * messages.length - 0.01)]
     } else if (obj && (step % 2 == 1)) {
         obj.innerHTML = "Ready..!"
     }
@@ -824,7 +824,7 @@ function loadElection(election, uid, callback) {
     } else if (obj) {
         obj.style.transform = "translate(0,-500%)"
     }
-    if (!election_data|| (step % 2 == 0) ) {
+    if (!election_data || (step % 2 == 0)) {
         window.setTimeout(loadElection, 750, election, uid, callback);
     }
 }
@@ -844,17 +844,17 @@ function displayElection(code, response, el) {
 function renderElectionFrontpage(response, el) {
     var par = document.getElementById('preloaderWrapper')
     par.innerHTML = "";
-    
+
     var title = document.createElement('h1');
     title.innerHTML = response.base_data.title;
     par.appendChild(title);
-    
+
     var issueList = document.createElement('ol');
     issueList.setAttribute("class", "issueList")
-    
+
     var s = 0;
     var ynas = 0;
-    response.issues.sort(function(a,b) { return (a.title > b.title)? 1 : -1 } )
+    response.issues.sort(function (a, b) { return (a.title > b.title) ? 1 : -1 })
     for (i in response.issues) {
         var issue = response.issues[i]
         if (issue.type == "yna") {
@@ -864,18 +864,18 @@ function renderElectionFrontpage(response, el) {
         var outer = document.createElement('li');
         // Set style
         outer.setAttribute("class", "issueListItemWide")
-        
+
         var no = document.createElement('div');
         no.setAttribute("class", "issueNumber")
         no.innerHTML = (s)
-        
+
         if (issue.hasVoted) {
             outer.setAttribute("style", "background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%); opacity: 0.55;")
             outer.setAttribute("title", "Notice: You have already voted once on this issue. You may recast your vote if you like.")
         } else {
             outer.setAttribute("title", "You have not yet voted on this issue");
         }
-        
+
         // Add issue
         var inner = document.createElement('span')
         var a = issue.id
@@ -887,11 +887,11 @@ function renderElectionFrontpage(response, el) {
         outer.appendChild(no)
         outer.appendChild(inner)
         outer.setAttribute("onclick", "location.href='ballot_" + (issue.category ? issue.category : issue.type.match(/([a-z]+)/)[0]) + ".html?" + el[0] + "/" + issue.id + "/" + (el[1] ? el[1] : "") + "';")
-        outer.style.animation = "fadein " + (0.5 +  (s/6)) + "s"
+        outer.style.animation = "fadein " + (0.5 + (s / 6)) + "s"
         issueList.appendChild(outer)
     }
     par.appendChild(issueList)
-    
+
     if (ynas > 1) {
         var btn = document.createElement("input")
         btn.setAttribute("type", "button")
@@ -908,7 +908,7 @@ function renderElectionFrontpage(response, el) {
         p.innerHTML = "Click on an issue to start voting. You may recast your vote on any issue as often as you like."
         par.insertBefore(p, title.nextSibling)
     }
-    
+
     if (response.base_data.monitors && response.base_data.monitors.length > 0) {
         var p = document.createElement('div')
         p.setAttribute("style", "width: 100%; float: left; text-align: center;")
@@ -917,7 +917,7 @@ function renderElectionFrontpage(response, el) {
         p.innerHTML += "<a href='mailto:" + m + "?subject=Issues%20with%20election%20" + response.base_data.id + "%20at%20" + response.baseurl + "'>" + m + "</a>."
         par.appendChild(p)
     }
-    
+
 }
 
 
@@ -927,17 +927,17 @@ function renderElectionBulk(response, el) {
     var par = document.getElementById('preloaderWrapper')
     par.innerHTML = "";
     par.setAttribute("id", "contents")
-    
+
     var title = document.createElement('h1');
     title.innerHTML = "Bulk YNA voting for: " + response.base_data.title;
     par.appendChild(title);
-    
+
     var issueList = document.createElement('ol');
     issueList.setAttribute("class", "issueList")
-    
+
     var s = 0;
     var ynas = 0;
-    response.issues.sort(function(a,b) { return (a.title > b.title)? 1 : -1 } )
+    response.issues.sort(function (a, b) { return (a.title > b.title) ? 1 : -1 })
     bulk_issues = []
     for (i in response.issues) {
         var issue = response.issues[i]
@@ -947,11 +947,11 @@ function renderElectionBulk(response, el) {
             var outer = document.createElement('li');
             // Set style
             outer.setAttribute("class", "issueListItemWide")
-            
+
             var no = document.createElement('div');
             no.setAttribute("class", "issueNumber")
             no.innerHTML = (s)
-            
+
             // Add issue
             var inner = document.createElement('span')
             inner.setAttribute("id", "inner_yna_" + issue.id)
@@ -960,7 +960,7 @@ function renderElectionBulk(response, el) {
             outer.appendChild(inner)
             outer.style.height = "32px"
             outer.style.marginBottom = "15px"
-            
+
             // details
             if (issue.hasVoted) {
                 outer.setAttribute("style", "margin-bottom: 15px; background: linear-gradient(to bottom, #d8d8d8 0%,#aaaaaa 100%);")
@@ -968,141 +968,141 @@ function renderElectionBulk(response, el) {
             } else {
                 outer.setAttribute("title", "You have not yet voted on this issue");
             }
-            
+
             var statement = document.createElement('div')
             statement.setAttribute("class", "statement_marker")
             statement.style.float = "left"
             statement.style.marginRight = "15px"
             statement.setAttribute("title", "Click to read issue details")
-            statement.innerHTML = "<a href='#details_"+issue.id+"'>Details</a>"
+            statement.innerHTML = "<a href='#details_" + issue.id + "'>Details</a>"
             outer.appendChild(statement)
-            
-            
+
+
             var popup = document.createElement("div")
             popup.setAttribute("class", "modal")
             popup.setAttribute("id", "details_" + issue.id)
             popup.setAttribute("aria-hidden", "true")
-            
+
             var popupd = document.createElement("div")
             popupd.setAttribute("class", "modal-dialog")
             popup.appendChild(popupd)
-            
+
             var popuph = document.createElement("div")
             popuph.setAttribute("class", "modal-header")
             popuph.innerHTML = '<h2>Details about issue #' + issue.id + ": " + issue.title + '</h2><a href="#close" class="btn-close" aria-hidden="true">&#215;</a>'
-            
+
             details = "<b>Nominated by: </b>" + issue.nominatedby + "<br/>"
             details += "<b>Seconded by: </b>" + (issue.seconds ? issue.seconds : "no-one") + "<br/>"
             details += "<br/><b>Description:<blockquote>" + issue.description + "</blockquote>"
             var popupb = document.createElement("div")
             popupb.setAttribute("class", "modal-body")
             popupb.innerHTML = '<pre>' + details + '</pre>'
-            
+
             var popupf = document.createElement("div")
             popupf.setAttribute("class", "modal-footer")
             popupf.innerHTML = '<a href="#close" class="btn">Close window</a>'
-            
+
             popupd.appendChild(popuph)
             popupd.appendChild(popupb)
             popupd.appendChild(popupf)
-            
+
             //document.getElementsByTagName('body')[0].appendChild(popup)
             issueList.appendChild(popup)
-            
-            
-            
-            
-            
+
+
+
+
+
             var yes = document.createElement('input')
             yes.setAttribute("type", "button")
             yes.setAttribute("value", "Yes")
             yes.setAttribute("class", "btn-green")
             yes.setAttribute("style", "float: right;");
             yes.setAttribute("onclick", "castVote('" + el[0] + "', '" + issue.id + "', '" + el[1] + "', 'y');")
-            
+
             var no = document.createElement('input')
             no.setAttribute("type", "button")
             no.setAttribute("value", "No")
             no.setAttribute("class", "btn-red")
             no.setAttribute("style", " float: right;");
             no.setAttribute("onclick", "castVote('" + el[0] + "', '" + issue.id + "', '" + el[1] + "', 'n');")
-            
+
             var abstain = document.createElement('input')
             abstain.setAttribute("type", "button")
             abstain.setAttribute("value", "Abstain")
             abstain.setAttribute("class", "btn-yellow")
             abstain.setAttribute("style", "float: right;");
             abstain.setAttribute("onclick", "castVote('" + el[0] + "', '" + issue.id + "', '" + el[1] + "', 'a');")
-            
+
             var mark = document.createElement('img');
             mark.setAttribute("width", "26")
             mark.setAttribute("height", "32")
             mark.setAttribute("style", "float: right; margin-left: 10px;")
             mark.setAttribute("id", "mark_" + issue.id)
-            
+
             inner.appendChild(mark)
             inner.appendChild(no)
             inner.appendChild(abstain)
             inner.appendChild(yes)
-            outer.style.animation = "fadein " + (0.5 +  (s/6)) + "s"
+            outer.style.animation = "fadein " + (0.5 + (s / 6)) + "s"
             issueList.appendChild(outer)
         }
     }
-    
+
     if (bulk_issues.length > 0) {
-        
+
         var warning = document.createElement('div')
         warning.setAttribute("id", "bulkvoter")
         warning.innerHTML = "<h3>Danger zone: cast bulk vote on remaining issues</h3><p>The buttons below allows you to cast one giant vote on all the issues above that you have not voted on yet. Use with care!</p>"
-        
+
         issueList.appendChild(warning)
-        
+
         var outer = document.createElement('li');
         // Set style
         outer.setAttribute("class", "issueListItemWide")
-        
+
         var no = document.createElement('div');
         no.setAttribute("class", "issueNumber")
         no.innerHTML = (s)
-        
+
         // Add bulk txt
         var inner = document.createElement('span')
-        inner.setAttribute("id", "inner_yna_bulk" )
+        inner.setAttribute("id", "inner_yna_bulk")
         inner.innerHTML = "Bulk vote on the rest:";
-        
+
         var yes = document.createElement('input')
         yes.setAttribute("type", "button")
         yes.setAttribute("value", "Yes")
         yes.setAttribute("class", "btn-green")
         yes.setAttribute("style", "float: right;");
         yes.setAttribute("onclick", "castBulkVote('" + el[0] + "', 'bulk', '" + el[1] + "', 'y');")
-        
+
         var no = document.createElement('input')
         no.setAttribute("type", "button")
         no.setAttribute("value", "No")
         no.setAttribute("class", "btn-red")
         no.setAttribute("style", " float: right;");
         no.setAttribute("onclick", "castBulkVote('" + el[0] + "', 'bulk', '" + el[1] + "', 'n');")
-        
+
         var abstain = document.createElement('input')
         abstain.setAttribute("type", "button")
         abstain.setAttribute("value", "Abstain")
         abstain.setAttribute("class", "btn-yellow")
         abstain.setAttribute("style", "float: right;");
         abstain.setAttribute("onclick", "castBulkVote('" + el[0] + "', 'bulk', '" + el[1] + "', 'a');")
-        
+
         var mark = document.createElement('img');
         mark.setAttribute("width", "26")
         mark.setAttribute("height", "32")
         mark.setAttribute("style", "float: right; margin-left: 10px;")
         mark.setAttribute("id", "mark_bulk")
-        
+
         inner.appendChild(mark)
         inner.appendChild(no)
         inner.appendChild(abstain)
         inner.appendChild(yes)
         outer.appendChild(inner)
-        outer.style.animation = "fadein " + (0.5 +  (s/6)) + "s"
+        outer.style.animation = "fadein " + (0.5 + (s / 6)) + "s"
         issueList.appendChild(outer)
     }
     par.appendChild(issueList)
@@ -1110,7 +1110,7 @@ function renderElectionBulk(response, el) {
 }
 
 function castBulkVote(election, garbage, uid, vote) {
-    if (bulk_issues && bulk_issues.length > 0 ) {
+    if (bulk_issues && bulk_issues.length > 0) {
         var nb = 0
         for (var i in bulk_issues) {
             if (bulk_issues[i].hasVoted == false) {
@@ -1130,9 +1130,9 @@ function castBulkVote(election, garbage, uid, vote) {
                     vote: vote,
                     issue: issue
                 },
-                undefined,
-                castVoteCallback,
-                {issue: issue})
+                    undefined,
+                    castVoteCallback,
+                    { issue: issue })
             }
         }
         document.getElementById("inner_yna_bulk").innerHTML = "Bulk vote cast on all remaining issues!"
@@ -1141,12 +1141,12 @@ function castBulkVote(election, garbage, uid, vote) {
             mark.setAttribute("src", "/images/vote_" + vote[0] + ".png")
         }
     }
-    
+
 }
 
 function castVote(election, issue, uid, vote) {
     // first, mark this as voted upon in bulk_issues
-    if (bulk_issues && bulk_issues.length > 0 ) {
+    if (bulk_issues && bulk_issues.length > 0) {
         for (var i in bulk_issues) {
             if (bulk_issues[i].id == issue) {
                 bulk_issues[i].hasVoted = true
@@ -1154,8 +1154,8 @@ function castVote(election, issue, uid, vote) {
             }
         }
     }
-    
-    
+
+
     var mark = document.getElementById('mark_' + issue);
     if (mark) {
         mark.setAttribute("src", "/images/vote_" + vote[0] + ".png")
@@ -1165,9 +1165,9 @@ function castVote(election, issue, uid, vote) {
         vote: vote,
         issue: issue
     },
-    undefined,
-    castVoteCallback,
-    {issue: issue})
+        undefined,
+        castVoteCallback,
+        { issue: issue })
 }
 
 function castVoteCallback(code, response, state) {
@@ -1202,12 +1202,12 @@ function showElections(code, response, state) {
             outer.setAttribute("class", "issueListItemWideClosed")
             outer.setAttribute("title", "This election has beeen closed")
         }
-        
+
         var no = document.createElement('div');
         no.setAttribute("class", "issueNumber")
         no.innerHTML = (s)
-        
-        
+
+
         // Add election
         var inner = document.createElement('span')
         inner.innerHTML = election.id + ": " + election.title;
@@ -1223,15 +1223,15 @@ function showElections(code, response, state) {
 function castSingleVote(vote) {
     var l = document.location.search.substr(1).split("/");
     election = l[0];
-    issue = l.length > 1 ? l[l.length-2] : "";
-    uid = l.length > 2 ? l[l.length-1] : "";
+    issue = l.length > 1 ? l[l.length - 2] : "";
+    uid = l.length > 2 ? l[l.length - 1] : "";
     postREST("/steve/voter/vote/" + election + "/" + issue, {
         uid: uid,
         vote: vote
-        },
+    },
         undefined,
         castSingleVoteCallback,
-        {vote: vote})
+        { vote: vote })
 }
 
 function castSingleVoteCallback(code, response, state) {
@@ -1257,51 +1257,51 @@ function displayIssueYNA(code, response, state) {
         obj.innerHTML = "<h1>Could not load issue:</h1><h2>" + response.message + "</h2>";
     } else {
         obj.innerHTML = ""
-        
+
         var title = document.createElement('h2')
         title.innerHTML = response.issue.title;
         obj.appendChild(title)
-        
+
         obj.appendChild(keyvaluepairText("nominatedby", "Put forward (nominated) by:", response.issue.nominatedby))
-        obj.appendChild(keyvaluepairText("seconds", "Seconded by:", response.issue.seconds.length > 0 ?  response.issue.seconds.join(", ") : "no-one" ))
-        
+        obj.appendChild(keyvaluepairText("seconds", "Seconded by:", response.issue.seconds.length > 0 ? response.issue.seconds.join(", ") : "no-one"))
+
         var desc = document.createElement('pre')
         desc.setAttribute("class", "statement")
         desc.innerHTML = response.issue.description
         obj.appendChild(desc)
-        
+
         var outer = document.createElement('div')
         outer.setAttribute("class", "issueListItem")
-        
+
         var yes = document.createElement('input')
         yes.setAttribute("type", "button")
         yes.setAttribute("value", "Yes")
         yes.setAttribute("class", "btn-green")
         yes.setAttribute("style", "float: right;");
         yes.setAttribute("onclick", "castSingleVote('y');")
-        
+
         var no = document.createElement('input')
         no.setAttribute("type", "button")
         no.setAttribute("value", "No")
         no.setAttribute("class", "btn-red")
         no.setAttribute("style", " float: right;");
         no.setAttribute("onclick", "castSingleVote('n');")
-        
+
         var abstain = document.createElement('input')
         abstain.setAttribute("type", "button")
         abstain.setAttribute("value", "Abstain")
         abstain.setAttribute("class", "btn-yellow")
         abstain.setAttribute("style", "float: right;");
         abstain.setAttribute("onclick", "castSingleVote('a');")
-        
+
         var p = document.createElement('p')
         p.innerHTML = "Cast your vote by clicking on the respective button below. You may recast your vote as many time as you like, should you reconsider."
-        
+
         obj.appendChild(p)
         outer.appendChild(no)
         outer.appendChild(abstain)
         outer.appendChild(yes)
-        
+
         obj.appendChild(outer)
     }
 }
@@ -1315,14 +1315,14 @@ function primeMonitorsCallback(code, response, election) {
 function primeMonitors() {
     var l = document.location.search.substr(1).split('/');
     var election = l[0]
-    
-    
+
+
     postREST("/steve/admin/debug/" + election, {
-        
+
     },
-    undefined,
-    primeMonitorsCallback,
-    election)
+        undefined,
+        primeMonitorsCallback,
+        election)
 }
 
 function setVoteTypes(code, response, state) {
@@ -1337,12 +1337,12 @@ function setVoteTypes(code, response, state) {
             sortable.push([option, type])
         }
         sortable.sort(
-            function(a,b) {
+            function (a, b) {
                 var ta = a[1].match(/^(.+?)\d+/) ? a[1].match(/(.+?)\d+/)[1] : null
                 var tb = b[1].match(/^(.+?)\d+/) ? b[1].match(/(.+?)\d+/)[1] : null
-                if ( ta && tb && ta == tb ) {
+                if (ta && tb && ta == tb) {
                     return parseInt(a[1].match(/(\d+)/)[1]) > parseInt(b[1].match(/(\d+)/)[1])
-                } else  {
+                } else {
                     return (a[1] < b[1])
                 }
             })
@@ -1352,5 +1352,5 @@ function setVoteTypes(code, response, state) {
     } else {
         alert(response.message)
     }
-    
+
 }
