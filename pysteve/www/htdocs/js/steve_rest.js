@@ -393,9 +393,11 @@ function removeEditCandidate(indice) {
 
 function addEditCandidate() {
     var name = window.prompt("Enter name of candidate:")
+    var asfid = window.prompt("Enter ASF ID of candidate:")
     if (name) {
         edit_i.candidates.push({
             name: name,
+            asfid: asfid,
             statement: "No statement made"
         })
     }
@@ -412,12 +414,14 @@ function renderEditCandidates() {
         s++;
         var candidate = edit_i.candidates[c]
         var name = candidate.name
+        var asfid = candidate.asfid
         var statement = candidate.statement
         var seconds = candidate.seconds_txt
         var h = document.createElement('h4')
         h.innerHTML = name + " &nbsp; - &nbsp <a href='javascript:void(removeEditCandidate(\"" + name + "\"));'>Delete</a>"
         obj.appendChild(h)
         obj.appendChild(keyvaluepair("name_" + c, "Name:", "text", name, false, "edit_i.candidates[" + c + "].name = this.value"))
+        obj.appendChild(keyvaluepair("asfid_" + c, "ASF ID:", "text", asfid, false, "edit_i.candidates[" + c + "].asfid = this.value"))
         obj.appendChild(keyvaluepair("statement_" + c, "Statement:", "textarea", statement ? statement : "", false, "edit_i.candidates[" + c + "].statement = this.value"))
         obj.appendChild(keyvaluepair("seconds_txt_" + c, "Nomination/Seconds:", "textarea", seconds ? seconds : "", false, "edit_i.candidates[" + c + "].seconds_txt = this.value"))
         obj.appendChild(document.createElement('hr'))
