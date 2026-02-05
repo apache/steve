@@ -37,12 +37,12 @@ def main(mtgdir):
     assert os.path.exists(labelfile)
 
     labelmap = stv_tool.read_labelmap(labelfile)
-    newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
+    newformat = len(next(iter(labelmap))) > 1  # keys like "a" or "aa"?
     votes = stv_tool.read_votefile(rawfile, newformat)
 
     # Rebuild the list of label-lists into a comma-separated votestring
     # for the STV tally function.
-    votestrings = [ ','.join(v) for v in votes ]
+    votestrings = [','.join(v) for v in votes]
 
     kv = {
         'version': 1,
