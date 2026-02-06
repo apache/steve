@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -32,12 +34,14 @@ DB_FNAME = THIS_DIR.parent / 'steve.db'
 # Supported vote types
 VALID_VTYPES = {'yna', 'stv'}
 
+
 def parse_datetime(dt_str):
     """Parse ISO datetime string to Unix timestamp."""
     if not dt_str:
         return None
     dt = datetime.datetime.fromisoformat(dt_str)
     return int(dt.timestamp())
+
 
 def validate_issue(issue):
     """Validate an issue dict from YAML."""
@@ -50,6 +54,7 @@ def validate_issue(issue):
         if not isinstance(kv['seats'], int) or kv['seats'] <= 0:
             raise ValueError("STV seats must be a positive integer")
     return issue
+
 
 def main(yaml_file):
     with open(yaml_file, 'r') as f:
@@ -76,9 +81,12 @@ def main(yaml_file):
     if eligible_voters != 'members':
         raise ValueError("Only 'members' is supported for eligible_voters")
 
+    ### revising how we manage the two database instances and their
+    ### connections. no transactions for now. partial Elections, and
+    ### issues are fine for now.
     # Start transaction for safety
-    pdb = steve.persondb.PersonDB(DB_FNAME)
-    pdb.db.conn.execute('BEGIN TRANSACTION')
+    #pdb = steve.persondb.PersonDB(DB_FNAME)
+    #pdb.db.conn.execute('BEGIN TRANSACTION')
 
     try:
         # Create election
@@ -95,19 +103,31 @@ def main(yaml_file):
             )
             _LOGGER.info(f'Added issue[I:{iid}] to election[E:{election.eid}]')
 
+        # Open a PersonDB using the existing DB from the Election
+        pdb = steve.persondb.PersonDB(election.db)
+
+        ### HACK: we opened PDB using the existing DB from the Election.
+        ### It does not have the cursors specific to PersonDB. For now,
+        ### hack the bugger in.
+        ### q_person: SELECT * FROM person ORDER BY pid
+        pdb.q_person = pdb.db.cursor_for('SELECT * FROM person ORDER BY pid')
+
         # Add voters: All persons in persondb to all issues
         all_persons = pdb.list_persons()
         for person in all_persons:
             election.add_voter(person.pid)
         _LOGGER.info(f'Added {len(all_persons)} voters to election[E:{election.eid}]')
 
-        pdb.db.conn.execute('COMMIT')
+        ### we aren't doing transactions right now. omit this.
+        #pdb.db.conn.execute('COMMIT')
         _LOGGER.info(f'Election[E:{election.eid}] fully created from {yaml_file}')
 
     except Exception as e:
-        pdb.db.conn.execute('ROLLBACK')
+        ### we aren't doing transactions right now. omit this.
+        #pdb.db.conn.execute('ROLLBACK')
         _LOGGER.error(f'Failed to create election from {yaml_file}: {e}')
         raise
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

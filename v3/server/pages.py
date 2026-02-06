@@ -235,7 +235,7 @@ async def admin_page():
     ### "me" because of authz access to manage issues.
 
     ### should open/keep a PersonDB instance in the APP
-    pdb = steve.persondb.PersonDB(DB_FNAME)
+    pdb = steve.persondb.PersonDB.open(DB_FNAME)
     try:
         me = pdb.get_person(result.uid)
     except steve.persondb.PersonNotFound:
@@ -344,7 +344,7 @@ async def do_open_endpoint(election):
     ### check authz
 
     ### should open/keep a PersonDB instance in the APP
-    pdb = steve.persondb.PersonDB(DB_FNAME)
+    pdb = steve.persondb.PersonDB.open(DB_FNAME)
 
     # Open the Election.
     election.open(pdb)
