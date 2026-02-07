@@ -54,7 +54,7 @@ def touch_every_line():
 
     _ = e.get_metadata()  # while EDITABLE
 
-    pdb = steve.persondb.PersonDB(TESTING_DB)
+    pdb = steve.persondb.PersonDB.open(TESTING_DB)
     pdb.add_person('alice', 'Alice', 'alice@example.org')
     pdb.add_person('bob', None, 'bob@example.org')
     pdb.add_person('carlos', 'Carlos', 'carlos@example.org')

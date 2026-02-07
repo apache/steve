@@ -98,8 +98,19 @@ election:
     #     the ORDER BY. However, with few revotes, that sort is not
     #     expensive. Collect some data. Or maybe people can lobby.
 
-    # Which elections are open for voting by PID?
-    # Note: SALT and OPENED_KEY are never returned.
+# Returns all elections that are currently open for voting by the
+    # specified person (PID). An election is included if:
+    #   - The person has mayvote entries for any issues in the election
+    #   - The election has been opened (salt IS NOT NULL)
+    #   - The election has not been closed (closed IS NULL or 0)
+    # 
+    # Uses LEFT JOIN to person table to fetch the owner's name for display,
+    # ensuring elections are still returned even if the owner_pid does not
+    # exist in the person table (in which case owner_name will be NULL).
+    # 
+    # Returns: eid, title, owner_pid, authz, closed, open_at, close_at,
+    #          is_opened (boolean), issue_count, owner_name
+    # Note: SALT and OPENED_KEY are never returned for security.
     q_open_to_me: |
         SELECT e.eid, e.title, e.owner_pid, e.authz, e.closed,
                e.open_at, e.close_at,
@@ -109,7 +120,7 @@ election:
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid
         JOIN election e ON i.eid = e.eid
-        INNER JOIN person p ON e.owner_pid = p.pid
+        LEFT JOIN person p ON e.owner_pid = p.pid
         WHERE m.pid = ?
           AND e.salt IS NOT NULL
           AND (e.closed IS NULL OR e.closed = 0)

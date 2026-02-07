@@ -39,7 +39,7 @@ LDAP_ATTR = 'memberUid'
 
 @asfpy.stopwatch.Stopwatch()
 def main():
-    pdb = steve.persondb.PersonDB(DB_FNAME)
+    pdb = steve.persondb.PersonDB.open(DB_FNAME)
     # Reach into PDB for the CONN, and start a transaction for all
     # of the inserts we will perform. (rather than default auto-commit)
     pdb.db.conn.execute('BEGIN TRANSACTION')
