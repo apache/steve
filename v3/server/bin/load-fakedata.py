@@ -59,11 +59,7 @@ def gen_election(owner_pid, issue_count=10):
         description = FAKE.paragraph()
         vtype = 'yna'  ### something else?
         kv = None  ### something else?
-
-        ### grr. this should be internal
-        iid = steve.crypto.create_id()
-        e.add_issue(iid, title, description, vtype, kv)
-        _LOGGER.info(f'[E:{e.eid}]: created issue[I:{iid}]: "{title}"')
+        e.add_issue(title, description, vtype, kv)
 
 
 def random_owner():

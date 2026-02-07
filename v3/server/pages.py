@@ -308,7 +308,7 @@ async def manage_stv_page(election, issue):
     result.seats = kv.seats
 
     ### list of candidates. see KV.LABELMAP
-    #result.count = len(result.candidates)
+    # result.count = len(result.candidates)
 
     return result
 
@@ -327,8 +327,10 @@ async def do_create_endpoint():
     # Create the Election.
     election = steve.election.Election.create(DB_FNAME, form.title, result.uid)
 
-    _LOGGER.info(f'User[U:{result.uid}] created election[E:{election.eid}];'
-                 f' title: "{form.title}"')
+    _LOGGER.info(
+        f'User[U:{result.uid}] created election[E:{election.eid}];'
+        f' title: "{form.title}"'
+    )
     await flash_success(f'Created election: {form.title}')
 
     # Go to the management page for the new Election.

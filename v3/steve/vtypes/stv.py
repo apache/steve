@@ -40,7 +40,7 @@ stv_tool = load_stv()
 def tally(votestrings, kv):
     """
     Run the STV tally process.
-    
+
     votestrings: List of strings, each representing a voter's preferences as comma-separated labels
                  (e.g., 'a,b,c' for votes in order of preference). Labels must match keys in kv['labelmap'].
     kv: Dict containing STV configuration.
@@ -48,21 +48,24 @@ def tally(votestrings, kv):
         - 'labelmap': Dict mapping single-character labels to candidate names (e.g., {'a': 'Alice'}).
         - 'seats': Integer number of seats to elect.
     """
-    
+
     # kv['labelmap'] should be: LABEL: NAME
     # for example: { 'a': 'John Doe', }
     labelmap = kv['labelmap']
-    
+
     seats = kv['seats']
-    
+
     # Remap all votestrings from comma-separated label strings into sequences of NAMEs.
     # Split on commas, strip whitespace, and filter out empty parts.
-    votes = [[labelmap[label.strip()] for label in v.split(',') if label.strip()] for v in votestrings]
-    
+    votes = [
+        [labelmap[label.strip()] for label in v.split(',') if label.strip()]
+        for v in votestrings
+    ]
+
     # Use sorted names for reproducible ordering.
     names = sorted(labelmap.values())
     results = stv_tool.run_stv(names, votes, seats)
-    
+
     human = '\n'.join(
         f'{c.name:40}{" " if c.status == stv_tool.ELECTED else " not "}elected'
         for c in results.l

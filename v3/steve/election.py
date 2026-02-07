@@ -196,7 +196,6 @@ class Election:
             closed=md.closed,  ### should we process this?
             open_at=md.open_at,  ### should we process this?
             close_at=md.close_at,  ### should we process this?
-
             state=self._compute_state(md),
         )
 
@@ -235,9 +234,7 @@ class Election:
         assert self.is_editable()
         assert vtype in vtypes.TYPES
 
-        self.c_edit_issue.perform(
-            title, description, vtype, self.kv2json(kv), iid
-        )
+        self.c_edit_issue.perform(title, description, vtype, self.kv2json(kv), iid)
 
         # If the issue didn't exist, we updated nothing.
         if self.c_edit_issue.rowcount == 0:
@@ -447,8 +444,7 @@ class Election:
         while True:
             eid = crypto.create_id()
             try:
-                db.c_create.perform(eid, title, owner_pid,
-                                    authz, open_at, close_at)
+                db.c_create.perform(eid, title, owner_pid, authz, open_at, close_at)
                 break
             except sqlite3.IntegrityError:
                 _LOGGER.debug('EID conflict(!!) ... trying again.')

@@ -24,12 +24,9 @@ QUERIES = THIS_DIR.parent / 'queries.yaml'
 
 
 class PersonDB:
-
     @classmethod
     def open(cls, db_fname):
-        return cls(asfpy.db.DB(db_fname,
-                               yaml_fname=QUERIES,
-                               yaml_section='person'))
+        return cls(asfpy.db.DB(db_fname, yaml_fname=QUERIES, yaml_section='person'))
 
     def __init__(self, db):
         self.db = db
