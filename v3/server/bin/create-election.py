@@ -87,8 +87,8 @@ def main(yaml_file):
     ### connections. no transactions for now. partial Elections, and
     ### issues are fine for now.
     # Start transaction for safety
-    #pdb = steve.persondb.PersonDB(DB_FNAME)
-    #pdb.db.conn.execute('BEGIN TRANSACTION')
+    # pdb = steve.persondb.PersonDB(DB_FNAME)
+    # pdb.db.conn.execute('BEGIN TRANSACTION')
 
     try:
         # Create election
@@ -125,12 +125,12 @@ def main(yaml_file):
         _LOGGER.info(f'Added {len(all_persons)} voters to election[E:{election.eid}]')
 
         ### we aren't doing transactions right now. omit this.
-        #pdb.db.conn.execute('COMMIT')
+        # pdb.db.conn.execute('COMMIT')
         _LOGGER.info(f'Election[E:{election.eid}] fully created from {yaml_file}')
 
     except Exception as e:
         ### we aren't doing transactions right now. omit this.
-        #pdb.db.conn.execute('ROLLBACK')
+        # pdb.db.conn.execute('ROLLBACK')
         _LOGGER.error(f'Failed to create election from {yaml_file}: {e}')
         raise
 
