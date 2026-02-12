@@ -40,7 +40,7 @@ APP = asfquart.APP
 _LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
-DB_FNAME = THIS_DIR.parent / APP.cfg.db
+DB_FNAME = THIS_DIR / APP.cfg.db
 TEMPLATES = THIS_DIR / 'templates'
 STATICDIR = THIS_DIR / 'static'
 
