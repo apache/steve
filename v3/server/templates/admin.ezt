@@ -23,6 +23,14 @@
                                 eid: [owned.eid]
                                 <br/>
                                 closed: [owned.closed]
+                                [if-any owned.open_at]
+                                    <br/>
+                                    Expected Election opening: [owned.open_at]
+                                [end]
+                                [if-any owned.close_at]
+                                    <br/>
+                                    Expected Election closing: [owned.close_at]
+                                [end]
                             </p>
                             [if-any owned.closed]
                                 Closed
