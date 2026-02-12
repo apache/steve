@@ -40,7 +40,7 @@ APP = asfquart.APP
 _LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
-DB_FNAME = THIS_DIR / APP.cfg.db
+DB_FNAME = THIS_DIR.parent / APP.cfg.db
 TEMPLATES = THIS_DIR / 'templates'
 STATICDIR = THIS_DIR / 'static'
 
@@ -546,6 +546,10 @@ def postprocess_election(e):
     dt_close = e.close_at and datetime.datetime.fromtimestamp(e.close_at)
     e.fmt_close_at = format_datetime(dt_close)
     e.fmt_close_at_full = dt_close and dt_close.strftime(FMT_DATE_FULL)
+
+    # Add ISO date strings for input fields (YYYY-MM-DD)
+    e.fmt_open_at_iso = dt_open.date().isoformat() if dt_open else None
+    e.fmt_close_at_iso = dt_close.date().isoformat() if dt_close else None
 
     ### temporary. need to adjust input query.
     if 'issue_count' not in e:

@@ -133,18 +133,18 @@
 
         <div>
           [is e_state "editable"]
-            Estimate to open: <input type="date">
+            Estimate to open: <input type="date" [if-any fmt_open_at_iso]value="[fmt_open_at_iso]"[end]>
           [else]
-            Opened: [#fmt_open_at_full]TBD
+            Opened: [fmt_open_at_full]
           [end]
         </div>
       
         <div class="mb-3">
           [is e_state "closed"]
-            Closed: [#fmt_close_at_full]TBD
+            Closed: [fmt_close_at_full]
           [else]
             [# can set/extend Close date, until actually closed. ]
-            Estimate to close: <input type="date">
+            Estimate to close: <input type="date" [if-any fmt_close_at_iso]value="[fmt_close_at_iso]"[end]>
           [end]
         </div>
 
