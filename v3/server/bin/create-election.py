@@ -78,10 +78,10 @@ def main(yaml_file):
     for issue in issues:
         validate_issue(issue)
 
-    # Extract voters tag (placeholder: assume "members" means all persons)
-    eligible_voters = data.get('eligible_voters')
-    if eligible_voters != 'members':
-        raise ValueError("Only 'members' is supported for eligible_voters")
+    # Extract record: list of pid values for eligible voters
+    record = data.get('record', [])
+    if not isinstance(record, list):
+        raise ValueError('record must be a list of pid values')
 
     ### revising how we manage the two database instances and their
     ### connections. no transactions for now. partial Elections, and
@@ -118,11 +118,16 @@ def main(yaml_file):
         ### q_person: SELECT * FROM person ORDER BY pid
         pdb.q_person = pdb.db.cursor_for('SELECT * FROM person ORDER BY pid')
 
-        # Add voters: All persons in persondb to all issues
+        # Get all persons
         all_persons = pdb.list_persons()
-        for person in all_persons:
-            election.add_voter(person.pid)
-        _LOGGER.info(f'Added {len(all_persons)} voters to election[E:{election.eid}]')
+        all_pids = {person.pid for person in all_persons}
+
+        # Validate and add voters from record
+        for pid in record:
+            if pid not in all_pids:
+                raise ValueError(f'PID {pid} from record not found in person database')
+            election.add_voter(pid)
+        _LOGGER.info(f'Added {len(record)} voters to election[E:{election.eid}]')
 
         ### we aren't doing transactions right now. omit this.
         # pdb.db.conn.execute('COMMIT')
