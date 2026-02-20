@@ -35,12 +35,16 @@ DB_FNAME = THIS_DIR.parent / 'steve.db'
 VALID_VTYPES = {'yna', 'stv'}
 
 
-def parse_datetime(dt_str):
-    """Parse ISO datetime string to Unix timestamp."""
-    if not dt_str:
+def parse_datetime(dt):
+    """Parse ISO datetime string to Unix timestamp, or return if already int."""
+    if not dt:
         return None
-    dt = datetime.datetime.fromisoformat(dt_str)
-    return int(dt.timestamp())
+    if isinstance(dt, int):
+        return dt
+    if isinstance(dt, str):
+        dt_obj = datetime.datetime.fromisoformat(dt)
+        return int(dt_obj.timestamp())
+    raise ValueError(f"Invalid datetime format: {dt}")
 
 
 def validate_issue(issue):
