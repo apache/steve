@@ -391,12 +391,6 @@ async def do_vote_endpoint(election):
             await flash_danger(f'Invalid issue ID: {iid}')
             return quart.redirect(f'/vote-on/{election.eid}', code=303)
 
-        # Check if already voted on this issue
-        voted_upon = election.has_voted_upon(result.uid)
-        if voted_upon.get(iid, False):
-            await flash_warning(f'Already voted on issue {iid}; vote not updated.')
-            continue
-
         try:
             election.add_vote(result.uid, iid, votestring)
             _LOGGER.info(f'User[U:{result.uid}] voted on issue[I:{iid}] in election[E:{election.eid}]')
