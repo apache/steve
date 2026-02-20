@@ -126,8 +126,14 @@ def main(yaml_file):
         all_persons = pdb.list_persons()
         all_pids = {person.pid for person in all_persons}
 
+        ### hack for testing. map OLD pids to their newer equivalent
+        _REMAP = {
+            'iroh': 'wells',
+            }
+
         # Validate and add voters from record
         for pid in record:
+            pid = _REMAP.get(pid, pid)
             if pid not in all_pids:
                 raise ValueError(f'PID {pid} from record not found in person database')
             election.add_voter(pid)
