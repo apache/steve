@@ -263,7 +263,7 @@ class Election:
                 iid=row.iid,
                 title=row.title,
                 description=row.description,
-                type=row.type,
+                vtype=row.type,
                 kv=self.json2kv(row.kv),
             )
 
