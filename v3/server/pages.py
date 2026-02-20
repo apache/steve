@@ -90,6 +90,33 @@ async def basic_info():
     return basic
 
 
+async def _set_election_date(election, field):
+    """Helper to set open_at or close_at on an election, with validation and logging."""
+    result = await basic_info()
+    ### check authz
+    data = await quart.request.get_json()
+    date_str = data.get('date')
+    if not date_str:
+        quart.abort(400, 'Missing date')
+    
+    # Validate date (basic check)
+    try:
+        dt = datetime.datetime.fromisoformat(date_str).date()
+    except ValueError:
+        quart.abort(400, 'Invalid date format')
+    
+    # Set the date on the election (field is 'open_at' or 'close_at')
+    if field == 'open_at':
+        election.set_open_at(dt)
+    elif field == 'close_at':
+        election.set_close_at(dt)
+    else:
+        quart.abort(400, 'Invalid field')
+    
+    _LOGGER.info(f'User[U:{result.uid}] set {field} for election[E:{election.eid}] to {date_str}')
+    return '', 204
+
+
 # Define a bunch of helpers for recording "flash" messages in the session.
 # Each helper function is:
 #    async def flash_FOO(message)
@@ -317,53 +344,14 @@ async def manage_stv_page(election, issue):
 @asfquart.auth.require({R.committer})
 @load_election
 async def do_set_open_at_endpoint(election):
-    result = await basic_info()
-
-    ### check authz
-
-    data = await quart.request.get_json()
-    date_str = data.get('date')
-    if not date_str:
-        quart.abort(400, 'Missing date')
-
-    # Validate date (basic check)
-    try:
-        dt = datetime.datetime.fromisoformat(date_str).date()
-    except ValueError:
-        quart.abort(400, 'Invalid date format')
-
-    # Record the opening date.
-    election.set_open_at(dt)
-
-    _LOGGER.info(f'User[U:{result.uid}] set open_at for election[E:{election.eid}] to {date_str}')
-    return '', 204
+    return await _set_election_date(election, 'open_at')
 
 
 @APP.post('/do-set-close_at/<eid>')
 @asfquart.auth.require({R.committer})
 @load_election
 async def do_set_close_at_endpoint(election):
-    # Similar to above, but for close_at
-    result = await basic_info()
-
-    ### check authz
-
-    data = await quart.request.get_json()
-    date_str = data.get('date')
-    if not date_str:
-        quart.abort(400, 'Missing date')
-
-    # Validate date (basic check)
-    try:
-        dt = datetime.datetime.fromisoformat(date_str).date()
-    except ValueError:
-        quart.abort(400, 'Invalid date format')
-
-    # Record the closing date.
-    election.set_close_at(dt)
-
-    _LOGGER.info(f'User[U:{result.uid}] set close_at for election[E:{election.eid}] to {date_str}')
-    return '', 204
+    return await _set_election_date(election, 'close_at')
 
 
 @APP.post('/do-create-election')

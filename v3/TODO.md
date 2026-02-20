@@ -2,64 +2,10 @@
 
 Based on a review of `v3/server/pages.py` (and related templates like `voter.ezt`), here are the identified issues, errors, and areas for improvement. These focus on correctness, logic, security, and completeness, while adhering to project conventions (minimal changes, no unsolicited refactors). Prioritized by impact.
 
-## 1. Missing Endpoints for Date Saving (Critical)
-- **Issue**: The `manage.ezt` template includes JavaScript that makes POST requests to `/do-set-open_at/<eid>` and `/do-set-close_at/<eid>` for auto-saving open/close dates. These endpoints are not defined in `pages.py`, causing the auto-save functionality to fail (likely with 404 errors).
+## 1. Missing Endpoints for Date Saving (Critical) - RESOLVED
+- **Issue**: The `manage.ezt` template includes JavaScript that makes POST requests to `/do-set-open_at/<eid>` and `/do-set-close_at/<eid>` for auto-saving open/close dates. These endpoints were not defined in `pages.py`, causing the auto-save functionality to fail (likely with 404 errors).
 - **Impact**: Users won't be able to save dates via the UI, breaking the intended workflow.
-- **Suggested Fix**: Add these two endpoints. They should:
-  - Require authentication (e.g., `@asfquart.auth.require({R.committer})`).
-  - Use the `@load_election` decorator to load the election.
-  - Parse the JSON body for a 'date' field (expecting a string like 'YYYY-MM-DD').
-  - Validate the date (e.g., ensure it's a valid date string and in the future for open_at/close_at).
-  - Update the election's `open_at` or `close_at` via the Election class (assuming it has methods like `set_open_at(date)` or direct attribute setting).
-  - Handle CSRF (the JS sends 'X-CSRFToken' header; verify it matches the session's token).
-  - Return 204 on success (no content, as it's auto-save). On failure, return 400/500 with an error message.
-  - Log the action (e.g., `_LOGGER.info(f'User[U:{result.uid}] updated {field} for election[E:{election.eid}]')`).
-  - No flash messages needed for auto-save, but consider error handling in the JS (already partially done).
-- **Example Implementation Sketch** (add near the other `/do-*` endpoints; keep it minimal):
-  ```python
-  @APP.post('/do-set-open_at/<eid>')
-  @asfquart.auth.require({R.committer})
-  @load_election
-  async def do_set_open_at_endpoint(election):
-      result = await basic_info()
-      # TODO: Check authz if needed
-      data = await quart.request.get_json()
-      date_str = data.get('date')
-      if not date_str:
-          quart.abort(400, 'Missing date')
-      # Validate date (basic check)
-      try:
-          dt = datetime.datetime.fromisoformat(date_str).date()
-      except ValueError:
-          quart.abort(400, 'Invalid date format')
-      # Assume Election has a method to set it
-      election.set_open_at(dt)  # Or direct: election.open_at = dt.timestamp()
-      _LOGGER.info(f'User[U:{result.uid}] set open_at for election[E:{election.eid}] to {date_str}')
-      return '', 204
-
-  @APP.post('/do-set-close_at/<eid>')
-  @asfquart.auth.require({R.committer})
-  @load_election
-  async def do_set_close_at_endpoint(election):
-      # Similar to above, but for close_at
-      result = await basic_info()
-      # TODO: Check authz
-      data = await quart.request.get_json()
-      date_str = data.get('date')
-      if not date_str:
-          quart.abort(400, 'Missing date')
-      try:
-          dt = datetime.datetime.fromisoformat(date_str).date()
-      except ValueError:
-          quart.abort(400, 'Invalid date format')
-      election.set_close_at(dt)
-      _LOGGER.info(f'User[U:{result.uid}] set close_at for election[E:{election.eid}] to {date_str}')
-      return '', 204
-  ```
-- **Notes**: 
-  - Confirm if the Election class supports setting dates (check `steve.election.Election`). If not, you may need to add methods there.
-  - For editable elections, ensure open_at/close_at can be set; for open elections, only close_at.
-  - Test CSRF: The `basic_info()` sets `csrf_token = 'placeholder'`, so implement real CSRF generation/verification (e.g., via a library or session) before deploying.
+- **Resolution**: Added the two endpoints with a refactored helper function `_set_election_date` to handle common logic (auth, JSON parsing, validation, setting dates, logging, and response). Endpoints now require authentication, validate dates, and log actions. CSRF handling remains a TODO (placeholder token in use). Test for proper date-setting and error handling.
 
 ## 2. Upcoming Elections Not Populated in `voter_page()`
 - **Issue**: The `voter.ezt` template checks for `[if-any upcoming]` and loops over `upcoming` elections, but `voter_page()` only sets `result.election` (for open elections). `result.upcoming` is never defined, so the "Upcoming Elections" section will always be empty.
