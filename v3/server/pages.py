@@ -248,11 +248,23 @@ async def vote_on_page(election):
     result.election = election.get_metadata()
     result.e_title = result.election.title
 
+    ### need this from PDB
+    result.election.owner_name = 'unknown'
+
     # Add more stuff into the Election instance.
     _ = postprocess_election(result.election)
 
     result.issues = election.list_issues()
     result.issue_count = len(result.issues)
+
+    ### fix these. scan the issues' vtype
+    result.has_yna_issues = 'yes'  # EZT boolean
+    result.has_stv_issues = 'yes'  # EZT boolean
+
+    result.are_yna_plural = ezt.boolean(len(result.issues) > 1)
+    result.are_stv_plural = ezt.boolean(len(result.issues) > 1)
+
+    result.has_voted = None  # EZT boolean
 
     return result
 
