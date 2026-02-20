@@ -7,15 +7,10 @@ Based on a review of `v3/server/pages.py` (and related templates like `voter.ezt
 - **Impact**: Users won't be able to save dates via the UI, breaking the intended workflow.
 - **Resolution**: Added the two endpoints with a refactored helper function `_set_election_date` to handle common logic (auth, JSON parsing, validation, setting dates, logging, and response). Endpoints now require authentication, validate dates, and log actions. CSRF handling remains a TODO (placeholder token in use). Test for proper date-setting and error handling. Added supporting methods `set_open_at` and `set_close_at` to the Election class in `election.py`, and corresponding cursors in `queries.yaml`.
 
-## 2. Upcoming Elections Not Populated in `voter_page()`
+## 2. Upcoming Elections Not Populated in `voter_page()` - RESOLVED
 - **Issue**: The `voter.ezt` template checks for `[if-any upcoming]` and loops over `upcoming` elections, but `voter_page()` only sets `result.election` (for open elections). `result.upcoming` is never defined, so the "Upcoming Elections" section will always be empty.
 - **Impact**: Upcoming elections (e.g., those in 'editable' state with a future open date) won't display, confusing users.
-- **Suggested Fix**: Modify `voter_page()` to separate elections into `upcoming` and `election` (open ones). Assuming `steve.election.Election.open_to_pid()` returns all relevant elections, filter them:
-  - `upcoming`: Elections where `state == 'editable'` and `open_at` is in the future (within `SOON_CUTOFF`).
-  - `election`: The rest (open or closed, but template seems to handle closed via `(closed)` text).
-  - Add: `result.upcoming = [postprocess_election(e) for e in election if e.state == steve.election.Election.S_EDITABLE and (e.open_at and e.open_at > datetime.datetime.now().timestamp())]`
-  - Then, `result.election = [postprocess_election(e) for e in election if e not in result.upcoming]`
-  - Update `result.len_election` accordingly.
+- **Resolution**: Added a new Election class method `upcoming_to_pid` to return editable elections for a given PID with voting eligibility. Added corresponding query `q_upcoming_to_me` in `queries.yaml`. Updated `voter_page()` to fetch and post-process upcoming elections into `result.upcoming`. Updated `voter.ezt` to include a dedicated "Upcoming Elections" section with similar card layout, a "Preview Ballot" link, and subtle visual distinction (lighter background, "Upcoming" badge). No filtering on `open_at` (all editable elections included).
 
 ## 3. Hardcoded `vtype` in `do_add_issue_endpoint()`
 - **Issue**: `vtype` is hardcoded to `'yna'`, and `kv = None`. The comment mentions handling SEATS for STV, but it's not implemented. If users try to add STV issues, it will fail or behave incorrectly.

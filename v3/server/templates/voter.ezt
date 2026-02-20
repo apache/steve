@@ -57,6 +57,52 @@
             </div>
           [end]
 
+        <h2>Upcoming Elections</h2>
+        [if-any upcoming]
+          [for upcoming]
+            <div class="w-auto mb-4">
+                <a href="/vote-on/[upcoming.eid]" class="text-decoration-none">
+                    <div class="card h-100 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">[upcoming.title] <span class="badge badge-secondary">Upcoming</span></h5>
+                            <p class="card-text">
+                                You have [upcoming.issue_count] issues to vote upon.
+                                <br/>
+                                eid: [upcoming.eid]
+
+                                [if-any upcoming.open_at]
+                                  <div>
+                                    Opening
+                                    <span title="[upcoming.fmt_open_at_full]"
+                                        style="border-bottom: 1px dotted #007bff;"
+                                        >[upcoming.fmt_open_at]</span>
+                                  </div>
+                                [end]
+                                [if-any upcoming.close_at]
+                                  <div>
+                                    Closing
+                                    <span title="[upcoming.fmt_close_at_full]"
+                                        style="border-bottom: 1px dotted #007bff;"
+                                        >[upcoming.fmt_close_at]</span>
+                                  </div>
+                                [end]
+
+                            </p>
+                        </div>
+                        <div class="card-footer text-muted small">
+                            Created by [upcoming.owner_name] ([upcoming.owner_pid])
+                            [if-any upcoming.authz]
+                                (authz: [upcoming.authz])
+                            [end]
+                        </div>
+                    </div>
+                </a>
+            </div>
+          [end]
+        [else]
+          <p>No upcoming elections.</p>
+        [end]
+
         <p>
           You have [len_owned] <a href="/admin">elections to manage</a>.
         </p>
