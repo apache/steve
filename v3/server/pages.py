@@ -313,6 +313,59 @@ async def manage_stv_page(election, issue):
     return result
 
 
+@APP.post('/do-set-open_at/<eid>')
+@asfquart.auth.require({R.committer})
+@load_election
+async def do_set_open_at_endpoint(election):
+    result = await basic_info()
+
+    ### check authz
+
+    data = await quart.request.get_json()
+    date_str = data.get('date')
+    if not date_str:
+        quart.abort(400, 'Missing date')
+
+    # Validate date (basic check)
+    try:
+        dt = datetime.datetime.fromisoformat(date_str).date()
+    except ValueError:
+        quart.abort(400, 'Invalid date format')
+
+    # Record the opening date.
+    election.set_open_at(dt)
+
+    _LOGGER.info(f'User[U:{result.uid}] set open_at for election[E:{election.eid}] to {date_str}')
+    return '', 204
+
+
+@APP.post('/do-set-close_at/<eid>')
+@asfquart.auth.require({R.committer})
+@load_election
+async def do_set_close_at_endpoint(election):
+    # Similar to above, but for close_at
+    result = await basic_info()
+
+    ### check authz
+
+    data = await quart.request.get_json()
+    date_str = data.get('date')
+    if not date_str:
+        quart.abort(400, 'Missing date')
+
+    # Validate date (basic check)
+    try:
+        dt = datetime.datetime.fromisoformat(date_str).date()
+    except ValueError:
+        quart.abort(400, 'Invalid date format')
+
+    # Record the closing date.
+    election.set_close_at(dt)
+
+    _LOGGER.info(f'User[U:{result.uid}] set close_at for election[E:{election.eid}] to {date_str}')
+    return '', 204
+
+
 @APP.post('/do-create-election')
 @asfquart.auth.require({R.pmc_member})  ### need general solution
 async def do_create_endpoint():
