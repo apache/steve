@@ -367,7 +367,7 @@ async def do_set_close_at_endpoint(election):
     return await _set_election_date(election, 'close_at')
 
 
-@APP.post('/do_vote/<eid>')
+@APP.post('/do-vote/<eid>')
 @asfquart.auth.require({R.committer})
 @load_election
 async def do_vote_endpoint(election):

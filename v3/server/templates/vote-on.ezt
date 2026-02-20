@@ -116,7 +116,7 @@
         return;
       }
 
-      fetch('/do_vote/[eid]', {
+      fetch('/do-vote/[eid]', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
