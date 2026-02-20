@@ -375,18 +375,25 @@ async def do_vote_endpoint(election):
 
     ### check authz
 
-    # Parse the JSON payload
-    data = await quart.request.get_json()
-    if not data:
+    # Parse the form data
+    form = edict(await quart.request.form)
+    if not form:
         await flash_danger('No vote data provided.')
         return quart.redirect(f'/vote-on/{election.eid}', code=303)
+
+    # Extract votes from form (keys like 'vote-<iid>')
+    votes = {}
+    for key, value in form.items():
+        if key.startswith('vote-'):
+            iid = key.split('-', 1)[1]
+            votes[iid] = value
 
     # Get the list of issues for this election
     issues = election.list_issues()
     issue_dict = {i.iid: i for i in issues}
 
     # Process each vote
-    for iid, votestring in data.items():
+    for iid, votestring in votes.items():
         if iid not in issue_dict:
             await flash_danger(f'Invalid issue ID: {iid}')
             return quart.redirect(f'/vote-on/{election.eid}', code=303)

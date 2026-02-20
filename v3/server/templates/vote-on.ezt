@@ -21,6 +21,10 @@
       </button>
     </div>
 
+    <form id="voteForm" method="POST" action="/do-vote/[eid]">
+    <!-- CSRF token for form submission -->
+    <input type="hidden" name="csrf_token" value="[csrf_token]">
+
     <div id="issues-list" class="list-group">
     [for issues]
       <div class="list-group-item issue-item">
@@ -51,8 +55,9 @@
 
     <!-- Submit Button -->
     <div class="mt-4">
-      <button type="button" class="btn btn-primary" onclick="submitVotes()">Submit Votes</button>
+      <button type="button" class="btn btn-primary" id="submitVoteBtn" onclick="submitVotes()">Submit Votes</button>
     </div>
+    </form>
   </div>
 
     </div>
@@ -105,7 +110,7 @@
     // Submit votes
     function submitVotes() {
       const votes = {};
-      [# careful! be wary of open-brackets within ezt ]
+      // careful! be wary of open-brackets within ezt
       document.querySelectorAll('.vote-radio input[[]type="radio"]:checked').forEach(radio => {
         const issueId = radio.name.split('-')[[]1];
         votes[[]issueId] = radio.value;
@@ -116,24 +121,6 @@
         return;
       }
 
-      fetch('/do-vote/[eid]', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(votes),
-      })
-        .then(response => {
-          if (!response.ok) throw new Error('Network response was not ok');
-          return response.json();
-        })
-        .then(data => {
-          alert('Votes submitted successfully!');
-          console.log('Server response:', data);
-        })
-        .catch(error => {
-          alert('Error submitting votes: ' + error.message);
-          console.error('Error:', error);
-        });
+      submitFormWithLoading('voteForm', 'submitVoteBtn', 'Submitting Votes...');
     }
   </script>

@@ -39,4 +39,14 @@ Based on a review of `v3/server/pages.py` (and related templates like `voter.ezt
 - **Imports/Constants**: All seem correct and follow conventions.
 - **No Obvious Syntax/Logic Errors**: The code parses and runs logically, but the above are functional gaps.
 
-If you'd like to implement any of these fixes (e.g., add the date endpoints or fix upcoming elections), provide confirmation and details. Let me know if you have more context or want me to check specific sections!
+If you'd like to implement any of these fixes (e.g., add the date endpoints or fix upcoming elections), provide confirmation and details. Let me know if you have more context or want to check specific sections!
+
+## 8. CSRF Checking
+- **Issue**: CSRF tokens are placeholders and not validated in POST endpoints.
+- **Impact**: Vulnerable to CSRF attacks.
+- **Suggested Fix**: Implement a decorator to check CSRF tokens on POST endpoints (e.g., compare form/session token). Generate real tokens per session.
+
+## 9. Error Handling in `submitFormWithLoading`
+- **Issue**: If the server returns an error during form submission via `submitFormWithLoading`, the page doesn't reload, and the button stays disabled, potentially confusing users.
+- **Impact**: Poor UX on submission failures.
+- **Suggested Fix**: Investigate and add client-side error handling (e.g., re-enable button on failure, show error message).
