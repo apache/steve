@@ -7,27 +7,121 @@
             <h2>[e_title]</h2>
         </div>
 
-    <div class="state-diagram">
-        <div id="state-editing"
-           class="state [is e_state "editable"]current[end]">Editing</div>
-        <div id="arrow1" class="arrow">→</div>
-        <div id="state-open"
-           class="state [is e_state "open"]current[end]">Open for Voting</div>
-        <div id="arrow2" class="arrow">→</div>
-        <div id="state-closed"
-           class="state [is e_state "closed"]current[end]">Closed</div>
+    <!-- CSRF token for JS fetch calls -->
+    <input type="hidden" id="csrf-token" value="[csrf_token]">
 
-        [is e_state "editable"]
-            <button id="open-btn" class="btn btn-success action-button open-button">
-                <i class="bi bi-unlock me-1"></i>Open
-            </button>
-        [end]
-        [is e_state "open"]
-            <button id="close-btn" class="btn btn-danger action-button close-button">
-                <i class="bi bi-lock me-1"></i>Close
-            </button>
-        [end]
-    </div>
+    <!-- Election State Panel -->
+    <div class="row g-3 mb-4 mt-2">
+
+        <!-- Info Box -->
+        <div class="col-md-6">
+            <div class="card h-100 position-relative" id="info-box">
+
+                <!-- Saved toast, anchored to info box -->
+                <div class="toast-container position-absolute top-0 end-0 p-2">
+                    <div id="saved-toast" class="toast align-items-center text-bg-success border-0"
+                         role="alert" aria-live="assertive" aria-atomic="true"
+                         data-bs-autohide="true" data-bs-delay="2000">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi bi-check-lg me-1"></i>Saved
+                            </div>
+                        </div>
+                    </div>
+                </div>[# saved-toast ]
+
+                <div class="card-header">
+                    <!-- State stepper -->
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="election-step-dot [is e_state "editable"]step-current[end][is e_state "open"]step-done[end][is e_state "closed"]step-done[end]"></span>
+                            <span class="[is e_state "editable"]fw-bold[end][is e_state "open"]text-muted[end][is e_state "closed"]text-muted[end]">Editing</span>
+                        </div>
+                        <span class="text-muted">→</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="election-step-dot [is e_state "open"]step-current[end][is e_state "closed"]step-done[end]"></span>
+                            <span class="[is e_state "open"]fw-bold[end][is e_state "editable"]text-muted[end][is e_state "closed"]text-muted[end]">Open for Voting</span>
+                        </div>
+                        <span class="text-muted">→</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="election-step-dot [is e_state "closed"]step-current[end]"></span>
+                            <span class="[is e_state "closed"]fw-bold[end][is e_state "editable"]text-muted[end][is e_state "open"]text-muted[end]">Closed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Open date: picker when editable, static otherwise -->
+                    <div class="mb-3">
+                        [is e_state "editable"]
+                            <label for="open-at-input" class="form-label text-muted small mb-1">Estimated Open Date</label>
+                            <input type="date" class="form-control" id="open-at-input"
+                                   [if-any election.fmt_open_at_iso]value="[election.fmt_open_at_iso]"[end]>
+                        [else]
+                            <div class="text-muted small mb-1">Opened</div>
+                            <div class="fw-semibold">[election.fmt_open_at_full]</div>
+                        [end]
+                    </div>
+
+                    <!-- Close date: static when closed, picker otherwise -->
+                    <div class="mb-1">
+                        [is e_state "closed"]
+                            <div class="text-muted small mb-1">Closed</div>
+                            <div class="fw-semibold">[election.fmt_close_at_full]</div>
+                        [else]
+                            [# can set/extend Close date until actually closed ]
+                            <label for="close-at-input" class="form-label text-muted small mb-1">Estimated Close Date</label>
+                            <input type="date" class="form-control" id="close-at-input"
+                                   [if-any election.fmt_close_at_iso]value="[election.fmt_close_at_iso]"[end]>
+                        [end]
+                    </div>
+
+                </div>[# card-body ]
+            </div>[# card info-box ]
+        </div>[# col info-box ]
+
+        <!-- Action Box -->
+        <div class="col-md-6">
+            <div class="card h-100 [is e_state "editable"]border-success[end][is e_state "open"]border-danger[end]">
+                <div class="card-header [is e_state "editable"]text-bg-success[end][is e_state "open"]text-bg-danger[end][is e_state "closed"]text-bg-secondary[end]">
+                    [is e_state "editable"]Next Action[end]
+                    [is e_state "open"]Next Action[end]
+                    [is e_state "closed"]Election Complete[end]
+                </div>
+                <div class="card-body">
+                    [is e_state "editable"]
+                        <p class="card-text">
+                            <strong>Open this election for voting.</strong>
+                            This action is permanent. The current date and time will be
+                            recorded as the official open date, and voters will be able
+                            to submit ballots immediately.
+                        </p>
+                        <button id="open-btn" class="btn btn-success">
+                            <i class="bi bi-unlock me-1"></i>Open for Voting
+                        </button>
+                    [end]
+                    [is e_state "open"]
+                        <p class="card-text">
+                            <strong>Close this election.</strong>
+                            This action is permanent. No further ballots will be accepted,
+                            and the current date and time will be recorded as the official
+                            close date.
+                        </p>
+                        <button id="close-btn" class="btn btn-danger">
+                            <i class="bi bi-lock me-1"></i>Close Election
+                        </button>
+                    [end]
+                    [is e_state "closed"]
+                        <p class="card-text text-muted">
+                            This election is closed. No further changes are possible.
+                        </p>
+                    [end]
+                </div>[# card-body ]
+            </div>[# card action-box ]
+        </div>[# col action-box ]
+
+    </div>[# row state panel ]
 
     <!-- Open Confirmation Modal -->
     <div class="modal fade" id="openConfirmModal" tabindex="-1" aria-labelledby="openConfirmModalLabel" aria-hidden="true">
@@ -38,11 +132,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Opening this election will allow voting and is irreversible. Are you sure?
+                    <p>Opening this election will allow voting and cannot be undone.</p>
+                    <p class="mb-0">The current date and time will be recorded as the official open date.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" id="confirm-open">Confirm</button>
+                    <button type="button" class="btn btn-success" id="confirm-open">
+                        <i class="bi bi-unlock me-1"></i>Open for Voting
+                    </button>
                 </div>
             </div>
         </div>
@@ -57,15 +154,38 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Closing this election will end voting permanently. Are you sure?
+                    <p>Closing this election will permanently end voting. This cannot be undone.</p>
+                    <p class="mb-0">The current date and time will be recorded as the official close date.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirm-close">Confirm</button>
+                    <button type="button" class="btn btn-danger" id="confirm-close">
+                        <i class="bi bi-lock me-1"></i>Close Election
+                    </button>
                 </div>
             </div>
         </div>
     </div>[# id=closeConfirmModal ]
+
+    <!-- Date Save Error Modal -->
+    <div class="modal fade" id="dateSaveErrorModal" tabindex="-1" aria-labelledby="dateSaveErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-bg-danger">
+                    <h5 class="modal-title" id="dateSaveErrorModalLabel">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Save Failed
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    The date could not be saved. Please check your connection and try again.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div>[# id=dateSaveErrorModal ]
 
     <!-- Edit/Add Issue Modal -->
     <div class="modal fade" id="issueModal" tabindex="-1" aria-labelledby="issueModalLabel" aria-hidden="true">
@@ -131,23 +251,6 @@
         </div>[# modal-dialog ]
     </div>[# id=deleteIssueModal ]
 
-        <div>
-          [is e_state "editable"]
-            Estimate to open: <input type="date" [if-any election.fmt_open_at_iso]value="[election.fmt_open_at_iso]"[end]>
-          [else]
-            Opened: [election.fmt_open_at_full]
-          [end]
-        </div>
-      
-        <div class="mb-3">
-          [is e_state "closed"]
-            Closed: [election.fmt_close_at_full]
-          [else]
-            [# can set/extend Close date, until actually closed. ]
-            Estimate to close: <input type="date" [if-any election.fmt_close_at_iso]value="[election.fmt_close_at_iso]"[end]>
-          [end]
-        </div>
-
         <div class="mb-4">
 
         [is e_state "editable"]
@@ -156,7 +259,7 @@
             </button>
         [end]
 
-            <button type="button" class="btn btn-outline-secondary ms-2" onclick="toggleAllDescriptions()">
+            <button type="button" id="toggle-all-btn" class="btn btn-outline-secondary ms-2" onclick="toggleAllDescriptions()">
                 <i class="bi bi-arrows-expand me-1"></i>
                 <span id="toggle-all-text">Expand All</span>
             </button>
@@ -202,6 +305,10 @@
 <script>
     const openModal = new bootstrap.Modal(document.getElementById('openConfirmModal'));
     const closeModal = new bootstrap.Modal(document.getElementById('closeConfirmModal'));
+    const dateSaveErrorModal = new bootstrap.Modal(document.getElementById('dateSaveErrorModal'));
+    const savedToast = new bootstrap.Toast(document.getElementById('saved-toast'));
+
+    const csrfToken = document.getElementById('csrf-token').value;
 
     [is e_state "editable"]
         const openBtn = document.getElementById('open-btn');
@@ -227,6 +334,44 @@
         window.location.href = '/do-close/[eid]';
     });
 
+    // Auto-save a date field on change
+    async function saveDate(field, value) {
+        try {
+            const resp = await fetch(`/do-set-${field}/[eid]`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ date: value }),
+            });
+            if (resp.status === 204) {
+                savedToast.show();
+            } else {
+                dateSaveErrorModal.show();
+            }
+        } catch (e) {
+            dateSaveErrorModal.show();
+        }
+    }
+
+    [is e_state "editable"]
+        document.getElementById('open-at-input').addEventListener('change', function () {
+            saveDate('open_at', this.value);
+        });
+    [end]
+
+    [is e_state "editable"]
+        document.getElementById('close-at-input').addEventListener('change', function () {
+            saveDate('close_at', this.value);
+        });
+    [end]
+    [is e_state "open"]
+        document.getElementById('close-at-input').addEventListener('change', function () {
+            saveDate('close_at', this.value);
+        });
+    [end]
+
     // Toggle individual description
     function toggleDescription(issueId) {
       const desc = document.getElementById(`description-${issueId}`);
@@ -249,7 +394,7 @@
         twiddle.classList.toggle('bi-caret-right-fill', !allExpanded);
         twiddle.classList.toggle('bi-caret-down-fill', allExpanded);
       });
-      const toggleBtn = document.querySelector('.btn-outline-secondary');
+      const toggleBtn = document.getElementById('toggle-all-btn');
       const toggleIcon = toggleBtn.querySelector('i');
       const toggleText = document.getElementById('toggle-all-text');
       

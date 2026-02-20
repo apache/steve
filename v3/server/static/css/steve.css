@@ -57,3 +57,25 @@
 .description { display: none; }
 .description.show { display: block; }
 .twiddle { cursor: pointer; }
+
+/* State stepper dots in the info box card header within manage/EID */
+.election-step-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #adb5bd;
+    background: transparent;
+    flex-shrink: 0;
+}
+
+.election-step-dot.step-current {
+    border-color: #212529;
+    border-width: 2.5px;
+    background: transparent;
+}
+
+.election-step-dot.step-done {
+    border-color: #495057;
+    background: #495057;
+}
