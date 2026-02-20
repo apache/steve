@@ -2,7 +2,7 @@
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
 # regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
+# to You under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
@@ -365,6 +365,48 @@ async def do_set_open_at_endpoint(election):
 @load_election
 async def do_set_close_at_endpoint(election):
     return await _set_election_date(election, 'close_at')
+
+
+@APP.post('/do_vote/<eid>')
+@asfquart.auth.require({R.committer})
+@load_election
+async def do_vote_endpoint(election):
+    result = await basic_info()
+
+    ### check authz
+
+    # Parse the JSON payload
+    data = await quart.request.get_json()
+    if not data:
+        await flash_danger('No vote data provided.')
+        return quart.redirect(f'/vote-on/{election.eid}', code=303)
+
+    # Get the list of issues for this election
+    issues = election.list_issues()
+    issue_dict = {i.iid: i for i in issues}
+
+    # Process each vote
+    for iid, votestring in data.items():
+        if iid not in issue_dict:
+            await flash_danger(f'Invalid issue ID: {iid}')
+            return quart.redirect(f'/vote-on/{election.eid}', code=303)
+
+        # Check if already voted on this issue
+        voted_upon = election.has_voted_upon(result.uid)
+        if voted_upon.get(iid, False):
+            await flash_warning(f'Already voted on issue {iid}; vote not updated.')
+            continue
+
+        try:
+            election.add_vote(result.uid, iid, votestring)
+            _LOGGER.info(f'User[U:{result.uid}] voted on issue[I:{iid}] in election[E:{election.eid}]')
+        except Exception as e:
+            _LOGGER.error(f'Error adding vote for user[U:{result.uid}] on issue[I:{iid}]: {e}')
+            await flash_danger(f'Error submitting vote for issue {iid}.')
+            return quart.redirect(f'/vote-on/{election.eid}', code=303)
+
+    await flash_success('Votes submitted successfully!')
+    return quart.redirect(f'/voter', code=303)
 
 
 @APP.post('/do-create-election')
