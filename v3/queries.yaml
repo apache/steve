@@ -59,6 +59,8 @@ election:
             )
     c_delete_issues: DELETE FROM issue WHERE eid = ?
     c_delete_election: DELETE FROM election WHERE eid = ?
+    c_set_open_at: UPDATE election SET open_at = ? WHERE eid = ?
+    c_set_close_at: UPDATE election SET close_at = ? WHERE eid = ?
 
     # Fast check to see if the Election exists. No data returned.
     q_check_election: SELECT 1 FROM election WHERE eid = ?

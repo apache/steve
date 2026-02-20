@@ -5,7 +5,7 @@ Based on a review of `v3/server/pages.py` (and related templates like `voter.ezt
 ## 1. Missing Endpoints for Date Saving (Critical) - RESOLVED
 - **Issue**: The `manage.ezt` template includes JavaScript that makes POST requests to `/do-set-open_at/<eid>` and `/do-set-close_at/<eid>` for auto-saving open/close dates. These endpoints were not defined in `pages.py`, causing the auto-save functionality to fail (likely with 404 errors).
 - **Impact**: Users won't be able to save dates via the UI, breaking the intended workflow.
-- **Resolution**: Added the two endpoints with a refactored helper function `_set_election_date` to handle common logic (auth, JSON parsing, validation, setting dates, logging, and response). Endpoints now require authentication, validate dates, and log actions. CSRF handling remains a TODO (placeholder token in use). Test for proper date-setting and error handling.
+- **Resolution**: Added the two endpoints with a refactored helper function `_set_election_date` to handle common logic (auth, JSON parsing, validation, setting dates, logging, and response). Endpoints now require authentication, validate dates, and log actions. CSRF handling remains a TODO (placeholder token in use). Test for proper date-setting and error handling. Added supporting methods `set_open_at` and `set_close_at` to the Election class in `election.py`, and corresponding cursors in `queries.yaml`.
 
 ## 2. Upcoming Elections Not Populated in `voter_page()`
 - **Issue**: The `voter.ezt` template checks for `[if-any upcoming]` and loops over `upcoming` elections, but `voter_page()` only sets `result.election` (for open elections). `result.upcoming` is never defined, so the "Upcoming Elections" section will always be empty.

@@ -484,6 +484,14 @@ class Election:
         )
         return [row for row in db.q_owned.fetchall()]
 
+    def set_open_at(self, timestamp):
+        "Set the open_at timestamp for this Election."
+        self.c_set_open_at.perform(timestamp, self.eid)
+
+    def set_close_at(self, timestamp):
+        "Set the close_at timestamp for this Election."
+        self.c_set_close_at.perform(timestamp, self.eid)
+
 
 def not_found(cursor, key):
     row = cursor.first_row(key)
