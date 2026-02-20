@@ -153,11 +153,23 @@ async def voter_page():
         election = steve.election.Election.open_to_pid(DB_FNAME, result.uid)
         owned = steve.election.Election.owned_elections(DB_FNAME, result.uid)
 
-    result.election = [postprocess_election(e) for e in election]
-    result.upcoming = [postprocess_election(e) for e in steve.election.Election.upcoming_to_pid(DB_FNAME, result.uid)]
+    result.open_elections = [postprocess_election(e) for e in election]
+    result.upcoming_elections = [postprocess_election(e) for e in steve.election.Election.upcoming_to_pid(DB_FNAME, result.uid)]
+    result.past_elections = [ ]  ### TBD
 
-    result.len_election = len(election)
+    result.len_open = len(result.open_elections)
+    result.len_upcoming = len(result.upcoming_elections)
+    result.len_past = len(result.past_elections)
+
+    ### no longer needed? move to navbar?
     result.len_owned = len(owned)
+
+    if result.len_open:
+        result.active_tab = 'open'
+    elif result.len_upcoming:
+        result.active_tab = 'upcoming'
+    else:
+        result.active_tab = 'past'
 
     return result
 
@@ -601,6 +613,9 @@ def postprocess_election(e):
     ### temporary. need to adjust input query.
     if 'issue_count' not in e:
         e.issue_count = 5  ### arbitrary. just provide a value
+
+    ### need to figure this out later.
+    e.has_voted = None  # EZT False
 
     return e
 

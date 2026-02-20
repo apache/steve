@@ -1,110 +1,222 @@
 [include "header.ezt"]
     <div class="container">
-        <h1>[title]</h1>
         [include "flashes.ezt"]
 
-          [for election]
-            <div class="w-auto mb-4">
-                <a href="/vote-on/[election.eid]" class="text-decoration-none">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">[election.title][#
-                              ][if-any election.closed] (closed)[else][#
-                              ][if-any election.is_opened] (open)[end][end]</h5>
-                            <p class="card-text">
-                                You have [election.issue_count] issues to vote upon.
-                                <br/>
-                                eid: [election.eid]
+        <ul class="nav nav-tabs mb-3" id="electionTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link [if-any active_tab][else]active[end]" id="open-tab"
+                        data-bs-toggle="tab" data-bs-target="#open"
+                        type="button" role="tab"
+                        aria-controls="open"
+                        aria-selected="[if-any active_tab]false[else]true[end]">
+                    Voting
+                    [if-any len_open]
+                        <span class="ms-1 text-muted small">([len_open])</span>
+                    [end]
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="upcoming-tab"
+                        data-bs-toggle="tab" data-bs-target="#upcoming"
+                        type="button" role="tab"
+                        aria-controls="upcoming"
+                        aria-selected="false">
+                    Upcoming
+                    [if-any len_upcoming]
+                        <span class="ms-1 text-muted small">([len_upcoming])</span>
+                    [end]
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="past-tab"
+                        data-bs-toggle="tab" data-bs-target="#past"
+                        type="button" role="tab"
+                        aria-controls="past"
+                        aria-selected="false">
+                    Past
+                    [if-any len_past]
+                        <span class="ms-1 text-muted small">([len_past])</span>
+                    [end]
+                </button>
+            </li>
+        </ul>
 
-                            [if-any election.closed]
-                                Closed
-                                <span title="[election.fmt_close_at_full]"
-                                        style="border-bottom: 1px dotted #007bff;"
-                                        >[election.fmt_close_at]</span>
-                            [else]
-                                [if-any election.open_at]
-                                  <div>
-                                    [if-any election.is_opened]
-                                        Opened
-                                    [else]
-                                        Opening
-                                    [end]
-                                    <span title="[election.fmt_open_at_full]"
-                                        style="border-bottom: 1px dotted #007bff;"
-                                        >[election.fmt_open_at]</span>
-                                  </div>
-                                [end]
-                                [if-any election.close_at]
-                                  <div>
-                                    Closing
-                                    <span title="[election.fmt_close_at_full]"
-                                        style="border-bottom: 1px dotted #007bff;"
-                                        >[election.fmt_close_at]</span>
-                                  </div>
-                                [end]
-                            [end]
+        <div class="tab-content" id="electionTabContent">
 
-                            </p>
-                        </div>
-                        <div class="card-footer text-muted small">
-                            Created by [election.owner_name] ([election.owner_pid])
-                            [if-any election.authz]
-                                (authz: [election.authz])
-                            [end]
-                        </div>
+            <!-- Open Elections -->
+            <div class="tab-pane fade show active" id="open" role="tabpanel" aria-labelledby="open-tab">
+                [if-any open_elections]
+                    <div class="row g-3">
+                        [for open_elections]
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title mb-3">[open_elections.title]</h5>
+                                        <p class="card-text text-muted small mb-3">
+                                            [open_elections.issue_count] issues
+                                            &nbsp;&middot;&nbsp;
+                                            Opened
+                                            <span title="[open_elections.fmt_open_at_full]"
+                                                  style="border-bottom: 1px dotted currentColor; cursor: help;"
+                                                  >[open_elections.fmt_open_at]</span>
+                                            [if-any open_elections.close_at]
+                                                &nbsp;&middot;&nbsp;
+                                                Closes
+                                                <span title="[open_elections.fmt_close_at_full]"
+                                                      style="border-bottom: 1px dotted currentColor; cursor: help;"
+                                                      >[open_elections.fmt_close_at]</span>
+                                            [end]
+                                        </p>
+                                        <div class="mt-auto">
+                                            [if-any open_elections.has_voted]
+                                                <a href="/vote-on/[open_elections.eid]"
+                                                   class="btn btn-outline-primary">Recast Vote</a>
+                                            [else]
+                                                <a href="/vote-on/[open_elections.eid]"
+                                                   class="btn btn-primary">Vote Now</a>
+                                            [end]
+                                        </div>
+                                    </div>
+                                    <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
+                                        <span>
+                                            [open_elections.owner_name]
+                                            <span class="text-muted" style="font-size: 0.8em;">([open_elections.owner_pid])</span>
+                                            [if-any open_elections.authz]
+                                                &nbsp;&middot;&nbsp; [open_elections.authz]
+                                            [end]
+                                        </span>
+                                        <span class="text-muted" style="font-size: 0.8em;">eid: [open_elections.eid]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        [end]
                     </div>
-                </a>
+                [else]
+                    <p class="text-muted">No elections are currently open for voting.</p>
+                [end]
             </div>
-          [end]
 
-        <h2>Upcoming Elections</h2>
-        [if-any upcoming]
-          [for upcoming]
-            <div class="w-auto mb-4">
-                <a href="/vote-on/[upcoming.eid]" class="text-decoration-none">
-                    <div class="card h-100 bg-light">
-                        <div class="card-body">
-                            <h5 class="card-title">[upcoming.title] <span class="badge badge-secondary">Upcoming</span></h5>
-                            <p class="card-text">
-                                You have [upcoming.issue_count] issues to vote upon.
-                                <br/>
-                                eid: [upcoming.eid]
-
-                                [if-any upcoming.open_at]
-                                  <div>
-                                    Opening
-                                    <span title="[upcoming.fmt_open_at_full]"
-                                        style="border-bottom: 1px dotted #007bff;"
-                                        >[upcoming.fmt_open_at]</span>
-                                  </div>
-                                [end]
-                                [if-any upcoming.close_at]
-                                  <div>
-                                    Closing
-                                    <span title="[upcoming.fmt_close_at_full]"
-                                        style="border-bottom: 1px dotted #007bff;"
-                                        >[upcoming.fmt_close_at]</span>
-                                  </div>
-                                [end]
-
-                            </p>
-                        </div>
-                        <div class="card-footer text-muted small">
-                            Created by [upcoming.owner_name] ([upcoming.owner_pid])
-                            [if-any upcoming.authz]
-                                (authz: [upcoming.authz])
-                            [end]
-                        </div>
+            <!-- Upcoming Elections -->
+            <div class="tab-pane fade" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+                [if-any upcoming_elections]
+                    <div class="row g-3">
+                        [for upcoming_elections]
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title mb-3">[upcoming_elections.title]</h5>
+                                        <p class="card-text mb-0">
+                                            [if-any upcoming_elections.open_at]
+                                                <span class="fw-semibold">
+                                                    Opens
+                                                    <span title="[upcoming_elections.fmt_open_at_full]"
+                                                          style="border-bottom: 1px dotted currentColor; cursor: help;"
+                                                          >[upcoming_elections.fmt_open_at]</span>
+                                                </span>
+                                            [else]
+                                                <span class="fw-semibold text-muted">Opening date not yet set</span>
+                                            [end]
+                                        </p>
+                                        [if-any upcoming_elections.close_at]
+                                            <p class="card-text text-muted small mt-1 mb-0">
+                                                Closes
+                                                <span title="[upcoming_elections.fmt_close_at_full]"
+                                                      style="border-bottom: 1px dotted currentColor; cursor: help;"
+                                                      >[upcoming_elections.fmt_close_at]</span>
+                                            </p>
+                                        [end]
+                                        <p class="card-text text-muted small mt-2 mb-0">
+                                            [upcoming_elections.issue_count] issues
+                                        </p>
+                                    </div>
+                                    <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
+                                        <span>
+                                            [upcoming_elections.owner_name]
+                                            <span class="text-muted" style="font-size: 0.8em;">([upcoming_elections.owner_pid])</span>
+                                            [if-any upcoming_elections.authz]
+                                                &nbsp;&middot;&nbsp; [upcoming_elections.authz]
+                                            [end]
+                                        </span>
+                                        <span class="text-muted" style="font-size: 0.8em;">eid: [upcoming_elections.eid]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        [end]
                     </div>
-                </a>
+                [else]
+                    <p class="text-muted">No upcoming elections.</p>
+                [end]
             </div>
-          [end]
-        [else]
-          <p>No upcoming elections.</p>
-        [end]
 
-        <p>
-          You have [len_owned] <a href="/admin">elections to manage</a>.
-        </p>
+            <!-- Past Elections -->
+            <div class="tab-pane fade" id="past" role="tabpanel" aria-labelledby="past-tab">
+                [if-any past_elections]
+                    <div class="row g-3">
+                        [for past_elections]
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">[past_elections.title]</h5>
+                                        <p class="card-text text-muted small mb-0">
+                                            Opened
+                                            <span title="[past_elections.fmt_open_at_full]"
+                                                  style="border-bottom: 1px dotted currentColor; cursor: help;"
+                                                  >[past_elections.fmt_open_at]</span>
+                                            &nbsp;&middot;&nbsp;
+                                            Closed
+                                            <span title="[past_elections.fmt_close_at_full]"
+                                                  style="border-bottom: 1px dotted currentColor; cursor: help;"
+                                                  >[past_elections.fmt_close_at]</span>
+                                        </p>
+                                    </div>
+                                    <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
+                                        <span>
+                                            [past_elections.owner_name]
+                                            <span class="text-muted" style="font-size: 0.8em;">([past_elections.owner_pid])</span>
+                                            [if-any past_elections.authz]
+                                                &nbsp;&middot;&nbsp; [past_elections.authz]
+                                            [end]
+                                        </span>
+                                        <span class="text-muted" style="font-size: 0.8em;">eid: [past_elections.eid]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        [end]
+                    </div>
+                [else]
+                    <p class="text-muted">No past elections.</p>
+                [end]
+            </div>
+
+        </div>
     </div>
+
+<script>
+// Activate the correct tab based on server-supplied active_tab value.
+// Falls back to "open" if the value is unrecognized.
+(function () {
+    var active = "[active_tab]";
+    var map = { open: "open-tab", upcoming: "upcoming-tab", past: "past-tab" };
+    var btnId = map[[]active] || "open-tab";
+    var btn = document.getElementById(btnId);
+    if (btn) {
+        // Deactivate all tabs first
+        document.querySelectorAll("#electionTabs .nav-link").forEach(function (el) {
+            el.classList.remove("active");
+            el.setAttribute("aria-selected", "false");
+        });
+        document.querySelectorAll(".tab-pane").forEach(function (el) {
+            el.classList.remove("show", "active");
+        });
+        // Activate the chosen tab and pane
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
+        var pane = document.getElementById(active in map ? active : "open");
+        if (pane) {
+            pane.classList.add("show", "active");
+        }
+    }
+}());
+</script>
+
 [include "footer.ezt"]
