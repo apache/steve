@@ -571,12 +571,17 @@ def postprocess_election(e):
     # Anything but 1 means the Election is not closed.
     e.closed = ezt.boolean(e.closed == 1)
 
-    # Anything but 1 means the Election has not been opened.
+    # We sometimes get IS_OPENED or STATE. Other times, neither.
+    # If no open/closed/state information, then we must be EDITABLE.
     if 'is_opened' in e:
+        # Anything but 1 means the Election has not been opened.
         e.is_opened = ezt.boolean(e.is_opened == 1)
+    elif 'state' not in e:
+        e.is_opened = None  # ezt False
     else:
-        # Sometimes, we get IS_OPENED. Other times, STATE.
         e.is_opened = ezt.boolean(e.state != steve.election.Election.S_EDITABLE)
+    ### note that IS_OPENED is a misnomer since it is True for closed
+    ### elections. We should rename it to LOCKED.
 
     # note: an election has a third Edit state: not open, not closed;
     # this is called "editable" (S_EDITABLE)
