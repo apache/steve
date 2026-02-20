@@ -230,7 +230,7 @@ class Election:
         return iid
 
     def edit_issue(self, iid, title, description, vtype, kv):
-        "Update an existing issue designated by IID."
+        "Edit an existing issue designated by IID."
         assert self.is_editable()
         assert vtype in vtypes.TYPES
 
@@ -539,4 +539,4 @@ class IssueNotFound(Exception):
         super().__init__(str(self))
 
     def __str__(self):
-        return f'Issue[I:{iid}] not found'
+        return f'Issue[I:{self.iid}] not found'
