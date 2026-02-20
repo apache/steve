@@ -144,9 +144,9 @@ election:
     # ensuring elections are still returned even if the owner_pid does not
     # exist in the person table (in which case owner_name will be NULL).
     # 
-    # Returns: eid, title, authz, open_at, close_at, closed, issue_count, owner_name
+    # Returns: eid, title, owner_pid, authz, open_at, close_at, closed, issue_count, owner_name
     q_upcoming_to_me: |
-        SELECT e.eid, e.title, e.authz, e.open_at, e.close_at,
+        SELECT e.eid, e.title, e.owner_pid, e.authz, e.open_at, e.close_at,
                0 AS closed,
                COUNT(i.iid) AS issue_count,
                p.name AS owner_name
