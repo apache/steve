@@ -484,6 +484,18 @@ class Election:
         )
         return [row for row in db.q_owned.fetchall()]
 
+    @classmethod
+    def upcoming_to_pid(cls, db_fname, pid):
+        "List of editable elections for PID to vote upon."
+
+        db = cls.open_database(db_fname)
+
+        # Run the generator to get all rows. Returned as EasyDicts.
+        db.q_upcoming_to_me.perform(
+            pid,
+        )
+        return [row for row in db.q_upcoming_to_me.fetchall()]
+
     def set_open_at(self, timestamp):
         "Set the open_at timestamp for this Election."
         self.c_set_open_at.perform(timestamp, self.eid)
@@ -527,4 +539,4 @@ class IssueNotFound(Exception):
         super().__init__(str(self))
 
     def __str__(self):
-        return f'Issue[I:{self.iid}] not found'
+        return f'Issue[I:{iid}] not found'

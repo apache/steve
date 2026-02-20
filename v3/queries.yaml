@@ -135,6 +135,29 @@ election:
                owner_pid, (opened_key IS NOT NULL) AS is_opened
         FROM election WHERE owner_pid = ?
 
+    # Returns all editable elections for voting by the specified person (PID).
+    # An election is included if:
+    #   - The person has mayvote entries for any issues in the election
+    #   - The election is editable (salt IS NULL)
+    # 
+    # Uses LEFT JOIN to person table to fetch the owner's name for display,
+    # ensuring elections are still returned even if the owner_pid does not
+    # exist in the person table (in which case owner_name will be NULL).
+    # 
+    # Returns: eid, title, open_at, close_at, issue_count, owner_name
+    q_upcoming_to_me: |
+        SELECT e.eid, e.title, e.open_at, e.close_at,
+               COUNT(i.iid) AS issue_count,
+               p.name AS owner_name
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        JOIN election e ON i.eid = e.eid
+        LEFT JOIN person p ON e.owner_pid = p.pid
+        WHERE m.pid = ?
+          AND e.salt IS NULL
+        GROUP BY e.eid
+        ORDER BY e._ROWID_
+
 
 person:
     c_add_person: |
