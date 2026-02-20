@@ -159,6 +159,13 @@ election:
         GROUP BY e.eid
         ORDER BY e._ROWID_
 
+    q_voting_persons: |
+        SELECT DISTINCT m.pid, p.email
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        JOIN person p ON m.pid = p.pid
+        WHERE i.eid = ?
+        ORDER BY m.pid
 
 person:
     c_add_person: |

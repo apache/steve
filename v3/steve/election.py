@@ -117,10 +117,13 @@ class Election:
             for i in self.q_issues.fetchall()
         )
 
-        # Include the PID and EMAIL for each Person.
-        ### we don't want all people. Just those who are allowed to
-        ### vote in this Election. Examine the "mayvote" table.
-        pdata = ''.join(p.pid + p.email for p in pdb.list_persons())
+        # Include the PID and EMAIL for each Person who may vote in this Election.
+        # Use q_voting_persons to get distinct, sorted PIDs and emails from mayvote/issue/person join.
+        self.q_voting_persons.perform(self.eid)
+        pdata = ''.join(
+            row.pid + row.email
+            for row in self.q_voting_persons.fetchall()
+        )
 
         return (mdata + idata + pdata).encode()
 
