@@ -17,6 +17,7 @@
 
 import base64
 import secrets
+import hashlib  # for blake2b
 
 import passlib.hash  # note that .argon2 is proxy in this pkg
 
@@ -37,11 +38,21 @@ def gen_salt() -> bytes:
 
 def gen_opened_key(edata: bytes, salt: bytes) -> bytes:
     "Generate the OpenedKey for this election."
-    return _hash(edata, salt)
+
+    # The data is of arbitrary length. Use BLAKE2b to quickly hash all
+    # this down into a manageable size for Argon2.
+    # Note: BLAKE2b is the internal primitive of Argon2, so a good fit.
+    digest = hashlib.blake2b(edata).digest()
+
+    # We have scaled EDATA down to 64 bytes, which is now within the
+    # passlib input size for the Argon2 algorithm.
+    return _hash(digest, salt)
 
 
 def gen_vote_token(opened_key: bytes, pid: str, iid: str, salt: bytes) -> bytes:
     "Generate a person or issue token."
+
+    # NOTE: the data is short enough for the Argon2 algorithm.
     return _hash(opened_key + pid.encode() + iid.encode(), salt)
 
 
