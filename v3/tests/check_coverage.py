@@ -94,8 +94,8 @@ def touch_every_line():
     e.add_vote('alice', i1, 'y')
     e.add_vote('bob', i1, 'n')
     e.add_vote('carlos', i1, 'a')  # use each of Y/N/A
-    e.add_vote('alice', i2, 'bc')
-    e.add_vote('bob', i2, 'ad')
+    e.add_vote('alice', i2, 'b,c')
+    e.add_vote('bob', i2, 'a,d')
     _ = e.has_voted_upon('alice')
     _ = e.is_tampered(pdb)
 
