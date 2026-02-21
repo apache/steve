@@ -112,6 +112,9 @@ class Election:
 
         self.q_issues.perform(self.eid)
         # Use an f-string to render "None" if a column is NULL.
+        # Render KV in its original TEXT column form. Parsing it to JSON,
+        # then serializing might introduce ordering issues in any dicts.
+        # This must be repeatable, so mis-ordering would be drastic.
         idata = ''.join(
             f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
             for i in self.q_issues.fetchall()
