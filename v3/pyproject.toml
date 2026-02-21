@@ -12,7 +12,6 @@ dependencies = [
     "asfquart>=0.1.12",
     "ezt>=1.1",
     "easydict>=1.13",
-    "passlib>=1.7.4,<2",
     "cryptography>=46.0.5,<47",
     "argon2-cffi>=25.1.0,<26",
 ]
