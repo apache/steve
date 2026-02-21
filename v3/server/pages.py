@@ -2,7 +2,7 @@
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
 # regarding copyright ownership.  The ASF licenses this file
-# to You under the Apache License, Version 2.0 (the
+# to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
@@ -271,6 +271,11 @@ async def vote_on_page(election):
     # Sort issues: STV first, then by title
     result.issues.sort(key=lambda i: (0 if i.vtype == 'stv' else 1, i.title))
     result.issue_count = len(result.issues)
+
+    # Add seats for STV issues
+    for issue in result.issues:
+        if issue.vtype == 'stv':
+            issue.seats = issue.kv.get('seats', 0)
 
     # Scan issues for types and counts
     yna_count = sum(1 for i in result.issues if i.vtype == 'yna')
