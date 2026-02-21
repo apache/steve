@@ -248,23 +248,39 @@ async def vote_on_page(election):
     result.election = election.get_metadata()
     result.e_title = result.election.title
 
-    ### need this from PDB
-    result.election.owner_name = 'unknown'
+    # Fetch owner name from PersonDB
+    pdb = steve.persondb.PersonDB.open(DB_FNAME)
+    try:
+        owner_person = pdb.get_person(result.election.owner_pid)
+        result.election.owner_name = owner_person[0]  # name
+    except steve.persondb.PersonNotFound:
+        result.election.owner_name = 'unknown'
+
+    # Check if user can vote in this election (has mayvote entries)
+    election.q_find_issues.perform(result.uid, election.eid)
+    if not election.q_find_issues.fetchall():
+        result = await basic_info()
+        result.title = 'Access Denied'
+        result.eid = election.eid
+        raise_404(T_BAD_EID, result)  # Reuse template for consistency
 
     # Add more stuff into the Election instance.
     _ = postprocess_election(result.election)
 
     result.issues = election.list_issues()
+    # Sort issues: STV first, then by title
+    result.issues.sort(key=lambda i: (0 if i.vtype == 'stv' else 1, i.title))
     result.issue_count = len(result.issues)
 
-    ### fix these. scan the issues' vtype
-    result.has_yna_issues = 'yes'  # EZT boolean
-    result.has_stv_issues = 'yes'  # EZT boolean
+    # Scan issues for types and counts
+    yna_count = sum(1 for i in result.issues if i.vtype == 'yna')
+    stv_count = sum(1 for i in result.issues if i.vtype == 'stv')
+    result.has_yna_issues = ezt.boolean(yna_count > 0)
+    result.has_stv_issues = ezt.boolean(stv_count > 0)
+    result.are_yna_plural = ezt.boolean(yna_count > 1)
+    result.are_stv_plural = ezt.boolean(stv_count > 1)
 
-    result.are_yna_plural = ezt.boolean(len(result.issues) > 1)
-    result.are_stv_plural = ezt.boolean(len(result.issues) > 1)
-
-    result.has_voted = None  # EZT boolean
+    result.has_voted = None  # Leave as None for now
 
     return result
 
@@ -284,7 +300,7 @@ async def admin_page():
     result.owned = [postprocess_election(e) for e in owned]
 
     ### owned.owner_name should be based on OWNER_PID. That might not be
-    ### "me" because of authz access to manage issues.
+    ### the "me" because of authz access to manage issues.
 
     ### should open/keep a PersonDB instance in the APP
     pdb = steve.persondb.PersonDB.open(DB_FNAME)
