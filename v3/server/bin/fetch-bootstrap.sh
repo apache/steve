@@ -29,6 +29,10 @@ I_VERSION="1.13.1"
 I_DIST="bootstrap-icons-${I_VERSION}"
 I_URL="https://github.com/twbs/icons/releases/download/v${I_VERSION}/${I_DIST}.zip"
 
+S_VERSION="1.15.0"
+S_DIST="Sortable-${S_VERSION}"
+S_URL="https://github.com/SortableJS/Sortable/releases/download/${S_VERSION}/${S_DIST}.zip"
+
 THIS_DIR=$(dirname "`realpath $0`")
 PARENT_DIR=$(dirname "$THIS_DIR")
 STATIC_DIR="${PARENT_DIR}/static"
@@ -78,8 +82,28 @@ echo "Extracting: fonts/bootstrap-icons.woff"
 unzip -joq "${I_ZIPFILE}" "${I_DIST}/fonts/bootstrap-icons.woff" -d "${STATIC_DIR}/css/fonts"
 
 # --------------------
+#
+# Grab the SortableJS package (JS)
+#
+
+S_ZIPFILE="${THIS_DIR}/sortable.zip"
+
+echo "Fetching: ${S_URL}"
+curl -q --location "${S_URL}" --output "${S_ZIPFILE}"
+
+echo "Extracting: Sortable.min.js"
+unzip -joq "${S_ZIPFILE}" "${S_DIST}/Sortable.min.js" -d "${STATIC_DIR}/js"
+
+echo ""
+echo "Modify templates with new integrity values:"
+echo "Sortable.min.js:"
+echo -n "sha384-" ; openssl dgst -sha384 -binary "${STATIC_DIR}/js/Sortable.min.js" | openssl base64 -A ; echo ""
+echo ""
+
+# --------------------
 
 echo ""
 echo "NOTE: zip files can now be removed:"
 echo "  ${ZIPFILE}"
 echo "  ${I_ZIPFILE}"
+echo "  ${S_ZIPFILE}"
