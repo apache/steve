@@ -40,7 +40,7 @@ election:
     c_add_issue: INSERT INTO issue VALUES (?, ?, ?, ?, ?, ?)
     c_edit_issue: |
         UPDATE issue
-        SET title = ?, description, type = ?, kv = ?
+        SET title = ?, description = ?, type = ?, kv = ?
         WHERE iid = ?
     c_delete_issue: DELETE FROM issue WHERE iid = ?
     c_add_vote: |
