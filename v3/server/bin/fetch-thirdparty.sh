@@ -29,9 +29,9 @@ I_VERSION="1.13.1"
 I_DIST="bootstrap-icons-${I_VERSION}"
 I_URL="https://github.com/twbs/icons/releases/download/v${I_VERSION}/${I_DIST}.zip"
 
-S_VERSION="1.15.0"
+S_VERSION="1.15.7"
 S_DIST="Sortable-${S_VERSION}"
-S_URL="https://github.com/SortableJS/Sortable/releases/download/${S_VERSION}/${S_DIST}.zip"
+S_URL="https://github.com/SortableJS/Sortable/archive/refs/tags/${S_VERSION}.zip"
 
 THIS_DIR=$(dirname "`realpath $0`")
 PARENT_DIR=$(dirname "$THIS_DIR")

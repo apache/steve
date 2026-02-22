@@ -319,8 +319,8 @@
 
 
 <!-- SortableJS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"
-        integrity="sha512-Re8HTXL7IfXyPBPlWJMOFsUhxDJQkFMb1fTRhDHXbSon5NHKKVgUj0FIZEEMjJd0P9AhBRY+J6FfrqeGHmZQ=="
+<script src="/static/js/Sortable.min.js"
+        integrity="sha384-DgmC6Xe2bSN2WjTDXzWYbUbxyhNP+NNkGDR/g78pCXV7E7rcVTGxVg0uIVCUUcBc"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
