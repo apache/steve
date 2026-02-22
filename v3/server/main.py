@@ -16,6 +16,16 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+# /// script
+# dependencies = [
+#    "asfpy>=0.56",
+#    "asfquart>=0.1.12",
+#    "ezt>=1.1",
+#    "easydict>=1.13",
+#    "cryptography>=46.0.5,<47",
+#    "argon2-cffi>=25.1.0,<26",
+# ]
+# ///
 
 import sys
 import logging
