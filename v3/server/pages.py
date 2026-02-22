@@ -11,7 +11,7 @@
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
+# KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
 
@@ -267,23 +267,32 @@ async def vote_on_page(election):
     # Add more stuff into the Election instance.
     _ = postprocess_election(result.election)
 
-    result.issues = election.list_issues()
-    # Sort issues: STV first, then by title
-    result.issues.sort(key=lambda i: (0 if i.vtype == 'stv' else 1, i.title))
-    result.issue_count = len(result.issues)
+    all_issues = election.list_issues()
 
-    # Add seats for STV issues
-    for issue in result.issues:
-        if issue.vtype == 'stv':
-            issue.seats = issue.kv.get('seats', 0)
+    # Split into YNA and STV issues, sort each by title
+    issues_yna = [i for i in all_issues if i.vtype == 'yna']
+    issues_yna.sort(key=lambda i: i.title)
+    issues_stv = [i for i in all_issues if i.vtype == 'stv']
+    issues_stv.sort(key=lambda i: i.title)
 
-    # Scan issues for types and counts
-    yna_count = sum(1 for i in result.issues if i.vtype == 'yna')
-    stv_count = sum(1 for i in result.issues if i.vtype == 'stv')
+    # Add seats, labelmap, and candidates to STV issues from KV
+    for issue in issues_stv:
+        issue.seats = issue.kv.get('seats', 0)
+        issue.labelmap = edict(issue.kv.get('labelmap', {}))
+        issue.candidates = [{'label': k, 'name': v} for k, v in issue.labelmap.items()]
+        issue.candidates.sort(key=lambda c: c['name'])  # Sort candidates by name for consistency
+
+    # Compute counts and plurals
+    yna_count = len(issues_yna)
+    stv_count = len(issues_stv)
     result.has_yna_issues = ezt.boolean(yna_count > 0)
     result.has_stv_issues = ezt.boolean(stv_count > 0)
     result.are_yna_plural = ezt.boolean(yna_count > 1)
     result.are_stv_plural = ezt.boolean(stv_count > 1)
+
+    # Combine: STV first, then YNA
+    result.issues = issues_stv + issues_yna
+    result.issue_count = len(result.issues)
 
     result.has_voted = None  # Leave as None for now
 
