@@ -383,8 +383,7 @@
     updateRankNumbers();
     initSortable();
 
-    const modal = bootstrap.Modal.getOrCreate(document.getElementById('stvModal'));
-    modal.show();
+    showModal('stvModal');
   };
 
   function makeItem(candidate, rank) {
