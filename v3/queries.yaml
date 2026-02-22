@@ -40,7 +40,7 @@ election:
     c_add_issue: INSERT INTO issue VALUES (?, ?, ?, ?, ?, ?)
     c_edit_issue: |
         UPDATE issue
-        SET title = ?, description = ?, type = ?, kv = ?
+        SET title = ?, description, type = ?, kv = ?
         WHERE iid = ?
     c_delete_issue: DELETE FROM issue WHERE iid = ?
     c_add_vote: |
@@ -166,6 +166,9 @@ election:
         JOIN person p ON m.pid = p.pid
         WHERE i.eid = ?
         ORDER BY m.pid
+
+    q_closed_election_ids: SELECT eid FROM election WHERE closed = 1
+    q_open_election_ids: SELECT eid FROM election WHERE salt IS NOT NULL AND (closed IS NULL OR closed = 0)
 
 person:
     c_add_person: |

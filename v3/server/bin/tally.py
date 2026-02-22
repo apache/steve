@@ -39,17 +39,13 @@ def list_elections(db_fname, spy_on_open):
     Returns a list of (eid, title, close_at, state) tuples, sorted by close_at descending.
     Includes closed elections, or open ones if spy_on_open is True.
     """
-    # Get all elections owned by a dummy PID (since owned_elections doesn't filter by state)
-    # This is a hack; ideally, add a query for all elections with states.
-    # For now, fetch all owned by a non-existent PID to get all elections.
-    all_elections = steve.election.Election.owned_elections(db_fname, 'dummy_pid')
+    eids = steve.election.Election.list_closed_election_ids(db_fname, include_open=spy_on_open)
     
     elections = []
-    for e in all_elections:
-        election = steve.election.Election(db_fname, e.eid)
-        state = election.get_state()
-        if state == steve.election.Election.S_CLOSED or (spy_on_open and state == steve.election.Election.S_OPEN):
-            elections.append((e.eid, e.title, e.close_at, state))
+    for eid in eids:
+        election = steve.election.Election(db_fname, eid)
+        metadata = election.get_metadata()
+        elections.append((eid, metadata.title, metadata.close_at, metadata.state))
     
     # Sort by close_at descending (most recent first)
     elections.sort(key=lambda x: x[2] or 0, reverse=True)

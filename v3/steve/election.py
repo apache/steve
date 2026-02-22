@@ -502,6 +502,21 @@ class Election:
         )
         return [row for row in db.q_upcoming_to_me.fetchall()]
 
+    @classmethod
+    def list_closed_election_ids(cls, db_fname, include_open=False):
+        "Return a list of Election IDs for closed elections, optionally including open ones."
+        db = cls.open_database(db_fname)
+        
+        eids = []
+        db.q_closed_election_ids.perform()
+        eids.extend(row.eid for row in db.q_closed_election_ids.fetchall())
+        
+        if include_open:
+            db.q_open_election_ids.perform()
+            eids.extend(row.eid for row in db.q_open_election_ids.fetchall())
+        
+        return eids
+
     def set_open_at(self, timestamp):
         "Set the open_at timestamp for this Election."
         self.c_set_open_at.perform(timestamp, self.eid)
