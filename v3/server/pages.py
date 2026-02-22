@@ -24,6 +24,7 @@ import pathlib
 import datetime
 import functools
 import logging
+import random
 
 from easydict import EasyDict as edict
 import asfpy.stopwatch
@@ -280,7 +281,8 @@ async def vote_on_page(election):
         issue.seats = issue.kv.get('seats', 0)
         issue.labelmap = edict(issue.kv.get('labelmap', {}))
         issue.candidates = [{'label': k, 'name': v} for k, v in issue.labelmap.items()]
-        issue.candidates.sort(key=lambda c: c['name'])  # Sort candidates by name for consistency
+        # Shuffle candidates to prevent bias towards the first listed candidate
+        random.shuffle(issue.candidates)
 
     # Compute counts and plurals
     yna_count = len(issues_yna)
