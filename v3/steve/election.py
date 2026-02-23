@@ -90,7 +90,7 @@ class Election:
         self.add_salts()
 
         edata = self.gather_election_data(pdb)
-        print('EDATA:', edata)
+        #print('EDATA:', edata)
         salt = crypto.gen_salt()
         opened_key = crypto.gen_opened_key(edata, salt)
 
@@ -323,7 +323,7 @@ class Election:
         # Accumulate all MOST-RECENT votes for Issue IID.
         votes = []
 
-        # Use mayvote to determine all potential voters for Issue IID.
+        # Use mayvote to determine all eligible voters for Issue IID.
         self.q_tally.perform(iid)
         for mayvote in self.q_tally.fetchall():
             # Each row is: PID, IID, SALT
@@ -338,6 +338,11 @@ class Election:
 
             # We don't need/want all columns, so only pick CIPHERTEXT.
             row = self.q_recent_vote.first_row(vote_token)
+
+            # This PID may not have voted on IID.
+            if row is None:
+                continue
+
             votestring = crypto.decrypt_votestring(
                 vote_token,
                 mayvote.salt,
@@ -382,14 +387,18 @@ class Election:
         return voted_upon
 
     def is_tampered(self, pdb):
-        # The Election should be open.
-        md = self._all_metadata(self.S_OPEN)
+        # The Election should be open (don't allow voting when TAMPERED)
+        # or it may be closed (don't bother tallying, if TAMPERED).
+        #
+        # ... if in the editable state, then the OPENED_KEY check below will
+        #     simply fail. So don't call when in that state. Your fault.
+        md = self._all_metadata()  # no required state
 
         # Compute an opened_key based on the current data.
         edata = self.gather_election_data(pdb)
         opened_key = crypto.gen_opened_key(edata, md.salt)
 
-        print('EDATA:', edata)
+        #print('EDATA:', edata)
         print('SALT:', md.salt)
         print('KEY:', opened_key)
 
