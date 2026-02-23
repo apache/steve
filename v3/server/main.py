@@ -68,6 +68,8 @@ def run_standalone():
     ### other way to approach: what in asyncio do we need to observe?
     logging.getLogger('asyncio').setLevel(logging.INFO)
 
+    _LOGGER.info(' ** Run-mode: Standalone')
+
     # Set up the STeVe app, then we'll start it up.
     app = create_app()
 
@@ -112,7 +114,7 @@ def run_asgi():
 
     # Okay. Time to be a Hypercorn-based ASGI app.
 
-    _LOGGER.info('we must be an ASGI app!')
+    _LOGGER.info(' ** Run-mode: ASGI')
 
     global steve_app
     steve_app = create_app()
