@@ -5,8 +5,8 @@ election:
   title: "Board Election 2024"
   owner_pid: "alice"  # Apache ID of the election owner
   authz: "pmc"  # Optional authorization level
-  open_at: "2024-01-01T00:00:00"  # Optional ISO datetime for opening
-  close_at: "2024-01-31T23:59:59"  # Optional ISO datetime for closing
+  open_at: 1704067200  # Optional Unix timestamp for opening (2024-01-01T00:00:00)
+  close_at: 1706745599  # Optional Unix timestamp for closing (2024-01-31T23:59:59)
 
 issues:
   - title: "Approve Budget"
@@ -25,4 +25,9 @@ issues:
         d: "David"
       seats: 3  # Number of seats to elect
 
-eligible_voters: "members"  # Placeholder: all persons in the database are eligible
+record:  # List of PIDs eligible to vote (must exist in person database)
+  - alice
+  - bob
+  - carlos
+  - david
+  - eve
