@@ -618,15 +618,6 @@ async def settings_page():
     return result
 
 
-@APP.get('/privacy')
-@APP.use_template(TEMPLATES / 'privacy.ezt')
-async def privacy_page():
-    result = await basic_info()
-    result.title = 'Privacy'
-
-    return result
-
-
 @APP.get('/about')
 @APP.use_template(TEMPLATES / 'about.ezt')
 async def about_page():
