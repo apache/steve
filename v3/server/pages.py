@@ -99,13 +99,13 @@ async def _set_election_date(election, field):
     date_str = data.get('date')
     if not date_str:
         quart.abort(400, 'Missing date')
-    
+
     # Validate date (basic check)
     try:
         dt = datetime.datetime.fromisoformat(date_str).date()
     except ValueError:
         quart.abort(400, 'Invalid date format')
-    
+
     # Set the date on the election (field is 'open_at' or 'close_at')
     if field == 'open_at':
         election.set_open_at(dt)
@@ -113,8 +113,10 @@ async def _set_election_date(election, field):
         election.set_close_at(dt)
     else:
         quart.abort(400, 'Invalid field')
-    
-    _LOGGER.info(f'User[U:{result.uid}] set {field} for election[E:{election.eid}] to {date_str}')
+
+    _LOGGER.info(
+        f'User[U:{result.uid}] set {field} for election[E:{election.eid}] to {date_str}'
+    )
     return '', 204
 
 
@@ -155,8 +157,11 @@ async def voter_page():
         owned = steve.election.Election.owned_elections(DB_FNAME, result.uid)
 
     result.open_elections = [postprocess_election(e) for e in election]
-    result.upcoming_elections = [postprocess_election(e) for e in steve.election.Election.upcoming_to_pid(DB_FNAME, result.uid)]
-    result.past_elections = [ ]  ### TBD
+    result.upcoming_elections = [
+        postprocess_election(e)
+        for e in steve.election.Election.upcoming_to_pid(DB_FNAME, result.uid)
+    ]
+    result.past_elections = []  ### TBD
 
     result.len_open = len(result.open_elections)
     result.len_upcoming = len(result.upcoming_elections)
@@ -444,14 +449,18 @@ async def do_vote_endpoint(election):
 
         try:
             election.add_vote(result.uid, iid, votestring)
-            _LOGGER.info(f'User[U:{result.uid}] voted on issue[I:{iid}] in election[E:{election.eid}]')
+            _LOGGER.info(
+                f'User[U:{result.uid}] voted on issue[I:{iid}] in election[E:{election.eid}]'
+            )
         except Exception as e:
-            _LOGGER.error(f'Error adding vote for user[U:{result.uid}] on issue[I:{iid}]: {e}')
+            _LOGGER.error(
+                f'Error adding vote for user[U:{result.uid}] on issue[I:{iid}]: {e}'
+            )
             await flash_danger(f'Error submitting vote for issue {iid}.')
             return quart.redirect(f'/vote-on/{election.eid}', code=303)
 
     await flash_success('Votes submitted successfully!')
-    return quart.redirect(f'/voter', code=303)
+    return quart.redirect('/voter', code=303)
 
 
 @APP.post('/do-create-election')

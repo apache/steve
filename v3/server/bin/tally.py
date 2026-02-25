@@ -39,14 +39,16 @@ def list_elections(db_fname, spy_on_open):
     Returns a list of (eid, title, close_at, state) tuples, sorted by close_at descending.
     Includes closed elections, or open ones if spy_on_open is True.
     """
-    eids = steve.election.Election.list_closed_election_ids(db_fname, include_open=spy_on_open)
-    
+    eids = steve.election.Election.list_closed_election_ids(
+        db_fname, include_open=spy_on_open
+    )
+
     elections = []
     for eid in eids:
         election = steve.election.Election(db_fname, eid)
         metadata = election.get_metadata()
         elections.append((eid, metadata.title, metadata.close_at, metadata.state))
-    
+
     # Sort by close_at descending (most recent first)
     elections.sort(key=lambda x: x[2] or 0, reverse=True)
     return elections
@@ -58,14 +60,18 @@ def select_election(elections):
     Returns the selected eid, or None if none available.
     """
     if not elections:
-        print("No elections available for tallying.")
+        print('No elections available for tallying.')
         return None
-    
-    print("Available elections (sorted by close date, most recent first):")
+
+    print('Available elections (sorted by close date, most recent first):')
     for i, (eid, title, close_at, state) in enumerate(elections, 1):
-        close_str = datetime.datetime.fromtimestamp(close_at).strftime('%Y-%m-%d %H:%M') if close_at else 'N/A'
-        print(f"{i}. {eid} - {title} (Closed: {close_str}, State: {state})")
-    
+        close_str = (
+            datetime.datetime.fromtimestamp(close_at).strftime('%Y-%m-%d %H:%M')
+            if close_at
+            else 'N/A'
+        )
+        print(f'{i}. {eid} - {title} (Closed: {close_str}, State: {state})')
+
     while True:
         try:
             choice = input("Select an election by number (or 'q' to quit): ").strip()
@@ -75,7 +81,7 @@ def select_election(elections):
             if 0 <= idx < len(elections):
                 return elections[idx][0]
             else:
-                print("Invalid choice. Try again.")
+                print('Invalid choice. Try again.')
         except ValueError:
             print("Please enter a number or 'q'.")
 
@@ -86,9 +92,9 @@ def tally_election(election, output_format):
     """
     issues = election.list_issues()
     if not issues:
-        print("No issues to tally in this election.")
+        print('No issues to tally in this election.')
         return
-    
+
     results = {}
     for issue in issues:
         try:
@@ -97,20 +103,20 @@ def tally_election(election, output_format):
                 'title': issue.title,
                 'vtype': issue.vtype,
                 'human_result': tally_result[0],
-                'supporting_data': tally_result[1]
+                'supporting_data': tally_result[1],
             }
         except Exception as e:
-            print(f"Error tallying issue {issue.iid}: {e}")
+            print(f'Error tallying issue {issue.iid}: {e}')
             raise  # Fail hard
-    
+
     if output_format == 'json':
         print(json.dumps(results, indent=2))
     else:  # text
         for iid, data in results.items():
-            print(f"Issue {iid}: {data['title']} ({data['vtype']})")
-            print(f"Result: {data['human_result']}")
-            print(f"Details: {data['supporting_data']}")
-            print("-" * 40)
+            print(f'Issue {iid}: {data["title"]} ({data["vtype"]})')
+            print(f'Result: {data["human_result"]}')
+            print(f'Details: {data["supporting_data"]}')
+            print('-' * 40)
 
 
 def main(spy_on_open, election_id, db_fname, output_format):
@@ -123,16 +129,16 @@ def main(spy_on_open, election_id, db_fname, output_format):
         elections = list_elections(db_fname, spy_on_open)
         election_id = select_election(elections)
         if not election_id:
-            print("No election selected. Exiting.")
+            print('No election selected. Exiting.')
             return
         election = steve.election.Election(db_fname, election_id)
-    
+
     # Check for tampering
     pdb = steve.persondb.PersonDB.open(db_fname)
     if election.is_tampered(pdb):
-        print(f"Error: Election {election_id} has been tampered with. Cannot proceed.")
+        print(f'Error: Election {election_id} has been tampered with. Cannot proceed.')
         sys.exit(1)
-    
+
     # Proceed with tally
     tally_election(election, output_format)
 
@@ -142,27 +148,25 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description="Tally votes for all issues in a closed election (or open if --spy-on-open-elections is used)."
+        description='Tally votes for all issues in a closed election (or open if --spy-on-open-elections is used).',
     )
     parser.add_argument(
         '--spy-on-open-elections',
         action='store_true',
-        help='Allow tallying of open elections (use with caution).'
+        help='Allow tallying of open elections (use with caution).',
     )
     parser.add_argument(
         '--election-id',
-        help='Specify election ID to tally directly (skips interactive selection).'
+        help='Specify election ID to tally directly (skips interactive selection).',
     )
     parser.add_argument(
-        '--db-path',
-        default=str(DEFAULT_DB_FNAME),
-        help='Path to the database file.'
+        '--db-path', default=str(DEFAULT_DB_FNAME), help='Path to the database file.'
     )
     parser.add_argument(
         '--output',
         choices=['text', 'json'],
         default='text',
-        help='Output format for results.'
+        help='Output format for results.',
     )
     args = parser.parse_args()
 
