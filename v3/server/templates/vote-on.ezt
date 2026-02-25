@@ -76,7 +76,9 @@
   .sortable-chosen { box-shadow: 0 2px 8px rgba(13,110,253,.25); }
 
   /* empty-state hint */
-  .stv-panel-empty {
+  #stv-ranked-list.is-empty::after {
+    content: "Drag candidates here to rank them";
+    display: block;
     color: #adb5bd;
     font-size: .85rem;
     text-align: center;
@@ -291,9 +293,6 @@
               </button>
             </div>
             <div class="stv-panel" id="stv-ranked-list">
-              <div class="stv-panel-empty" id="stv-ranked-empty">
-                Drag candidates here to rank them
-              </div>
             </div>
           </div>
 
@@ -436,12 +435,6 @@
   }
 
   function onSortEnd() {
-    // Remove the empty-hint element if it got sorted (it shouldn't, but guard)
-    const hint = document.getElementById('stv-ranked-empty');
-    const rp   = document.getElementById('stv-ranked-list');
-    if (hint && hint.parentElement === rp && rp.children.length > 1) {
-      hint.remove();
-    }
     updateRankNumbers();
     updateEmptyHint();
   }
@@ -454,19 +447,8 @@
 
   function updateEmptyHint() {
     const rp    = document.getElementById('stv-ranked-list');
-    let   hint  = document.getElementById('stv-ranked-empty');
     const items = rp.querySelectorAll('.stv-item');
-    if (items.length === 0) {
-      if (!hint) {
-        hint = document.createElement('div');
-        hint.className = 'stv-panel-empty';
-        hint.id        = 'stv-ranked-empty';
-        hint.textContent = 'Drag candidates here to rank them';
-      }
-      rp.appendChild(hint);
-    } else if (hint) {
-      hint.remove();
-    }
+    rp.classList.toggle('is-empty', items.length === 0);
   }
 
   // ── Save ranking back to hidden input ────────────────────────────────────
