@@ -44,6 +44,7 @@ THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR / APP.cfg.db
 TEMPLATES = THIS_DIR / 'templates'
 STATICDIR = THIS_DIR / 'static'
+DOCSDIR = THIS_DIR / 'docs'
 
 # Formatted values to inject into templates.
 FMT_DATE = '%b %d'
@@ -634,6 +635,25 @@ async def about_page():
     result.title = 'About'
 
     return result
+
+
+# Serve supporting documents for an issue
+@APP.get('/docs/<iid>/<docname>')
+@asfquart.auth.require  # fine-grained per-doc authz within the handler
+async def serve_doc(iid, docname):
+    result = await basic_info()  # get PID  ### grr: called uid
+
+    db = steve.election.Election.open_database(DB_FNAME)
+    row = db.q_get_mayvote.first_row(result.uid, iid)
+    if not row:
+        # Nothing fancy. Just pretend the file does not exist
+        quart.abort(404)
+        # NOTREACHED
+
+    ### verify the propriety of DOCNAME.
+
+    # Return per-issue document.
+    return await quart.send_from_directory(DOCSDIR / iid, docname)
 
 
 # Route to serve static files (CSS and JS)
