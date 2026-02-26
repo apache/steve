@@ -49,7 +49,7 @@ def parse_datetime(dt):
     if isinstance(dt, str):
         dt_obj = datetime.datetime.fromisoformat(dt)
         return int(dt_obj.timestamp())
-    raise ValueError(f"Invalid datetime format: {dt}")
+    raise ValueError(f'Invalid datetime format: {dt}')
 
 
 def validate_issue(issue):

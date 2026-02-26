@@ -90,7 +90,7 @@ class Election:
         self.add_salts()
 
         edata = self.gather_election_data(pdb)
-        #print('EDATA:', edata)
+        # print('EDATA:', edata)
         salt = crypto.gen_salt()
         opened_key = crypto.gen_opened_key(edata, salt)
 
@@ -123,10 +123,7 @@ class Election:
         # Include the PID and EMAIL for each Person who may vote in this Election.
         # Use q_voting_persons to get distinct, sorted PIDs and emails from mayvote/issue/person join.
         self.q_voting_persons.perform(self.eid)
-        pdata = ''.join(
-            row.pid + row.email
-            for row in self.q_voting_persons.fetchall()
-        )
+        pdata = ''.join(row.pid + row.email for row in self.q_voting_persons.fetchall())
 
         return (mdata + idata + pdata).encode()
 
@@ -398,7 +395,7 @@ class Election:
         edata = self.gather_election_data(pdb)
         opened_key = crypto.gen_opened_key(edata, md.salt)
 
-        #print('EDATA:', edata)
+        # print('EDATA:', edata)
         print('SALT:', md.salt)
         print('KEY:', opened_key)
 
@@ -515,15 +512,15 @@ class Election:
     def list_closed_election_ids(cls, db_fname, include_open=False):
         "Return a list of Election IDs for closed elections, optionally including open ones."
         db = cls.open_database(db_fname)
-        
+
         eids = []
         db.q_closed_election_ids.perform()
         eids.extend(row.eid for row in db.q_closed_election_ids.fetchall())
-        
+
         if include_open:
             db.q_open_election_ids.perform()
             eids.extend(row.eid for row in db.q_open_election_ids.fetchall())
-        
+
         return eids
 
     def set_open_at(self, timestamp):
