@@ -4,7 +4,7 @@
  Welcome to Apache STeVe <https://steve.apache.org/>
 =============================================================
 
-Apache STeVe is software to conduct a vote using the STV (Single Transferrable
+Apache STeVe is software to conduct a vote using the STV (Single Transferable
 Vote) and other voting algorithms. The tool grew out of the voting system used
 to elect the Apache Software Foundation Board of Directors.
 

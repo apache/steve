@@ -1,5 +1,5 @@
-#!/bin/bash
-#
+#!/usr/bin/env bash
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,22 +16,19 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
 
-#
 # Gather "all" known STV voting processing into a reference directory,
 # with full debug output. These files can then be used as a comparison
 # to future developments on STV tooling, to ensure consistency.
-#
 
 if test "$1" = ""; then echo "USAGE: $0 MEETINGS_DIR"; exit 1; fi
 MEETINGS_DIR="$1"
 
 REFERENCE_DIR="v2-stv-ref"
-mkdir "$REFERENCE_DIR" || /bin/true
+mkdir -p "$REFERENCE_DIR"
 
 V3_DIR="v3-stv"
-mkdir "$V3_DIR" || /bin/true
+mkdir -p "$V3_DIR"
 
 THIS_FILE=`realpath $0`
 THIS_DIR=`dirname "$THIS_file"`

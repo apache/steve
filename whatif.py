@@ -59,7 +59,7 @@ if __name__ == '__main__':
   # extract an alias list of first, last, and joined names
   alias = {}
   for name in names:
-    lname = re.sub('[^\w ]', '', name.lower())
+    lname = re.sub(r'[^\w ]', '', name.lower())
     alias[lname.replace(' ', '')] = name
     for part in lname.split(' '):
       alias[part] = name
@@ -84,13 +84,13 @@ if __name__ == '__main__':
   # Trim the raw votes based on cmdline params. Eliminate votes that
   # are not for one of the allowed names. Do not include voters who
   # did not vote for anybody [post-trimming].
-  trimmed = { }
-  for hashid, voteseq in votes.items():
+  trimmed = [ ]
+  for voteseq in votes:
     newseq = [ v for v in voteseq if v in names ]
     if newseq:
-      trimmed[hashid] = newseq
+      trimmed.append(newseq)
 
   # run the vote
-  candidates = stv_tool.run_vote(names, trimmed, seats)
+  candidates = stv_tool.run_stv(names, trimmed, seats)
   candidates.print_results()
   print('Done!')

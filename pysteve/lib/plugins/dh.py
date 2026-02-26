@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 """ D'Hondt (Jefferson) Based Voting Plugin """
-import re, json, random
+import re
 
 from lib import constants
 

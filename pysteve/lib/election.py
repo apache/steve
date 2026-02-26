@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 import hashlib
-import json
 import os
 import random
 import time

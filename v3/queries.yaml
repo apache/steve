@@ -1,30 +1,182 @@
-queries:
-    salt_issue: UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?
-    salt_person: UPDATE PERSON SET salt = ? WHERE _ROWID_ = ?
-    open_election: UPDATE METADATA SET salt = ?, opened_key = ?
-    close_election: UPDATE METADATA SET closed = 1
-    add_issue: |
-            INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?)
-               ON CONFLICT DO UPDATE SET
-                 title=excluded.title,
-                 description=excluded.description,
-                 type=excluded.type,
-                 kv=excluded.kv
-    add_person: |
-            INSERT INTO PERSON VALUES (?, ?, ?, ?)
-               ON CONFLICT DO UPDATE SET
-                 name=excluded.name,
-                 email=excluded.email
-    delete_issue: DELETE FROM ISSUES WHERE iid = ?
-    delete_person: DELETE FROM PERSON WHERE pid = ?
-    add_vote: INSERT INTO VOTES VALUES (NULL, ?, ?, ?, ?)
-    has_voted: |
-            SELECT 1 FROM VOTES
-               WHERE person_token = ? AND issue_token = ?
-               LIMIT 1
-    metadata: SELECT * FROM METADATA
-    issues: SELECT * FROM ISSUES ORDER BY iid
-    person: SELECT * FROM PERSON ORDER BY pid
-    get_issue: SELECT * FROM ISSUES WHERE iid = ?
-    get_person: SELECT * FROM PERSON WHERE pid = ?
-    by_issue: SELECT * FROM VOTES WHERE issue_token = ? ORDER BY _ROWID_
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ----
+#
+# ### TBD: DOCCO
+#
+# CURSOR NAMING:
+#   c_* performs various actions
+#   q_* runs queries
+#
+
+election:
+    c_salt_mayvote: UPDATE mayvote SET salt = ? WHERE _ROWID_ = ?
+    c_create: |
+        INSERT INTO election
+          (eid, title, owner_pid, authz, open_at, close_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    c_open: |
+        UPDATE election
+        SET salt = ?, opened_key = ?, open_at = unixepoch('now')
+        WHERE eid = ?
+    c_close: |
+        UPDATE election
+        SET closed = 1, close_at = unixepoch('now')
+        WHERE eid = ?
+    c_add_issue: INSERT INTO issue VALUES (?, ?, ?, ?, ?, ?)
+    c_edit_issue: |
+        UPDATE issue
+        SET title = ?, description = ?, type = ?, kv = ?
+        WHERE iid = ?
+    c_delete_issue: DELETE FROM issue WHERE iid = ?
+    c_add_vote: |
+        INSERT INTO vote (vote_token, ciphertext)
+        VALUES (?, ?)
+    c_add_mayvote: INSERT INTO mayvote (pid, iid) VALUES (?, ?)
+    c_add_mayvote_all: |
+        INSERT INTO mayvote (pid, iid)
+        SELECT ?, iid FROM issue WHERE eid = ?
+    c_delete_mayvote: |
+        DELETE FROM mayvote
+        WHERE iid IN (
+            SELECT iid
+            FROM issue
+            WHERE eid = ?
+            )
+    c_delete_issues: DELETE FROM issue WHERE eid = ?
+    c_delete_election: DELETE FROM election WHERE eid = ?
+    c_set_open_at: UPDATE election SET open_at = ? WHERE eid = ?
+    c_set_close_at: UPDATE election SET close_at = ? WHERE eid = ?
+
+    # Fast check to see if the Election exists. No data returned.
+    q_check_election: SELECT 1 FROM election WHERE eid = ?
+
+    q_metadata: SELECT * FROM election WHERE eid = ?
+    q_issues: SELECT * FROM issue WHERE eid = ? ORDER BY iid
+    q_get_issue: SELECT * FROM issue WHERE iid = ?
+    q_get_mayvote: SELECT * FROM mayvote WHERE pid = ? AND iid = ?
+    q_tally: SELECT * FROM mayvote WHERE iid = ?
+    q_find_issues: |
+        SELECT m.*
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        WHERE m.pid = ? AND i.eid = ?
+    q_has_voted: |
+        SELECT 1 FROM vote
+        WHERE vote_token = ?
+        LIMIT 1
+    q_all_issues: |
+        SELECT m._ROWID_
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        WHERE i.eid = ?
+
+    q_recent_vote: |
+        SELECT ciphertext FROM vote
+        WHERE vote_token = ?
+        ORDER BY _ROWID_ DESC
+        LIMIT 1
+    # ALTERNATIVE to above:
+    #
+    # SELECT ciphertext FROM vote
+    # WHERE vote_token = ?
+    # AND vid = (SELECT MAX(vid) FROM vote WHERE vote_token = ?)
+    #
+    # ... this is clearer about the MAX() and avoids the sorting from
+    #     the ORDER BY. However, with few revotes, that sort is not
+    #     expensive. Collect some data. Or maybe people can lobby.
+
+# Returns all elections that are currently open for voting by the
+    # specified person (PID). An election is included if:
+    #   - The person has mayvote entries for any issues in the election
+    #   - The election has been opened (salt IS NOT NULL)
+    #   - The election has not been closed (closed IS NULL or 0)
+    # 
+    # Uses LEFT JOIN to person table to fetch the owner's name for display,
+    # ensuring elections are still returned even if the owner_pid does not
+    # exist in the person table (in which case owner_name will be NULL).
+    # 
+    # Returns: eid, title, owner_pid, authz, closed, open_at, close_at,
+    #          is_opened (boolean), issue_count, owner_name
+    # Note: SALT and OPENED_KEY are never returned for security.
+    q_open_to_me: |
+        SELECT e.eid, e.title, e.owner_pid, e.authz, e.closed,
+               e.open_at, e.close_at,
+               (e.opened_key IS NOT NULL) AS is_opened,
+               COUNT(i.iid) AS issue_count,
+               p.name AS owner_name
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        JOIN election e ON i.eid = e.eid
+        LEFT JOIN person p ON e.owner_pid = p.pid
+        WHERE m.pid = ?
+          AND e.salt IS NOT NULL
+          AND (e.closed IS NULL OR e.closed = 0)
+        GROUP BY e.eid
+        ORDER BY e._ROWID_
+
+    # Which elections were created by PID?
+    q_owned: |
+        SELECT eid, title, authz, closed, open_at, close_at,
+               owner_pid, (opened_key IS NOT NULL) AS is_opened
+        FROM election WHERE owner_pid = ?
+
+    # Returns all editable elections for voting by the specified person (PID).
+    # An election is included if:
+    #   - The person has mayvote entries for any issues in the election
+    #   - The election is editable (salt IS NULL)
+    # 
+    # Uses LEFT JOIN to person table to fetch the owner's name for display,
+    # ensuring elections are still returned even if the owner_pid does not
+    # exist in the person table (in which case owner_name will be NULL).
+    # 
+    # Returns: eid, title, owner_pid, authz, open_at, close_at, closed, issue_count, owner_name
+    q_upcoming_to_me: |
+        SELECT e.eid, e.title, e.owner_pid, e.authz, e.open_at, e.close_at,
+               0 AS closed,
+               COUNT(i.iid) AS issue_count,
+               p.name AS owner_name
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        JOIN election e ON i.eid = e.eid
+        LEFT JOIN person p ON e.owner_pid = p.pid
+        WHERE m.pid = ?
+          AND e.salt IS NULL
+        GROUP BY e.eid
+        ORDER BY e._ROWID_
+
+    q_voting_persons: |
+        SELECT DISTINCT m.pid, p.email
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        JOIN person p ON m.pid = p.pid
+        WHERE i.eid = ?
+        ORDER BY m.pid
+
+    q_closed_election_ids: SELECT eid FROM election WHERE closed = 1
+    q_open_election_ids: SELECT eid FROM election WHERE salt IS NOT NULL AND (closed IS NULL OR closed = 0)
+
+person:
+    c_add_person: |
+        INSERT INTO person VALUES (?, ?, ?)
+        ON CONFLICT DO UPDATE SET
+            name=excluded.name,
+            email=excluded.email
+    c_delete_person: DELETE FROM person WHERE pid = ?
+
+    q_person: SELECT * FROM person ORDER BY pid
+    q_get_person: SELECT * FROM person WHERE pid = ?

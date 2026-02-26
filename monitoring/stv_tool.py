@@ -47,7 +47,7 @@ BILLIONTH = 0.000000001
 # "[" date "]" voterhash votes
 RE_VOTE = re.compile(r'\[.{19}\]\s+'
                      r'(?P<voterhash>[\w\d]{32})\s+'
-                     r'(?P<votes>[a-z]{1,26})',
+                     r'(?P<votes>.*)$',
                      re.I)
 
 VERBOSE = False
@@ -55,6 +55,11 @@ VERBOSE = False
 
 #@deprecated
 def load_votes(fname):
+  """Used by WHATIF.PY.
+
+  Returns a list of names, and a list of vote-lists.
+  """
+
   line = open(fname).readline()
   if line.strip() == 'rank order':
     lines = open(fname).readlines()
@@ -66,44 +71,61 @@ def load_votes(fname):
     assert len(names) == len(labels)
     remap = dict(zip(labels, names))
 
+    ### this is broken. We need to return a list of lists. Not a dict.
+    ### we do not want to flow "who" voted -- that should be discarded.
+    raise Exception("This script cannot parse the provided input file. "
+                    "Fix the script.")
     votes = { }
     for line in lines[3:]:
       parts = line.strip().split(',')
       votes[parts[0]] = [remap[l] for l in parts[1:]]
     return names, votes
 
-  ini_fname = os.path.join(os.path.dirname(fname),
-                           'board_nominations.ini')
-  labelmap = read_labelmap(ini_fname)
+  # Map from "a".."z" to human names.
+  labelmap = read_nominees(fname)
 
   # Construct a label-sorted list of names from the labelmap.
   names = [name for _, name in sorted(labelmap.items())]
 
-  # Load the raw votes that were recorded.
-  ### the voterhash was discarded; this no longer works
+  # Load the raw votes that were recorded. (eg. "kbaf")
   votes_by_label = read_votefile(fname)
 
   # Remap all labels to names in the votes.
-  # NOTE: v represents the voter hash. (### why return this?)
-  votes = dict((v, [labelmap[l] for l in vote])
-               for v, vote in votes_by_label.items())
+  votes = [ [labelmap[l] for l in vote] for vote in votes_by_label ]
 
   return names, votes
 
 
-def read_votefile(fname):
+def read_votefile(fname, newformat):
+  """Return a list of votestrings, throwing out who produced each.
+
+  Note: the file is time-ordered, and later votes override any prior
+  vote from a specific voter.
+  """
+
   votes = { }
   for line in open(fname).readlines():
     match = RE_VOTE.match(line)
     if match:
       # For a given voter hashcode, record their latest set of votes.
-      votes[match.group('voterhash')] = match.group('votes')
+      vhash = match.group('voterhash')
+      vstring = match.group('votes').lower()
+      if vstring == '-':  # abstain
+        continue
+      if newformat:
+        # New format; example: AA AB AC
+        votes[vhash] = [ v for v in vstring.split() ]
+      else:
+        # Old format; example: abc
+        votes[vhash] = [ v for v in vstring ]
 
   # Discard voterhash, and just return the list of votes.
-  return votes.values()
+  return list(votes.values())
 
 
 def read_jsonvotes(fname):
+  "Return a list of votestrings."
+
   votes = [ ]
   for v in json.load(open(fname))['votes'].values():
     # Ignore the "null" votes, for STV purposes.
@@ -112,8 +134,13 @@ def read_jsonvotes(fname):
   return votes
 
 
-#@deprecated
 def read_nominees(votefile):
+  """Return a label map for a given votefile.
+
+  For VOTEFILE (raw_board_votes.txt or .json), this looks at the sibling
+  file to map from vote label to a human name.
+  """
+
   ini_fname = os.path.join(os.path.dirname(votefile),
                            'board_nominations.ini')
   return read_labelmap(ini_fname)
@@ -133,16 +160,14 @@ def read_labelmap(fname):
     sys.exit(2)
 
 
-#@deprecated
-def run_vote(names, votes, num_seats):
-
-  # List of votestrings, each as a list of ordered name choices.
-  ordered_votes = votes.values()
-
-  return run_stv(names, ordered_votes, num_seats)
-
-
 def run_stv(names: list, ordered_votes: list, num_seats: int):
+
+  # Note: ORDERED_VOTES is a list of lists. The interior lists are a list
+  # of candidate (human) NAMES, as ordered by the voter. The outer list is
+  # simply all the votes that were recorded.
+
+  # NOTE: files use labels such as "a" or "f", but this STV algorithm
+  # works with the human names. Cuz why not.
 
   # NOTE: NAMES must be a list for repeatability purposes. It does not
   # need to obey any particular ordering rules, but when re-running
@@ -461,19 +486,26 @@ def main(argv):
     parser.print_help()
     sys.exit(1)
 
-  ini_fname = os.path.join(os.path.dirname(args.raw_file),
-                           'board_nominations.ini')
-  labelmap = read_labelmap(ini_fname)
+  # Get mapping from vote label (typically "a" to "z") to human name.
+  labelmap = read_nominees(args.raw_file)
+
   # Construct a label-sorted list of names from the labelmap.
   names = [name for _, name in sorted(labelmap.items())]
 
   # Turn votes using labels into by-name.
   if args.raw_file.endswith('.json'):
+    ### noted on 2025-03-06:
+    ### this appears totally broken. The prior-year raw JSON files have
+    ### labels such as "AK" and "AB", yet the labels extracted from
+    ### board_nominations.ini uses labels like "k" and "b".
+    ### QUESTION: do new .json files have a mapping in them? eg. who is "AK"?
     votes_by_label = read_jsonvotes(args.raw_file)
     votes = [[labelmap[l.lower()] for l in vote.split()] for vote in votes_by_label]
   else:
-    votes_by_label = read_votefile(args.raw_file)
-    votes = [[labelmap[l] for l in vote] for vote in votes_by_label]
+    newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
+    # votes_by_label: [ [L1, L2, ...], [ L1, L2, ... ], ... ]
+    votes_by_label = read_votefile(args.raw_file, newformat)
+    votes = [[labelmap[label] for label in votelist] for votelist in votes_by_label]
 
   candidates = run_stv(names, votes, args.seats)
   candidates.print_results()

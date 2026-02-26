@@ -1,0 +1,34 @@
+# Sample YAML file for defining an election to be created via create-election.py
+# Copy this file, edit as needed, and run: python create-election.py <your_file.yaml>
+# Note: All PIDs must exist in the person database. Timestamps are Unix epoch ints.
+
+election:
+  title: "Board Election 2024"  # Required: Human-readable election title
+  owner_pid: "alice"  # Required: Apache ID of the election owner
+  authz: "pmc"  # Optional: Authorization level (e.g., 'pmc', 'members')
+  open_at: 1704067200  # Optional: Unix timestamp for opening (2024-01-01T00:00:00)
+  close_at: 1706745599  # Optional: Unix timestamp for closing (2024-01-31T23:59:59)
+
+issues:  # Required: List of voting issues
+  - title: "Approve Budget"  # Required: Issue title
+    description: "Vote yes/no/abstain on the proposed budget."  # Optional: Details
+    vtype: "yna"  # Required: Vote type ('yna' or 'stv')
+
+  - title: "Elect Board Members"  # Example STV issue
+    description: "Rank candidates for board seats using STV."
+    vtype: "stv"
+    kv:  # Required for STV: Key-value metadata
+      version: 1  # Format version
+      labelmap:  # Candidate mappings (label -> name)
+        a: "Alice"
+        b: "Bob"
+        c: "Carlos"
+        d: "David"
+      seats: 3  # Number of seats to elect
+
+record:  # Required: List of eligible voter PIDs (must exist in person database)
+  - alice
+  - bob
+  - carlos
+  - david
+  - eve

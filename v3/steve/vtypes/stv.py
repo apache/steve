@@ -1,26 +1,22 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# ----
-#
-# ### TBD: DOCCO
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 import os.path
-import importlib
+import importlib.util
 
 # Where can we find the stv_tool module?
 STV_RELPATH = '../../../monitoring/stv_tool.py'
@@ -41,13 +37,17 @@ def load_stv():
 stv_tool = load_stv()
 
 
-def tally(votestrings, kv, names=None):
-    "Run the STV tally process."
+def tally(votestrings, kv):
+    """
+    Run the STV tally process.
 
-    # NOTE: the NAMES parameter is usually not passed, but is available
-    # to compare operation against custom ordering of NAMES in the
-    # LABELMAP. This function takes a specific approach, which differs
-    # from historical orderings.
+    votestrings: List of strings, each representing a voter's preferences as comma-separated labels
+                 (e.g., 'a,b,c' for votes in order of preference). Labels must match keys in kv['labelmap'].
+    kv: Dict containing STV configuration.
+        - 'version': Integer version of the kv format (currently 1).
+        - 'labelmap': Dict mapping single-character labels to candidate names (e.g., {'a': 'Alice'}).
+        - 'seats': Integer number of seats to elect.
+    """
 
     # kv['labelmap'] should be: LABEL: NAME
     # for example: { 'a': 'John Doe', }
@@ -55,19 +55,22 @@ def tally(votestrings, kv, names=None):
 
     seats = kv['seats']
 
-    # Remap all votestrings from a string sequence of label characters,
-    # into a sequence of NAMEs.
-    votes = [[labelmap[c] for c in v] for v in votestrings]
+    # Remap all votestrings from comma-separated label strings into sequences of NAMEs.
+    # Split on commas, strip whitespace, and filter out empty parts.
+    votes = [
+        [labelmap[label.strip()] for label in v.split(',') if label.strip()]
+        for v in votestrings
+    ]
 
-    # NOTE: it is important that the names are sorted, to create a
-    # reproducible list of names. Callers may specify a custom ordering.
-    if names is None:
-        names = sorted(labelmap.values())
+    # Use sorted names for reproducible ordering.
+    names = sorted(labelmap.values())
     results = stv_tool.run_stv(names, votes, seats)
 
     human = '\n'.join(
         f'{c.name:40}{" " if c.status == stv_tool.ELECTED else " not "}elected'
         for c in results.l
-        )
-    data = { 'raw': results, }
+    )
+    data = {
+        'raw': results,
+    }
     return human, data

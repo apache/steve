@@ -1,0 +1,46 @@
+[project]
+name = "apache-steve"
+version = "3.0.0"
+
+authors = [{ name = "Apache STeVe Community", email = "dev@steve.apache.org" }]
+description = "The Apache STeVe voting system."
+license = "Apache-2.0"
+readme = "README.md"
+
+dependencies = [
+    "asfpy>=0.56",
+    "asfquart>=0.1.12",
+    "ezt>=1.1",
+    "easydict>=1.13",
+    "cryptography>=46.0.5,<47",
+    "argon2-cffi>=25.1.0,<26",
+]
+requires-python = ">=3.10"
+
+[project.urls]
+Homepage = "https://steve.apache.org/"
+Repository = "https://github.com/apache/steve"
+Issues = "https://github.com/apache/steve/issues"
+
+[dependency-groups]
+dev = ["faker~=37.8.0", "python-ldap~=3.0.0", { include-group = "lint" }]
+lint = [
+    "coverage>=7.10.6,<8",
+    "ruff>=0.14.3",
+    "mypy>=1.18.2,<2",
+    "types-PyYAML>=6.0.12,<7",
+    "types-requests>=2.32.4,<3",
+    "types-aiofiles>=24.1.0,<25",
+]
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv]
+default-groups = "all"
+
+# see https://docs.astral.sh/uv/reference/settings/#build-backend_module-name
+[tool.uv.build-backend]
+module-root = ""
+module-name = "steve"

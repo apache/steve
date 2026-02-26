@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import hashlib
 import json
 import time
 from lib import constants
@@ -187,7 +186,7 @@ class SQLiteBackend:
         # Make a clean issue document that only has the sqlite-defined fields in it
         issue_fields = ("id", "election", "title", "description", "type", "candidates", "seconds", "nominatedby")
         new_data = {k:v for k,v in issueData.items() if k in issue_fields}
-        self.DB.db.update("issues", issueData, id=issueID, election=electionID)
+        self.DB.db.update("issues", pickle(new_data), id=issueID, election=electionID)
 
     def issue_list(self, election):
         "List all issues in an election"
@@ -270,7 +269,7 @@ class SQLiteBackend:
         eid = constants.hexdigest(election + ":" + issue + ":" + uid)
         vhash = constants.hexdigest(constants.hexdigest(election + ":" + uid) + issue)
         try:
-            return self.DB.db.fetchone("votes", id=eid) or self.DB.db.fetchone("votes", id=vhash)
+            return self.DB.db.fetchone("votes", eid=eid) or self.DB.db.fetchone("votes", eid=vhash)
         except:
             return False
 

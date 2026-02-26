@@ -1,94 +1,87 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# ----
-#
-# ### TBD: DOCCO
-#
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
-import sys
+import logging
 import json
+import sqlite3
+import pathlib
+
+import asfpy.db
+from easydict import EasyDict as edict
 
 from . import crypto
-from . import db
 from . import vtypes
+
+_LOGGER = logging.getLogger(__name__)
+
+THIS_DIR = pathlib.Path(__file__).resolve().parent
+QUERIES = THIS_DIR.parent / 'queries.yaml'
 
 
 class Election:
-
     # Current state of an election.
     S_EDITABLE = 'editable'
     S_OPEN = 'open'
     S_CLOSED = 'closed'
 
-    def __init__(self, db_fname):
-        self.db = db.DB(db_fname)
+    @staticmethod
+    def open_database(db_fname):
+        return asfpy.db.DB(db_fname, yaml_fname=QUERIES, yaml_section='election')
 
-        # Construct cursors for all operations.
-        self.c_salt_issue = self.db.add_statement(
-            'UPDATE ISSUES SET salt = ? WHERE _ROWID_ = ?')
-        self.c_salt_person = self.db.add_statement(
-            'UPDATE PERSON SET salt = ? WHERE _ROWID_ = ?')
-        self.c_open = self.db.add_statement(
-            'UPDATE METADATA SET salt = ?, opened_key = ?')
-        self.c_close = self.db.add_statement(
-            'UPDATE METADATA SET closed = 1')
-        self.c_add_issue = self.db.add_statement(
-            '''INSERT INTO ISSUES VALUES (?, ?, ?, ?, ?, ?)
-               ON CONFLICT DO UPDATE SET
-                 title=excluded.title,
-                 description=excluded.description,
-                 type=excluded.type,
-                 kv=excluded.kv
-            ''')
-        self.c_add_person = self.db.add_statement(
-            '''INSERT INTO PERSON VALUES (?, ?, ?, ?)
-               ON CONFLICT DO UPDATE SET
-                 name=excluded.name,
-                 email=excluded.email
-            ''')
-        self.c_delete_issue = self.db.add_statement(
-            'DELETE FROM ISSUES WHERE iid = ?')
-        self.c_delete_person = self.db.add_statement(
-            'DELETE FROM PERSON WHERE pid = ?')
-        self.c_add_vote = self.db.add_statement(
-            'INSERT INTO VOTES VALUES (NULL, ?, ?, ?, ?)')
-        self.c_has_voted = self.db.add_statement(
-            '''SELECT 1 FROM VOTES
-               WHERE person_token = ? AND issue_token = ?
-               LIMIT 1
-            ''')
+    def __init__(self, db_fname, eid, op='Opening'):
+        _LOGGER.debug(f'{op} election ID "{eid}"')
 
-        # Cursors for running queries.
-        self.q_metadata = self.db.add_query('metadata',
-            'SELECT * FROM METADATA')
-        self.q_issues = self.db.add_query('issues',
-            'SELECT * FROM ISSUES ORDER BY iid')
-        self.q_person = self.db.add_query('person',
-            'SELECT * FROM PERSON ORDER BY pid')
-        self.q_get_issue = self.db.add_query('issues',
-            'SELECT * FROM ISSUES WHERE iid = ?')
-        self.q_get_person = self.db.add_query('person',
-            'SELECT * FROM PERSON WHERE pid = ?')
-        self.q_by_issue = self.db.add_query('votes',
-            'SELECT * FROM VOTES WHERE issue_token = ? ORDER BY _ROWID_')
+        self.db = self.open_database(db_fname)
+        self.eid = eid
 
-    def open(self):
+        if not_found(self.q_check_election, eid):
+            raise ElectionNotFound(eid)
 
+    def __getattr__(self, name):
+        "Proxy the cursors."
+        return self.__dict__.get(name, getattr(self.db, name))
+
+    def delete(self):
+        "Delete this Election and its Issues and Person/Issue pairs."
+
+        # Can't delete if it has been opened (even if later closed).
+        assert self.is_editable()
+
+        # Normally, we are in auto-commit mode. Switch to transactional.
+        self.db.conn.execute('BEGIN TRANSACTION')
+
+        # Order these things because of referential integrity.
+
+        # Delete all rows that refer to Issues within this Election.
+        self.c_delete_mayvote.perform(self.eid)
+
+        # Now, delete all the Issues that are part of this Election.
+        self.c_delete_issues.perform(self.eid)
+
+        # Finally, remove the Election itself.
+        self.c_delete_election.perform(self.eid)
+
+        self.db.conn.execute('COMMIT')
+
+        # Disable this instance.
+        self.db.conn.close()
+        self.db = None
+
+    def open(self, pdb):
         # Double-check the Election is in the editing state.
         assert self.is_editable()
 
@@ -96,16 +89,16 @@ class Election:
         # happens before we move to the "opened" state.
         self.add_salts()
 
-        edata = self.gather_election_data()
-        print('EDATA:', edata)
+        edata = self.gather_election_data(pdb)
+        # print('EDATA:', edata)
         salt = crypto.gen_salt()
         opened_key = crypto.gen_opened_key(edata, salt)
 
         print('SALT:', salt)
         print('KEY:', opened_key)
-        self.c_open.perform((salt, opened_key))
+        self.c_open.perform(salt, opened_key, self.eid)
 
-    def gather_election_data(self):
+    def gather_election_data(self, pdb):
         "Gather a definition of this election for keying and anti-tamper."
 
         # NOTE: separators and other zero-entropy constant chars are
@@ -114,17 +107,23 @@ class Election:
 
         # NOTE: all assembly of rows must use a repeatable ordering.
 
-        md = self.q_metadata.first_row()
+        md = self._all_metadata()
         mdata = md.eid + md.title
 
-        self.q_issues.perform()
+        self.q_issues.perform(self.eid)
         # Use an f-string to render "None" if a column is NULL.
-        idata = ''.join(f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
-                        for i in self.q_issues.fetchall())
+        # Render KV in its original TEXT column form. Parsing it to JSON,
+        # then serializing might introduce ordering issues in any dicts.
+        # This must be repeatable, so mis-ordering would be drastic.
+        idata = ''.join(
+            f'{i.iid}{i.title}{i.description}{i.type}{i.kv}'
+            for i in self.q_issues.fetchall()
+        )
 
-        self.q_person.perform()
-        pdata = ''.join(p.pid + p.email
-                        for p in self.q_person.fetchall())
+        # Include the PID and EMAIL for each Person who may vote in this Election.
+        # Use q_voting_persons to get distinct, sorted PIDs and emails from mayvote/issue/person join.
+        self.q_voting_persons.perform(self.eid)
+        pdata = ''.join(row.pid + row.email for row in self.q_voting_persons.fetchall())
 
         return (mdata + idata + pdata).encode()
 
@@ -135,126 +134,171 @@ class Election:
         assert self.is_open()
 
         # Simple tweak of the metadata to close the Election.
-        self.c_close.perform()
+        self.c_close.perform(self.eid)
 
     def add_salts(self):
-        "Set the SALT column in the ISSUES and PERSON tables."
+        "Set the SALT column in the MAYVOTE table."
 
         # The Election should be editable.
         assert self.is_editable()
 
-        cur = self.db.conn.cursor()
+        # Use Q_ALL_ISSUES to iterate over all Person/Issue mappings
+        # in this Election (specified by EID).
 
-        def for_table(table, mod_cursor):
-            "Use MOD_CURSOR to salt each row of TABLE."
+        # Normally, we are in auto-commit mode. Switch to transactional.
+        self.db.conn.execute('BEGIN TRANSACTION')
 
-            # Fetch all ROWID values now, to avoid two cursors
-            # attempting to work on TABLE at the same time.
-            cur.execute(f'SELECT _ROWID_ FROM {table}')
-            ids = cur.fetchall()
+        self.q_all_issues.perform(self.eid)
+        for mayvote in self.q_all_issues.fetchall():
+            # MAYVOTE is a 1-tuple: _ROWID_
+            # print('COLUMNS:', dir(mayvote))
 
-            # Now, add a salt to every row.
-            for r in ids:
-                salt = crypto.gen_salt()
-                print('ROW will use:', table, r[0], salt)
-                mod_cursor.perform((salt, r[0]))
+            # Use a distinct cursor to insert the SALT value.
+            salt = crypto.gen_salt()
+            self.c_salt_mayvote.perform(salt, mayvote.rowid)
 
-        for_table('issues', self.c_salt_issue)
-        for_table('person', self.c_salt_person)
+        self.db.conn.execute('COMMIT')
+
+    def _disappeared(self):
+        "The Election disappeared in the database. Disable SELF."
+
+        # Disable this instance.
+        self.db.conn.close()
+        self.db = None
+
+        # The caller may want to inform this EID no longer exists.
+        return ElectionNotFound(self.eid)
+
+    def _all_metadata(self, required_state=None):
+        "INTERNAL ONLY: return all metadata about this Election."
+
+        # NOTE: this returns the SALT and OPENED_KEY columns. This
+        # API is not for public use.
+        md = self.q_metadata.first_row(self.eid)
+        if not md:
+            raise self._disappeared()
+
+        if required_state:
+            state = self._compute_state(md)
+            if state != required_state:
+                raise ElectionBadState(self.eid, state, required_state)
+
+        return md
 
     def get_metadata(self):
         "Return basic metadata about this Election."
 
-        md = self.q_metadata.first_row()
-        # NOTE: do not return the SALT
-        # note: likely: never return opened_key
+        md = self._all_metadata()
+        # NOTE: do not return the SALT or OPENED_KEY
 
-        return md.eid, md.title, self.get_state()
+        return edict(
+            eid=md.eid,
+            title=md.title,
+            owner_pid=md.owner_pid,
+            authz=md.authz,
+            closed=md.closed,  ### should we process this?
+            open_at=md.open_at,  ### should we process this?
+            close_at=md.close_at,  ### should we process this?
+            state=self._compute_state(md),
+        )
 
     def get_issue(self, iid):
         "Return TITLE, DESCRIPTION, TYPE, and KV for issue IID."
 
+        issue = self.q_get_issue.first_row(iid)
+        if not issue:
+            raise IssueNotFound(iid)
+
         # NEVER return issue.salt
-        issue = self.q_get_issue.first_row((iid,))
+        return (issue.title, issue.description, issue.type, self.json2kv(issue.kv))
 
-        return (issue.title, issue.description, issue.type,
-                self.json2kv(issue.kv))
-
-    def add_issue(self, iid, title, description, vtype, kv):
-        "Add or update an issue designated by IID."
+    def add_issue(self, title, description, vtype, kv):
+        "Add a new issue with a generated unique IID."
         assert self.is_editable()
         assert vtype in vtypes.TYPES
 
-        # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
-        # be touched (it should be NULL).
-        self.c_add_issue.perform((iid, title, description, vtype,
-                                  self.kv2json(kv), None))
+        while True:
+            iid = crypto.create_id()
+            try:
+                # Pure INSERT - SALT will be NULL until election opens
+                self.c_add_issue.perform(
+                    iid, self.eid, title, description, vtype, self.kv2json(kv)
+                )
+                break
+            except sqlite3.IntegrityError:
+                _LOGGER.debug('IID conflict(!!) ... trying again.')
+
+        _LOGGER.info(f'Created issue[I:{iid}] in election[E:{self.eid}]')
+
+        return iid
+
+    def edit_issue(self, iid, title, description, vtype, kv):
+        "Edit an existing issue designated by IID."
+        assert self.is_editable()
+        assert vtype in vtypes.TYPES
+
+        self.c_edit_issue.perform(title, description, vtype, self.kv2json(kv), iid)
+
+        # If the issue didn't exist, we updated nothing.
+        if self.c_edit_issue.rowcount == 0:
+            raise IssueNotFound(iid)
+
+        _LOGGER.info(f'Updated issue[I:{iid}] in election[E:{self.eid}]')
 
     def delete_issue(self, iid):
         "Delete the Issue designated by IID."
+
+        # Can only delete Issues before the Election is OPEN.
         assert self.is_editable()
 
-        self.c_delete_issue.perform((iid,))
+        self.c_delete_issue.perform(iid)
+
+        # If the issue didn't exist, we deleted nothing.
+        if self.c_delete_issue.rowcount == 0:
+            raise IssueNotFound(iid)
+        # else .rowcount == 1
 
     def list_issues(self):
-        "Return ordered (IID, TITLE, DESCRIPTION, TYPE, KV) for all ISSUES."
+        "Return ordered EasyDicgt<IID, TITLE, DESCRIPTION, TYPE, KV> for all ISSUES."
 
         def extract_issue(row):
-            # NOTE: the SALT column is omitted. It should never be exposed.
-            return row[:4] + (self.json2kv(row.kv),)
+            return edict(
+                iid=row.iid,
+                title=row.title,
+                description=row.description,
+                vtype=row.type,
+                kv=self.json2kv(row.kv),
+            )
 
-        self.q_issues.perform()
-        return [ extract_issue(row) for row in self.q_issues.fetchall() ]
+        self.q_issues.perform(self.eid)
+        return [extract_issue(row) for row in self.q_issues.fetchall()]
 
-    def get_person(self, pid):
-        "Return NAME, EMAIL for Person identified by PID."
+    def add_voter(self, pid: str, iid: str | None = None) -> None:
+        "Add PID (Person) to Issue IID, or to all Issues (None)."
 
-        # NEVER return person.salt
-        person = self.q_get_person.first_row((pid,))
-        return person.name, person.email
-
-    def add_person(self, pid, name, email):
-        "Add or update a Person designated by PID."
+        # This is only allowed while the Election is editable.
         assert self.is_editable()
 
-        # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
-        # be touched (it should be NULL).
-        self.c_add_person.perform((pid, name, email, None))
+        if iid:
+            self.c_add_mayvote.perform(pid, iid)
+        else:
+            self.c_add_mayvote_all.perform(pid, self.eid)
 
-    def delete_person(self, pid):
-        "Delete the Person designated by PID."
-        assert self.is_editable()
-
-        self.c_delete_person.perform((pid,))
-
-    def list_persons(self):
-        "Return ordered (PID, NAME, EMAIL) for each Person."
-
-        # NOTE: the SALT column is omitted. It should never be exposed.
-        self.q_person.perform()
-        return [ row[:3] for row in self.q_person.fetchall() ]
-
-    def add_vote(self, pid, iid, votestring):
+    def add_vote(self, pid: str, iid: str, votestring: str):
         "Add VOTESTRING as the (latest) vote by PID for IID."
 
         # The Election should be open.
-        assert self.is_open()
-
-        md = self.q_metadata.first_row()
-        person = self.q_get_person.first_row((pid,))
-        issue = self.q_get_issue.first_row((iid,))
+        md = self._all_metadata(self.S_OPEN)
 
         ### validate VOTESTRING for ISSUE.TYPE voting
 
-        person_token = crypto.gen_token(md.opened_key, pid, person.salt)
-        #print('PERSON:', pid, person.salt, person_token)
-        issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
-        #print('ISSUE:', iid, issue.salt, issue_token)
+        mayvote = self.q_get_mayvote.first_row(pid, iid)
+        vote_token = crypto.gen_vote_token(md.opened_key, pid, iid, mayvote.salt)
 
-        salt, token = crypto.create_vote(person_token, issue_token, votestring)
-        #print('SALT:', salt)
-        #print('TOKEN:', token)
-        self.c_add_vote.perform((person_token, issue_token, salt, token))
+        # Pass MAYVOTE.SALT for PBKDF.
+        ciphertext = crypto.create_vote(vote_token, mayvote.salt, votestring)
+
+        self.c_add_vote.perform(vote_token, ciphertext)
 
     def tally_issue(self, iid):
         """Return the results for a given ISSUE-ID.
@@ -268,25 +312,44 @@ class Election:
         """
 
         # The Election should be closed.
-        assert self.is_closed()
+        md = self._all_metadata(self.S_CLOSED)
 
-        md = self.q_metadata.first_row()
-        issue = self.q_get_issue.first_row((iid,))
-        issue_token = crypto.gen_token(md.opened_key, iid, issue.salt)
+        # Need the issue TYPE
+        issue = self.q_get_issue.first_row(iid)
 
-        # Use this dict to retain "most recent" votes.
-        dedup = { }  # (PERSON_TOKEN, ISSUE_TOKEN) : VOTESTRING
+        # Accumulate all MOST-RECENT votes for Issue IID.
+        votes = []
 
-        self.q_by_issue.perform((issue_token,))
-        for row in self.q_by_issue.fetchall():
+        # Use mayvote to determine all eligible voters for Issue IID.
+        self.q_tally.perform(iid)
+        for mayvote in self.q_tally.fetchall():
+            # Each row is: PID, IID, SALT
+
+            # For the given Person PID found, compute a VOTE_TOKEN.
+            vote_token = crypto.gen_vote_token(
+                md.opened_key,
+                mayvote.pid,
+                iid,
+                mayvote.salt,
+            )
+
+            # We don't need/want all columns, so only pick CIPHERTEXT.
+            row = self.q_recent_vote.first_row(vote_token)
+
+            # This PID may not have voted on IID.
+            if row is None:
+                continue
+
             votestring = crypto.decrypt_votestring(
-                row.person_token, issue_token, row.salt, row.token)
-            dedup[row.person_token, row.issue_token] = votestring
+                vote_token,
+                mayvote.salt,
+                row.ciphertext,
+            )
+            votes.append(votestring)
 
-        # Make sure the votes are not in database-order.
+        # Make sure the votes are NOT in database-order.
         # Note: we are not returning the votes, so this may be
         #  superfluous. But it certainly should not hurt.
-        votes = list(dedup.values())
         crypto.shuffle(votes)  # in-place
 
         # Perform the tally, and return the results.
@@ -297,42 +360,42 @@ class Election:
         "Return {ISSUE-ID: BOOL} stating what has been voted upon."
 
         # The Election should be open.
-        assert self.is_open()
+        md = self._all_metadata(self.S_OPEN)
 
-        md = self.q_metadata.first_row()
-        person = self.q_get_person.first_row((pid,))
-        person_token = crypto.gen_token(md.opened_key, pid, person.salt)
+        voted_upon = {}
 
-        voted_upon = { }
+        self.q_find_issues.perform(pid, self.eid)
+        for row in self.q_find_issues.fetchall():
+            # print('COLUMNS:', dir(row))
 
-        self.q_issues.perform()
-        for issue in self.q_issues.fetchall():
-            issue_token = crypto.gen_token(md.opened_key,
-                                           issue.iid,
-                                           issue.salt)
+            # Query is mayvote.* ... so ROW is: PID, IID, SALT
+            vote_token = crypto.gen_vote_token(
+                md.opened_key,
+                pid,
+                row.iid,
+                row.salt,
+            )
 
-            # Is any vote present?
-            self.c_has_voted.perform((person_token, issue_token))
-            row = self.c_has_voted.fetchone()
-            _ = self.c_has_voted.fetchall()  # should be empty (LIMIT 1)
+            # Is any vote present? (wicked fast)
+            voted = self.q_has_voted.first_row(vote_token)
 
-            #print('HAS-VOTED:', row, '||', person_token, issue_token)
-            voted_upon[issue.iid] = row is not None
+            voted_upon[row.iid] = voted is not None
 
         return voted_upon
 
-    def is_tampered(self):
-
-        # The Election should be open.
-        assert self.is_open()
-
-        md = self.q_metadata.first_row()
+    def is_tampered(self, pdb):
+        # The Election should be open (don't allow voting when TAMPERED)
+        # or it may be closed (don't bother tallying, if TAMPERED).
+        #
+        # ... if in the editable state, then the OPENED_KEY check below will
+        #     simply fail. So don't call when in that state. Your fault.
+        md = self._all_metadata()  # no required state
 
         # Compute an opened_key based on the current data.
-        edata = self.gather_election_data()
+        edata = self.gather_election_data(pdb)
         opened_key = crypto.gen_opened_key(edata, md.salt)
 
-        print('EDATA:', edata)
+        # print('EDATA:', edata)
         print('SALT:', md.salt)
         print('KEY:', opened_key)
 
@@ -354,36 +417,153 @@ class Election:
     def get_state(self):
         "Derive our election state from the METADATA table."
 
-        md = self.q_metadata.first_row()
+        return self._compute_state(self._all_metadata())
+
+    @classmethod
+    def _compute_state(cls, md):
+        "Compute Election state, given all metadata."
+
         if md.closed == 1:
             assert md.salt is not None and md.opened_key is not None
-            return self.S_CLOSED
+            return cls.S_CLOSED
         assert md.closed in (None, 0)
 
         if md.salt is None:
             assert md.opened_key is None
-            return self.S_EDITABLE
+            return cls.S_EDITABLE
         assert md.opened_key is not None
 
-        return self.S_OPEN
+        return cls.S_OPEN
 
     @staticmethod
     def kv2json(kv):
-        'Convert a structured KV into a JSON string for storage.'
+        "Convert a structured KV into a JSON string for storage."
         # Note: avoid serializing None.
         return kv and json.dumps(kv)
 
     @staticmethod
     def json2kv(j):
-        'Convert the KV JSON string back into its structured value.'
+        "Convert the KV JSON string back into its structured value."
         return j and json.loads(j)
 
+    @classmethod
+    def create(
+        cls, db_fname, title, owner_pid, authz=None, open_at=None, close_at=None
+    ):
+        ### Open in autocommit??
+        db = cls.open_database(db_fname)
 
-def new_eid():
-    "Create a new ElectionID."
+        while True:
+            eid = crypto.create_id()
+            try:
+                db.c_create.perform(eid, title, owner_pid, authz, open_at, close_at)
+                break
+            except sqlite3.IntegrityError:
+                _LOGGER.debug('EID conflict(!!) ... trying again.')
+        _LOGGER.info(f'Created election[E:{eid}]')
 
-    # Use 4 bytes of a salt, for 32 bits.
-    b = crypto.gen_salt()
+        return cls(db_fname, eid, op='Opening NEW')
 
-    # Format into 8 hex characters.
-    return f'{b[0]:02x}{b[1]:02x}{b[2]:02x}{b[3]:02x}'
+    @classmethod
+    def delete_by_eid(cls, db_fname, eid):
+        "Delete the specified Election."
+        cls(db_fname, eid).delete()
+
+    @classmethod
+    def open_to_pid(cls, db_fname, pid):
+        "List of elections are OPEN for PID to vote upon."
+
+        db = cls.open_database(db_fname)
+
+        # Run the generator to get all rows. Returned as EasyDicts.
+        db.q_open_to_me.perform(
+            pid,
+        )
+        return [row for row in db.q_open_to_me.fetchall()]
+
+    @classmethod
+    def owned_elections(cls, db_fname, pid):
+        "List of elections are that PID has created."
+
+        db = cls.open_database(db_fname)
+
+        # NOTE: contains subset of columns. We don't want to return the
+        #       SALT or OPENED_KEY values.
+        #
+        # Run the generator to get all rows. Returned as EasyDicts.
+        db.q_owned.perform(
+            pid,
+        )
+        return [row for row in db.q_owned.fetchall()]
+
+    @classmethod
+    def upcoming_to_pid(cls, db_fname, pid):
+        "List of editable elections for PID to vote upon."
+
+        db = cls.open_database(db_fname)
+
+        # Run the generator to get all rows. Returned as EasyDicts.
+        db.q_upcoming_to_me.perform(
+            pid,
+        )
+        return [row for row in db.q_upcoming_to_me.fetchall()]
+
+    @classmethod
+    def list_closed_election_ids(cls, db_fname, include_open=False):
+        "Return a list of Election IDs for closed elections, optionally including open ones."
+        db = cls.open_database(db_fname)
+
+        eids = []
+        db.q_closed_election_ids.perform()
+        eids.extend(row.eid for row in db.q_closed_election_ids.fetchall())
+
+        if include_open:
+            db.q_open_election_ids.perform()
+            eids.extend(row.eid for row in db.q_open_election_ids.fetchall())
+
+        return eids
+
+    def set_open_at(self, timestamp):
+        "Set the open_at timestamp for this Election."
+        self.c_set_open_at.perform(timestamp, self.eid)
+
+    def set_close_at(self, timestamp):
+        "Set the close_at timestamp for this Election."
+        self.c_set_close_at.perform(timestamp, self.eid)
+
+
+def not_found(cursor, key):
+    row = cursor.first_row(key)
+    return row is None
+
+
+class ElectionNotFound(Exception):
+    def __init__(self, eid):
+        self.eid = eid
+        super().__init__(str(self))
+
+    def __str__(self):
+        return f'Election[E:{self.eid}] not found'
+
+
+class ElectionBadState(Exception):
+    def __init__(self, eid, current, required):
+        self.eid = eid
+        self.current = current
+        self.required = required
+        super().__init__(str(self))
+
+    def __str__(self):
+        return (
+            f'Election[E:{self.eid}]'
+            f' is "{self.current}" but should be "{self.required}"'
+        )
+
+
+class IssueNotFound(Exception):
+    def __init__(self, iid):
+        self.iid = iid
+        super().__init__(str(self))
+
+    def __str__(self):
+        return f'Issue[I:{self.iid}] not found'

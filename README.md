@@ -1,19 +1,25 @@
 # Welcome to Apache Steve <http://steve.apache.org/>
 
 Apache Steve is software to conduct a vote using the STV (Single
-Transferrable Vote) and other voting algorithms. The tool grew out of the voting
+Transferable Vote) and other voting algorithms. The tool grew out of the voting
 system used to elect the Apache Software Foundation Board of
 Directors.
 
 Read more about STV at
 http://en.wikipedia.org/wiki/Single_transferable_vote
 
+> [!NOTE]
+>
+> The `v3` directory contains the current (ongoing) version of Steve.
+> Read the [v3/README.md](v3/README.md) file for more information about
+> this version. Read the [Getting Started Guide](v3/docs/quickstart.md)
+> to set up a development environment for v3.
+
 ## Getting Started
 
 Getting Started documentation can be found at: http://steve.apache.org/demo.html
 Otherwise, come to the #steve channel on the Slack workspace at the-asf.slack.com, 
 and we'd be glad to help you.
-
 
 ## Documentation
 
@@ -34,21 +40,13 @@ Notification on all code changes are sent to the following mailing list:
 The mailing lists are open to anyone and publicly archived.
 
 You can subscribe the mailing lists by sending a message to
-<LIST>-subscribe@steve.apache.org (for example
-dev-subscribe@steve...).  To unsubscribe, send a message to
-<LIST>-unsubscribe@steve.apache.org.  For more instructions, send a
-message to <LIST>-help@steve.apache.org.
-
-Additional mailing list details may be found at
-http://steve.apache.org/support.html
+`<LIST>-subscribe@steve.apache.org` (for example
+`dev-subscribe@steve.apache.org`).  To unsubscribe, send a message to
+`<LIST>-unsubscribe@steve.apache.org`.  For more instructions, send a
+message to `<LIST>-help@steve.apache.org`.
 
 ## Issue Tracker
 
 If you encounter errors in Steve or want to suggest an improvement or a new
 feature, please visit the Steve issue tracker at
-https://issues.apache.org/jira/browse/STEVE
-
-## Implemented changes
-
-Implemented changes can be found at:
-    https://github.apache.org/apache/steve/
+https://github.com/apache/steve/issues
