@@ -4,7 +4,7 @@ This project uses `uv` for dependency management and enforces strict linting, fo
 
 ## Post-Generation Checklist
 
-After making any changes, run the following commands in the `v3/` directory:
+From the repository root (where this `AGENTS.md` file lives), run the following commands inside the `v3/` directory:
 
 1.  **Code Formatting**: Format the code using `ruff`.
     ```bash
