@@ -535,7 +535,7 @@ class Election:
         "Return a list of distinct voters (pid, name, email) eligible for this election."
         self.q_voting_persons.perform(self.eid)
         return [
-            {'pid': row.pid, 'name': row.name, 'email': row.email}
+            edict(pid=row.pid, name=row.name, email=row.email)
             for row in self.q_voting_persons.fetchall()
         ]
 
