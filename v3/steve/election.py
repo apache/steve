@@ -531,6 +531,14 @@ class Election:
         "Set the close_at timestamp for this Election."
         self.c_set_close_at.perform(timestamp, self.eid)
 
+    def get_voters_for_email(self):
+        "Return a list of distinct voters (pid, name, email) eligible for this election."
+        self.q_voting_persons.perform(self.eid)
+        return [
+            {'pid': row.pid, 'name': row.name, 'email': row.email}
+            for row in self.q_voting_persons.fetchall()
+        ]
+
 
 def not_found(cursor, key):
     row = cursor.first_row(key)
