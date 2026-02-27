@@ -19,13 +19,15 @@
 
 """
 Script to send emails to all eligible voters for a given election.
-Loads the election, renders an email template for each voter, and sends via asfpy.messaging.
+Loads the election, renders an email template for each voter using EZT, and sends via asfpy.messaging.
 """
 
 import argparse
 import pathlib
 import logging
+import io
 
+import ezt
 import asfpy.messaging
 import steve.election
 
@@ -53,14 +55,20 @@ def main(eid, template_file):
         return
     
     # Load the EZT template
-    template = asfpy.messaging.load_template(template_file)  # Assuming asfpy.messaging has a load_template method; adjust if needed
+    template = ezt.Template(template_file)
     
     # Send email to each voter
     for voter in voters:
-        # Render the template with voter data
-        # Note: This is a skeleton; implement template rendering as needed
-        # Example: rendered_body = template.render({'pid': voter.pid, 'name': voter.name, 'email': voter.email, 'election': metadata})
-        rendered_body = f"Dear {voter.name},\n\nThis is a test email for election {metadata.title}.\n\nRegards,\nElection System"
+        # Prepare data dictionary for template rendering
+        data = {
+            'voter': voter,  # edict with pid, name, email
+            'election': metadata,  # edict with eid, title, owner_pid, etc.
+        }
+        
+        # Render the template to a StringIO stream
+        output = io.StringIO()
+        template.generate(output, data)
+        rendered_body = output.getvalue()
         
         # Send the email
         asfpy.messaging.mail(
