@@ -72,7 +72,7 @@ def main(eid, template_file):
         
         # Send the email
         asfpy.messaging.mail(
-            sender="Election System <noreply@example.com>",  # Adjust sender
+            sender="<voter@apache.org>",
             recipient=voter.email,
             subject=f"Vote in Election: {metadata.title}",
             message=rendered_body,
