@@ -78,14 +78,14 @@
                                         </div>
                                     </div>
                                     <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
-                                        <span>
-                                            [open_elections.owner_name]
+                                        [if-any open_elections.authz]
+                                            <span>[open_elections.authz] can vote</span>
+                                        [end]
+                                        <span class="text-muted" style="font-size: 0.8em;">
+                                            Created By [open_elections.owner_name]
                                             <span class="text-muted" style="font-size: 0.8em;">([open_elections.owner_pid])</span>
-                                            [if-any open_elections.authz]
-                                                &nbsp;&middot;&nbsp; [open_elections.authz]
-                                            [end]
+                                            &nbsp;&middot;&nbsp; eid: [open_elections.eid]
                                         </span>
-                                        <span class="text-muted" style="font-size: 0.8em;">eid: [open_elections.eid]</span>
                                     </div>
                                 </div>
                             </div>
@@ -130,14 +130,14 @@
                                         </p>
                                     </div>
                                     <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
-                                        <span>
-                                            [upcoming_elections.owner_name]
+                                        [if-any upcoming_elections.authz]
+                                            <span>[upcoming_elections.authz] can vote</span>
+                                        [end]
+                                        <span class="text-muted" style="font-size: 0.8em;">
+                                            Created By [upcoming_elections.owner_name]
                                             <span class="text-muted" style="font-size: 0.8em;">([upcoming_elections.owner_pid])</span>
-                                            [if-any upcoming_elections.authz]
-                                                &nbsp;&middot;&nbsp; [upcoming_elections.authz]
-                                            [end]
+                                            &nbsp;&middot;&nbsp; eid: [upcoming_elections.eid]
                                         </span>
-                                        <span class="text-muted" style="font-size: 0.8em;">eid: [upcoming_elections.eid]</span>
                                     </div>
                                 </div>
                             </div>
@@ -170,14 +170,14 @@
                                         </p>
                                     </div>
                                     <div class="card-footer text-muted small d-flex justify-content-between align-items-center">
-                                        <span>
-                                            [past_elections.owner_name]
+                                        [if-any past_elections.authz]
+                                            <span>[past_elections.authz] can vote</span>
+                                        [end]
+                                        <span class="text-muted" style="font-size: 0.8em;">
+                                            Created By [past_elections.owner_name]
                                             <span class="text-muted" style="font-size: 0.8em;">([past_elections.owner_pid])</span>
-                                            [if-any past_elections.authz]
-                                                &nbsp;&middot;&nbsp; [past_elections.authz]
-                                            [end]
+                                            &nbsp;&middot;&nbsp; eid: [past_elections.eid]
                                         </span>
-                                        <span class="text-muted" style="font-size: 0.8em;">eid: [past_elections.eid]</span>
                                     </div>
                                 </div>
                             </div>
