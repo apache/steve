@@ -56,6 +56,18 @@ T_BAD_EID = APP.load_template(TEMPLATES / 'e_bad_eid.ezt')
 T_BAD_IID = APP.load_template(TEMPLATES / 'e_bad_iid.ezt')
 T_BAD_PID = APP.load_template(TEMPLATES / 'e_bad_pid.ezt')
 
+def rewrite_description(issue):
+    """Rewrite issue description: wrap in <pre> and convert doc:filename to links."""
+    import re
+    desc = issue.description
+    # Replace doc:filename with <a> link
+    def repl(match):
+        filename = match.group(1)
+        return f'<a href="/docs/{issue.iid}/{filename}">{filename}</a>'
+    desc = re.sub(r'doc:([^\s]+)', repl, desc)
+    # Wrap in <pre>
+    issue.description = f'<pre>{desc}</pre>'
+
 
 async def basic_info():
     """Return base-level EZT template data."""
@@ -301,6 +313,10 @@ async def vote_on_page(election):
     # Combine: STV first, then YNA
     result.issues = issues_stv + issues_yna
     result.issue_count = len(result.issues)
+
+    # Rewrite descriptions in-place
+    for issue in result.issues:
+        rewrite_description(issue)
 
     result.has_voted = None  # Leave as None for now
 
