@@ -52,6 +52,7 @@ def tally(votestrings, kv):
     # kv['labelmap'] should be: LABEL: NAME
     # for example: { 'a': 'John Doe', }
     labelmap = kv['labelmap']
+    revmap = { v: k for k, v in labelmap.items() }
 
     seats = kv['seats']
 
@@ -71,6 +72,13 @@ def tally(votestrings, kv):
         for c in results.l
     )
     data = {
-        'raw': results,
+        # LABEL: ELECTED-BOOL
+        'candidates': { revmap[cand.name]: (cand.status == stv_tool.ELECTED)
+                        for cand in results.l },
+
+        # Carry the input configuration and votestrings into the result.
+        'labelmap': labelmap,
+        'seats': seats,
+        'votestrings': [ vs for vs in votestrings if vs ],  # Eliminate empty
     }
     return human, data
