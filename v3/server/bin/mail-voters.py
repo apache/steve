@@ -55,7 +55,7 @@ def main(eid, template_file):
         return
 
     # Load the EZT template
-    template = ezt.Template(template_file)
+    template = ezt.Template(template_file, compress_whitespace=False)
 
     # Send email to each voter
     for voter in voters:
