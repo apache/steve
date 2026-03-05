@@ -491,12 +491,22 @@ def main(argv):
   else:
     jvalue = None
 
-  if jvalue and 'candidates' in jvalue:
+  if jvalue and 'results' in jvalue:
     # This is a modern (v3 starting in 2026) vote-results.json file.
     # It contains everything we need.
-    labelmap = jvalue['labelmap']
 
-    votes_by_label = jvalue['votestrings']
+    # Find the single/first STV issue in the results.
+    for issue in jvalue['results'].values():
+      if issue['vtype'] == 'stv':
+        break
+    else:
+      print('No STV issue found.')
+      sys.exit(1)
+
+    data = issue['supporting_data']
+    labelmap = data['labelmap']
+
+    votes_by_label = data['votestrings']
     votes = [[labelmap[l] for l in vote.split(',')] for vote in votes_by_label]
 
   else:
