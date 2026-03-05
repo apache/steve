@@ -47,7 +47,7 @@ RESULTS_VERSION = 1
 def list_elections(db_fname, spy_on_open):
     """
     List elections available for tallying.
-    Returns a list of (eid, title, close_at, state) tuples, sorted by close_at descending.
+    Returns a list of edict objects with eid, title, close_at, state, issue_count, person_count.
     Includes closed elections, or open ones if spy_on_open is True.
     """
     eids = steve.election.Election.list_closed_election_ids(
@@ -58,10 +58,21 @@ def list_elections(db_fname, spy_on_open):
     for eid in eids:
         election = steve.election.Election(db_fname, eid)
         metadata = election.get_metadata()
-        elections.append((eid, metadata.title, metadata.close_at, metadata.state))
+        # Fetch issue count using existing list_issues method
+        issue_count = len(election.list_issues())
+        # Fetch person count using existing get_voters_for_email method
+        person_count = len(election.get_voters_for_email())
+        elections.append(edict(
+            eid=eid,
+            title=metadata.title,
+            close_at=metadata.close_at,
+            state=metadata.state,
+            issue_count=issue_count,
+            person_count=person_count
+        ))
 
     # Sort by close_at descending (most recent first)
-    elections.sort(key=lambda x: x[2] or 0, reverse=True)
+    elections.sort(key=lambda x: x.close_at or 0, reverse=True)
     return elections
 
 
@@ -75,13 +86,13 @@ def select_election(elections):
         return None
 
     print('Available elections (sorted by close date, most recent first):')
-    for i, (eid, title, close_at, state) in enumerate(elections, 1):
+    for i, election in enumerate(elections, 1):
         close_str = (
-            datetime.datetime.fromtimestamp(close_at).strftime('%Y-%m-%d %H:%M')
-            if close_at
+            datetime.datetime.fromtimestamp(election.close_at).strftime('%Y-%m-%d %H:%M')
+            if election.close_at
             else 'N/A'
         )
-        print(f'{i}. {eid} - {title} (Closed: {close_str}, State: {state})')
+        print(f'{i}. {election.eid} - {election.title} (Closed: {close_str}, State: {election.state}, Issues: {election.issue_count}, Eligible: {election.person_count})')
 
     while True:
         try:
@@ -90,7 +101,7 @@ def select_election(elections):
                 return None
             idx = int(choice) - 1
             if 0 <= idx < len(elections):
-                return elections[idx][0]
+                return elections[idx].eid
             else:
                 print('Invalid choice. Try again.')
         except ValueError:
@@ -181,7 +192,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Tally votes for all issues in a closed election (or open if --spy-on-open-elections is used).',
     )
     parser.add_argument(
