@@ -314,8 +314,14 @@ class Election:
         # The Election should be closed.
         md = self._all_metadata(self.S_CLOSED)
 
+        ### TBD: we need a param to "spy" on Open elections
+        #md = self._all_metadata()
+
         # Need the issue TYPE
         issue = self.q_get_issue.first_row(iid)
+
+        # Accumulate PID values for each person who voted on IID.
+        voters = set()
 
         # Accumulate all MOST-RECENT votes for Issue IID.
         votes = []
@@ -340,6 +346,10 @@ class Election:
             if row is None:
                 continue
 
+            # There is a vote by this PID. Record the voter.
+            voters.add(mayvote.pid)
+
+            # Get the original votestring using the token/salt.
             votestring = crypto.decrypt_votestring(
                 vote_token,
                 mayvote.salt,
@@ -352,9 +362,9 @@ class Election:
         #  superfluous. But it certainly should not hurt.
         crypto.shuffle(votes)  # in-place
 
-        # Perform the tally, and return the results.
+        # Perform the tally, and return the results and voters.
         m = vtypes.vtype_module(issue.type)
-        return m.tally(votes, self.json2kv(issue.kv))
+        return m.tally(votes, self.json2kv(issue.kv)), voters
 
     def has_voted_upon(self, pid):
         "Return {ISSUE-ID: BOOL} stating what has been voted upon."

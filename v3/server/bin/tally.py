@@ -27,10 +27,16 @@ import sys
 import steve.election
 import steve.persondb
 
+from easydict import EasyDict as edict
+
 _LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 DEFAULT_DB_FNAME = THIS_DIR.parent / 'steve.db'
+
+# Self-annotate the format of a JSON output file.
+RESULTS_VERSION = 1
+# Future: document format changes across the versions.
 
 
 def list_elections(db_fname, spy_on_open):
@@ -86,31 +92,48 @@ def select_election(elections):
             print("Please enter a number or 'q'.")
 
 
-def tally_election(election, output_format):
+def tally_election(election, issue_id, output_format):
     """
     Tally all issues in the given election and output results.
     """
+    
     issues = election.list_issues()
     if not issues:
-        print('No issues to tally in this election.')
+        _LOGGER.error('No issues to tally in this election.')
         return
 
+    # Does the user want to just tally a single issue? (faster)
+    if issue_id:
+        issues = [issue for issue in issues if issue.iid == issue_id]
+        if not issues:
+            _LOGGER.error(f'Issue {issue_id} was not found.')
+            return
+        _LOGGER.info(f'Tallying one issue: {issue_id}')
+
+    if len(issues) > 1:
+        _LOGGER.info(f'Talling {len(issues)} issues ...')
+
+    all_voters = set()
     results = {}
     for issue in issues:
         try:
-            tally_result = election.tally_issue(issue.iid)
+            tally_result, issue_voters = election.tally_issue(issue.iid)
             results[issue.iid] = {
                 'title': issue.title,
                 'vtype': issue.vtype,
                 'human_result': tally_result[0],
                 'supporting_data': tally_result[1],
             }
+            all_voters.update(issue_voters)
         except Exception as e:
             print(f'Error tallying issue {issue.iid}: {e}')
             raise  # Fail hard
 
     if output_format == 'json':
-        print(json.dumps(results, indent=2))
+        print(json.dumps(edict(version=RESULTS_VERSION,
+                               results=results,
+                               voters=sorted(all_voters),
+                               ), indent=2))
     else:  # text
         for iid, data in results.items():
             print(f'Issue {iid}: {data["title"]} ({data["vtype"]})')
@@ -119,19 +142,25 @@ def tally_election(election, output_format):
             print('-' * 40)
 
 
-def main(spy_on_open, election_id, db_fname, output_format):
+def main(spy_on_open, election_id, issue_id, db_fname, output_format):
     """
     Main function to run the tally script.
     """
-    if election_id:
-        election = steve.election.Election(db_fname, election_id)
-    else:
+    if issue_id:
+        db = steve.election.Election.open_database(db_fname)
+        issue = db.q_get_issue.first_row(issue_id)
+        if not issue:
+            raise steve.election.IssueNotFound(issue_id)
+        election_id = issue.eid
+        db.conn.close()
+    elif not election_id:
         elections = list_elections(db_fname, spy_on_open)
         election_id = select_election(elections)
         if not election_id:
             print('No election selected. Exiting.')
             return
-        election = steve.election.Election(db_fname, election_id)
+
+    election = steve.election.Election(db_fname, election_id)
 
     # Check for tampering
     pdb = steve.persondb.PersonDB.open(db_fname)
@@ -140,7 +169,7 @@ def main(spy_on_open, election_id, db_fname, output_format):
         sys.exit(1)
 
     # Proceed with tally
-    tally_election(election, output_format)
+    tally_election(election, issue_id, output_format)
 
 
 if __name__ == '__main__':
@@ -157,7 +186,11 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--election-id',
-        help='Specify election ID to tally directly (skips interactive selection).',
+        help='Specify Election ID to tally directly (skips interactive selection).',
+    )
+    parser.add_argument(
+        '--issue-id',
+        help='Specify an Issue ID to tally directly (skips interactive selection).',
     )
     parser.add_argument(
         '--db-path', default=str(DEFAULT_DB_FNAME), help='Path to the database file.'
@@ -170,4 +203,8 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    main(args.spy_on_open_elections, args.election_id, args.db_path, args.output)
+    if args.election_id and args.issue_id:
+        _LOGGER.error('ISSUE_ID implies an ELECTION_ID; do not set both.')
+        sys.exit(1)
+
+    main(args.spy_on_open_elections, args.election_id, args.issue_id, args.db_path, args.output)
