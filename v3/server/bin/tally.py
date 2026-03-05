@@ -29,6 +29,11 @@ import steve.persondb
 
 from easydict import EasyDict as edict
 
+try:
+    import pbar
+except ImportError:
+    pbar = None
+
 _LOGGER = logging.getLogger(__name__)
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
@@ -111,7 +116,7 @@ def tally_election(election, issue_id, output_format):
         _LOGGER.info(f'Tallying one issue: {issue_id}')
 
     if len(issues) > 1:
-        _LOGGER.info(f'Talling {len(issues)} issues ...')
+        _LOGGER.info(f'Tallying {len(issues)} issues ...')
 
     all_voters = set()
     results = {}
