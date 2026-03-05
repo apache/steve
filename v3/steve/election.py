@@ -94,8 +94,8 @@ class Election:
         salt = crypto.gen_salt()
         opened_key = crypto.gen_opened_key(edata, salt)
 
-        print('SALT:', salt)
-        print('KEY:', opened_key)
+        #print('SALT:', salt)
+        #print('KEY:', opened_key)
         self.c_open.perform(salt, opened_key, self.eid)
 
     def gather_election_data(self, pdb):
@@ -406,8 +406,8 @@ class Election:
         opened_key = crypto.gen_opened_key(edata, md.salt)
 
         # print('EDATA:', edata)
-        print('SALT:', md.salt)
-        print('KEY:', opened_key)
+        #print('SALT:', md.salt)
+        #print('KEY:', opened_key)
 
         # The computed key should be unchanged.
         return opened_key != md.opened_key
