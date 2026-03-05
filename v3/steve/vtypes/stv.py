@@ -49,6 +49,9 @@ def tally(votestrings, kv):
         - 'seats': Integer number of seats to elect.
     """
 
+    # Trim the incoming votestrings: no empty strings:
+    trimmed = [ s for vs in votestrings if (s := vs.strip()) ]
+
     # kv['labelmap'] should be: LABEL: NAME
     # for example: { 'a': 'John Doe', }
     labelmap = kv['labelmap']
@@ -59,8 +62,8 @@ def tally(votestrings, kv):
     # Remap all votestrings from comma-separated label strings into sequences of NAMEs.
     # Split on commas, strip whitespace, and filter out empty parts.
     votes = [
-        [labelmap[label.strip()] for label in v.split(',') if label.strip()]
-        for v in votestrings
+        [labelmap[l] for label in vs.split(',') if (l := label.strip())]
+        for vs in trimmed
     ]
 
     # Use sorted names for reproducible ordering.
@@ -79,6 +82,6 @@ def tally(votestrings, kv):
         # Carry the input configuration and votestrings into the result.
         'labelmap': labelmap,
         'seats': seats,
-        'votestrings': [ vs for vs in votestrings if vs ],  # Eliminate empty
+        'votestrings': trimmed,
     }
     return human, data
