@@ -34,6 +34,7 @@ if __name__ != '__main__':
 import os.path
 import re
 import pathlib
+import json
 
 THIS_SCRIPT = pathlib.Path(__file__).resolve()
 THIS_DIR = THIS_SCRIPT.parent
@@ -48,17 +49,39 @@ def usage():
     sys.exit(1)
 
 
+def load_votedata(votefile):
+    "Accept multiple variants of the vote file. Return NAMES, VOTESTRINGS."
+
+    if votefile.endswith('.json'):
+        # Presume this is a v3 json file. (prior ones are useless, it seems)
+
+        jvalue = json.load(open(votefile))
+        labelmap, votestrings = stv_tool.load_v3(jvalue)
+
+        # Construct a label-sorted list of names from the labelmap.
+        names = [name for _, name in sorted(labelmap.items())]
+
+        return names, votestrings
+
+    # Assume raw_board_votes.txt
+    return stv_tool.load_votes(votefile)  # returns names, list of vote-lists
+
+
+### NOTE: whatif.rb has an expectation of our argument format and
+### sequencing. Stick to that for now. ... One day: argparse.
+
+
 # Get rid of the script name.
 _ = sys.argv.pop(0)
 
 if sys.argv and sys.argv[0] == '-v':
+    ### would be nice to pass this, but ... nope.
     stv_tool.VERBOSE = True
     sys.argv.pop(0)
 
 # extract required vote file argument, and load votes from it
 if not sys.argv or not os.path.exists(sys.argv[0]): usage()
-votefile = sys.argv.pop(0)
-names, votes = stv_tool.load_votes(votefile)
+names, votes = load_votedata(sys.argv.pop(0))
 
 # extract optional number of seats argument
 if sys.argv and sys.argv[0].isdigit():
