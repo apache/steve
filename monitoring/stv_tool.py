@@ -96,7 +96,7 @@ def load_votes(fname):
   return names, votes
 
 
-def read_votefile(fname, newformat):
+def read_votefile(fname):
   """Return a list of votestrings, throwing out who produced each.
 
   Note: the file is time-ordered, and later votes override any prior
@@ -112,12 +112,9 @@ def read_votefile(fname, newformat):
       vstring = match.group('votes').lower()
       if vstring == '-':  # abstain
         continue
-      if newformat:
-        # New format; example: AA AB AC
-        votes[vhash] = [ v for v in vstring.split() ]
-      else:
-        # Old format; example: abc
-        votes[vhash] = [ v for v in vstring ]
+
+      # Format; example: abc
+      votes[vhash] = [ v for v in vstring ]
 
   # Discard voterhash, and just return the list of votes.
   return list(votes.values())
@@ -523,13 +520,16 @@ def main(argv):
       ### labels such as "AK" and "AB", yet the labels extracted from
       ### board_nominations.ini uses labels like "k" and "b".
       ### QUESTION: do new .json files have a mapping in them? eg. who is "AK"?
-      votes_by_label = process_jsonvotes(jvalue['votes'].values())
-      votes = [[labelmap[l] for l in votelist] for votelist in votes_by_label]
-    else:
-      newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
-      # votes_by_label: [ [L1, L2, ...], [ L1, L2, ... ], ... ]
-      votes_by_label = read_votefile(args.raw_file, newformat)
-      votes = [[labelmap[label] for label in votelist] for votelist in votes_by_label]
+
+      ### ANSWER: punt. the raw_board_votes.json looks unusable.
+      raise Exception('cannot use that .json file')
+
+    ### we have no files with content like this. Force to False.
+    #newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
+
+    # votes_by_label: [ [L1, L2, ...], [ L1, L2, ... ], ... ]
+    votes_by_label = read_votefile(args.raw_file)
+    votes = [[labelmap[label] for label in votelist] for votelist in votes_by_label]
 
   # Construct a label-sorted list of names from the labelmap.
   names = [name for _, name in sorted(labelmap.items())]
