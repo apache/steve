@@ -35,7 +35,8 @@ import os.path
 import re
 import pathlib
 
-THIS_DIR = pathlib.Path(__file__).resolve().parent
+THIS_SCRIPT = pathlib.Path(__file__).resolve()
+THIS_DIR = THIS_SCRIPT.parent
 
 # We're a top-level script. Adjust the import path.
 sys.path.append(str(THIS_DIR / 'monitoring'))
@@ -43,11 +44,12 @@ import stv_tool
 
 
 def usage():
-    print(f'Usage: {SCRIPTNAME} [-v] RAW_VOTES_FILE [seats] [-]name...')
+    print(f'Usage: {THIS_SCRIPT.name} [-v] RAW_VOTES_FILE [seats] [-]name...')
     sys.exit(1)
 
 
-SCRIPTNAME = sys.argv.pop(0)
+# Get rid of the script name.
+_ = sys.argv.pop(0)
 
 if sys.argv and sys.argv[0] == '-v':
     stv_tool.VERBOSE = True
