@@ -96,6 +96,25 @@ def load_votes(fname):
   return names, votes
 
 
+def load_v3(jvalue):
+    "Given JVALUE loaded from a v3 .json file, return LABELMAP and VOTESTRINGS."
+
+    # Find the single/first STV issue in the results.
+    for issue in jvalue['results'].values():
+        if issue['vtype'] == 'stv':
+            break
+    else:
+        raise Exception('No STV issue found.')
+
+    data = issue['supporting_data']
+    labelmap = data['labelmap']
+
+    votes_by_label = data['votestrings']
+    votes = [[labelmap[l] for l in vote.split(',')] for vote in votes_by_label]
+
+    return labelmap, votes
+
+
 def read_votefile(fname):
   """Return a list of votestrings, throwing out who produced each.
 
@@ -492,19 +511,7 @@ def main(argv):
     # This is a modern (v3 starting in 2026) vote-results.json file.
     # It contains everything we need.
 
-    # Find the single/first STV issue in the results.
-    for issue in jvalue['results'].values():
-      if issue['vtype'] == 'stv':
-        break
-    else:
-      print('No STV issue found.')
-      sys.exit(1)
-
-    data = issue['supporting_data']
-    labelmap = data['labelmap']
-
-    votes_by_label = data['votestrings']
-    votes = [[labelmap[l] for l in vote.split(',')] for vote in votes_by_label]
+    labelmap, votes = load_v3(jvalue)
 
   else:
     # Older styles of vote records.
