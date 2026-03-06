@@ -27,19 +27,28 @@
 #   whatif.py ../Meetings/20110712/raw_board_votes.txt -LawrenceRosen
 #   whatif.py ../Meetings/20110712/raw_board_votes.txt 1 kulp noirin geir chris
 
-import os.path
 import sys
-import re
+if __name__ != '__main__':
+    raise Exception('ERROR: not intended to be used as a library.')
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'monitoring'))
+import os.path
+import re
+import pathlib
+
+THIS_DIR = pathlib.Path(__file__).resolve().parent
+
+# We're a top-level script. Adjust the import path.
+sys.path.append(str(THIS_DIR / 'monitoring'))
 import stv_tool
 
+
 def usage():
-  print('Usage: %s [-v] RAW_VOTES_FILE [seats] [-]name...' % scriptname)
+  print(f'Usage: {SCRIPTNAME} [-v] RAW_VOTES_FILE [seats] [-]name...')
   sys.exit(1)
 
-if __name__ == '__main__':
-  scriptname = sys.argv.pop(0)
+
+if True:  ### temporary. avoid indentation changes for now.
+  SCRIPTNAME = sys.argv.pop(0)
 
   if sys.argv and sys.argv[0] == '-v':
     stv_tool.VERBOSE = True
