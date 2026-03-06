@@ -43,63 +43,62 @@ import stv_tool
 
 
 def usage():
-  print(f'Usage: {SCRIPTNAME} [-v] RAW_VOTES_FILE [seats] [-]name...')
-  sys.exit(1)
+    print(f'Usage: {SCRIPTNAME} [-v] RAW_VOTES_FILE [seats] [-]name...')
+    sys.exit(1)
 
 
-if True:  ### temporary. avoid indentation changes for now.
-  SCRIPTNAME = sys.argv.pop(0)
+SCRIPTNAME = sys.argv.pop(0)
 
-  if sys.argv and sys.argv[0] == '-v':
+if sys.argv and sys.argv[0] == '-v':
     stv_tool.VERBOSE = True
     sys.argv.pop(0)
 
-  # extract required vote file argument, and load votes from it
-  if not sys.argv or not os.path.exists(sys.argv[0]): usage()
-  votefile = sys.argv.pop(0)
-  names, votes = stv_tool.load_votes(votefile)
+# extract required vote file argument, and load votes from it
+if not sys.argv or not os.path.exists(sys.argv[0]): usage()
+votefile = sys.argv.pop(0)
+names, votes = stv_tool.load_votes(votefile)
 
-  # extract optional number of seats argument
-  if sys.argv and sys.argv[0].isdigit():
+# extract optional number of seats argument
+if sys.argv and sys.argv[0].isdigit():
     seats = int(sys.argv.pop(0))
-  else:
+else:
     seats = 9
 
-  # extract an alias list of first, last, and joined names
-  alias = {}
-  for name in names:
+# extract an alias list of first, last, and joined names
+alias = {}
+for name in names:
     lname = re.sub(r'[^\w ]', '', name.lower())
     alias[lname.replace(' ', '')] = name
     for part in lname.split(' '):
-      alias[part] = name
+        alias[part] = name
 
-  # validate input
-  for arg in sys.argv:
+# validate input
+for arg in sys.argv:
     if arg.lstrip('-').lower() not in alias:
-      sys.stderr.write('invalid selection: %s\n' % arg)
-      usage()
+        sys.stderr.write('invalid selection: %s\n' % arg)
+        usage()
 
-  if not sys.argv:
+if not sys.argv:
     # no changes to the candidates running
     pass
-  elif sys.argv[0][0] == '-':
+elif sys.argv[0][0] == '-':
     # remove candidates from vote
     for name in sys.argv: names.remove(alias[name.lstrip('-').lower()])
-  else:
+else:
     # only include specified candidates
     # NOTE: order is important, so sort the names for repeatability
     names = [ alias[n.lower()] for n in sorted(sys.argv) ]
 
-  # Trim the raw votes based on cmdline params. Eliminate votes that
-  # are not for one of the allowed names. Do not include voters who
-  # did not vote for anybody [post-trimming].
-  trimmed = [ ]
-  for voteseq in votes:
+# Trim the raw votes based on cmdline params. Eliminate votes that
+# are not for one of the allowed names. Do not include voters who
+# did not vote for anybody [post-trimming].
+trimmed = [ ]
+for voteseq in votes:
     newseq = [ v for v in voteseq if v in names ]
     if newseq:
-      trimmed.append(newseq)
+        trimmed.append(newseq)
 
-  # run the vote
-  candidates = stv_tool.run_stv(names, trimmed, seats)
-  candidates.print_results()
-  print('Done!')
+# run the vote
+candidates = stv_tool.run_stv(names, trimmed, seats)
+candidates.print_results()
+print('Done!')
