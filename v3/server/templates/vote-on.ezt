@@ -330,7 +330,7 @@
 
   // ── Candidate data embedded by server ────────────────────────────────────
   // Each STV issue emits its candidates here so the modal can populate them
-  // without any XHR. Format: { iid: [{label, asfid, name}, ...], ... }
+  // without any XHR. Format: { iid: {seats, title, candidates: [{label, asfid, name}, ...]}, ... }
   const STV_CANDIDATES = {
 [for issues][is issues.vtype "stv"]    "[issues.iid]": {
       seats: [issues.seats],

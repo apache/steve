@@ -41,7 +41,9 @@ def get_candidates(kv):
     """Return normalized candidate details keyed by ballot label."""
 
     version = kv.get('version', 1)
-    labelmap = kv['labelmap']
+    labelmap = kv.get('labelmap')
+    if not isinstance(labelmap, dict):
+        raise ValueError('STV kv must contain a "labelmap" mapping')
 
     if version == 1:
         candidates = {}
