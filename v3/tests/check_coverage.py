@@ -69,13 +69,14 @@ def touch_every_line():
         None,
         'stv',
         {
+            'version': 2,
             'seats': 3,
             'labelmap': {
-                'a': 'Alice',
-                'b': 'Bob',
-                'c': 'Carlos',
-                'd': 'David',
-                'e': 'Eve',
+                'a': ['alice', 'Alice'],
+                'b': ['bob', 'Bob'],
+                'c': ['carlos', 'Carlos'],
+                'd': ['david', 'David'],
+                'e': ['eve', 'Eve'],
             },
         },
     )

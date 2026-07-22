@@ -62,14 +62,16 @@ def list_elections(db_fname, spy_on_open):
         issue_count = len(election.list_issues())
         # Fetch person count using existing get_voters_for_email method
         person_count = len(election.get_voters_for_email())
-        elections.append(edict(
-            eid=eid,
-            title=metadata.title,
-            close_at=metadata.close_at,
-            state=metadata.state,
-            issue_count=issue_count,
-            person_count=person_count
-        ))
+        elections.append(
+            edict(
+                eid=eid,
+                title=metadata.title,
+                close_at=metadata.close_at,
+                state=metadata.state,
+                issue_count=issue_count,
+                person_count=person_count,
+            )
+        )
 
     # Sort by close_at descending (most recent first)
     elections.sort(key=lambda x: x.close_at or 0, reverse=True)
@@ -88,11 +90,15 @@ def select_election(elections):
     print('Available elections (sorted by close date, most recent first):')
     for i, election in enumerate(elections, 1):
         close_str = (
-            datetime.datetime.fromtimestamp(election.close_at).strftime('%Y-%m-%d %H:%M')
+            datetime.datetime.fromtimestamp(election.close_at).strftime(
+                '%Y-%m-%d %H:%M'
+            )
             if election.close_at
             else 'N/A'
         )
-        print(f'{i}. {election.eid} - {election.title} (Closed: {close_str}, State: {election.state}, Issues: {election.issue_count}, Eligible: {election.person_count})')
+        print(
+            f'{i}. {election.eid} - {election.title} (Closed: {close_str}, State: {election.state}, Issues: {election.issue_count}, Eligible: {election.person_count})'
+        )
 
     while True:
         try:
@@ -112,7 +118,7 @@ def tally_election(election, issue_id, output_format):
     """
     Tally all issues in the given election and output results.
     """
-    
+
     issues = election.list_issues()
     if not issues:
         _LOGGER.error('No issues to tally in this election.')
@@ -146,10 +152,16 @@ def tally_election(election, issue_id, output_format):
             raise  # Fail hard
 
     if output_format == 'json':
-        print(json.dumps(edict(version=RESULTS_VERSION,
-                               results=results,
-                               voters=sorted(all_voters),
-                               ), indent=2))
+        print(
+            json.dumps(
+                edict(
+                    version=RESULTS_VERSION,
+                    results=results,
+                    voters=sorted(all_voters),
+                ),
+                indent=2,
+            )
+        )
     else:  # text
         for iid, data in results.items():
             print(f'Issue {iid}: {data["title"]} ({data["vtype"]})')
@@ -223,4 +235,10 @@ if __name__ == '__main__':
         _LOGGER.error('ISSUE_ID implies an ELECTION_ID; do not set both.')
         sys.exit(1)
 
-    main(args.spy_on_open_elections, args.election_id, args.issue_id, args.db_path, args.output)
+    main(
+        args.spy_on_open_elections,
+        args.election_id,
+        args.issue_id,
+        args.db_path,
+        args.output,
+    )

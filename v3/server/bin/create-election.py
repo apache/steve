@@ -30,6 +30,7 @@ import yaml
 
 import steve.election
 import steve.persondb
+import steve.vtypes.stv
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ def validate_issue(issue):
             )
         if not isinstance(kv['seats'], int) or kv['seats'] <= 0:
             raise ValueError('STV seats must be a positive integer')
+        steve.vtypes.stv.get_candidates(kv)
     return issue
 
 

@@ -36,6 +36,7 @@ import ezt
 import steve.election
 import steve.crypto
 import steve.persondb
+import steve.vtypes.stv
 
 APP = asfquart.APP
 _LOGGER = logging.getLogger(__name__)
@@ -56,14 +57,18 @@ T_BAD_EID = APP.load_template(TEMPLATES / 'e_bad_eid.ezt')
 T_BAD_IID = APP.load_template(TEMPLATES / 'e_bad_iid.ezt')
 T_BAD_PID = APP.load_template(TEMPLATES / 'e_bad_pid.ezt')
 
+
 def rewrite_description(issue):
     """Rewrite issue description: wrap in <pre> and convert doc:filename to links."""
     import re
+
     desc = issue.description
+
     # Replace doc:filename with <a> link
     def repl(match):
         filename = match.group(1)
         return f'<a href="/docs/{issue.iid}/{filename}">{filename}</a>'
+
     desc = re.sub(r'doc:([^\s]+)', repl, desc)
     # Wrap in <pre>
     issue.description = f'<pre>{desc}</pre>'
@@ -294,11 +299,13 @@ async def vote_on_page(election):
     issues_stv = [i for i in all_issues if i.vtype == 'stv']
     issues_stv.sort(key=lambda i: i.title)
 
-    # Add seats, labelmap, and candidates to STV issues from KV
+    # Add seats and normalized candidates to STV issues from KV
     for issue in issues_stv:
         issue.seats = issue.kv.get('seats', 0)
-        issue.labelmap = edict(issue.kv.get('labelmap', {}))
-        issue.candidates = [{'label': k, 'name': v} for k, v in issue.labelmap.items()]
+        candidates = steve.vtypes.stv.get_candidates(issue.kv)
+        issue.candidates = [
+            {'label': label, **candidate} for label, candidate in candidates.items()
+        ]
         # Shuffle candidates to prevent bias towards the first listed candidate
         random.shuffle(issue.candidates)
 
