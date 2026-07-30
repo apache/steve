@@ -330,13 +330,13 @@
 
   // ── Candidate data embedded by server ────────────────────────────────────
   // Each STV issue emits its candidates here so the modal can populate them
-  // without any XHR. Format: { iid: [{label, name}, ...], ... }
+  // without any XHR. Format: { iid: {seats, title, candidates: [{label, asfid, name}, ...]}, ... }
   const STV_CANDIDATES = {
 [for issues][is issues.vtype "stv"]    "[issues.iid]": {
       seats: [issues.seats],
       title: "[issues.title]",
       candidates: [
-[for issues.candidates]        { label: "[issues.candidates.label]", name: "[issues.candidates.name]" },
+[for issues.candidates]        { label: "[issues.candidates.label]", asfid: "[issues.candidates.asfid]", name: "[issues.candidates.name]" },
 [end]      ]
     },
 [end][end]  };
@@ -392,8 +392,9 @@
     div.className    = 'stv-item';
     div.dataset.label = candidate.label;
     if (rank) div.dataset.rank = rank;
+    const asfid = candidate.asfid ? ' (' + escapeHtml(candidate.asfid) + ')' : '';
     div.innerHTML = '<span class="drag-handle bi bi-grip-vertical"></span>'
-                  + '<span class="cand-name">' + escapeHtml(candidate.name) + '</span>';
+                  + '<span class="cand-name">' + escapeHtml(candidate.name) + asfid + '</span>';
     // Double-click to move between panels
     div.addEventListener('dblclick', () => moveItem(div));
     return div;

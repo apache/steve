@@ -18,12 +18,12 @@ issues:  # Required: List of voting issues
     description: "Rank candidates for board seats using STV."
     vtype: "stv"
     kv:  # Required for STV: Key-value metadata
-      version: 1  # Format version
-      labelmap:  # Candidate mappings (label -> name)
-        a: "Alice"
-        b: "Bob"
-        c: "Carlos"
-        d: "David"
+      version: 2  # Format version
+      labelmap:  # Candidate mappings (label -> [ASF ID, name])
+        a: [alice, "Alice"]
+        b: [bob, "Bob"]
+        c: [carlos, "Carlos"]
+        d: [david, "David"]
       seats: 3  # Number of seats to elect
 
 record:  # Required: List of eligible voter PIDs (must exist in person database)
