@@ -4,7 +4,8 @@
         [include "flashes.ezt"]
 
         <p>
-            TBD
+          For more information, please see the
+          <a href="https://steve.apache.org/">Apache STeVe website</a>
         </p>
     </div>
 [include "footer.ezt"]

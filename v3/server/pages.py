@@ -36,6 +36,7 @@ import ezt
 import steve.election
 import steve.crypto
 import steve.persondb
+import steve.vtypes.stv
 
 APP = asfquart.APP
 _LOGGER = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ THIS_DIR = pathlib.Path(__file__).resolve().parent
 DB_FNAME = THIS_DIR / APP.cfg.db
 TEMPLATES = THIS_DIR / 'templates'
 STATICDIR = THIS_DIR / 'static'
+DOCSDIR = THIS_DIR / 'docs'
 
 # Formatted values to inject into templates.
 FMT_DATE = '%b %d'
@@ -54,6 +56,22 @@ SOON_CUTOFF = 48 * SOON_1HOUR  # 48 hours, in seconds
 T_BAD_EID = APP.load_template(TEMPLATES / 'e_bad_eid.ezt')
 T_BAD_IID = APP.load_template(TEMPLATES / 'e_bad_iid.ezt')
 T_BAD_PID = APP.load_template(TEMPLATES / 'e_bad_pid.ezt')
+
+
+def rewrite_description(issue):
+    """Rewrite issue description: wrap in <pre> and convert doc:filename to links."""
+    import re
+
+    desc = issue.description
+
+    # Replace doc:filename with <a> link
+    def repl(match):
+        filename = match.group(1)
+        return f'<a href="/docs/{issue.iid}/{filename}">{filename}</a>'
+
+    desc = re.sub(r'doc:([^\s]+)', repl, desc)
+    # Wrap in <pre>
+    issue.description = f'<pre>{desc}</pre>'
 
 
 async def basic_info():
@@ -99,13 +117,13 @@ async def _set_election_date(election, field):
     date_str = data.get('date')
     if not date_str:
         quart.abort(400, 'Missing date')
-    
+
     # Validate date (basic check)
     try:
         dt = datetime.datetime.fromisoformat(date_str).date()
     except ValueError:
         quart.abort(400, 'Invalid date format')
-    
+
     # Set the date on the election (field is 'open_at' or 'close_at')
     if field == 'open_at':
         election.set_open_at(dt)
@@ -113,8 +131,10 @@ async def _set_election_date(election, field):
         election.set_close_at(dt)
     else:
         quart.abort(400, 'Invalid field')
-    
-    _LOGGER.info(f'User[U:{result.uid}] set {field} for election[E:{election.eid}] to {date_str}')
+
+    _LOGGER.info(
+        f'User[U:{result.uid}] set {field} for election[E:{election.eid}] to {date_str}'
+    )
     return '', 204
 
 
@@ -155,8 +175,11 @@ async def voter_page():
         owned = steve.election.Election.owned_elections(DB_FNAME, result.uid)
 
     result.open_elections = [postprocess_election(e) for e in election]
-    result.upcoming_elections = [postprocess_election(e) for e in steve.election.Election.upcoming_to_pid(DB_FNAME, result.uid)]
-    result.past_elections = [ ]  ### TBD
+    result.upcoming_elections = [
+        postprocess_election(e)
+        for e in steve.election.Election.upcoming_to_pid(DB_FNAME, result.uid)
+    ]
+    result.past_elections = []  ### TBD
 
     result.len_open = len(result.open_elections)
     result.len_upcoming = len(result.upcoming_elections)
@@ -276,11 +299,13 @@ async def vote_on_page(election):
     issues_stv = [i for i in all_issues if i.vtype == 'stv']
     issues_stv.sort(key=lambda i: i.title)
 
-    # Add seats, labelmap, and candidates to STV issues from KV
+    # Add seats and normalized candidates to STV issues from KV
     for issue in issues_stv:
         issue.seats = issue.kv.get('seats', 0)
-        issue.labelmap = edict(issue.kv.get('labelmap', {}))
-        issue.candidates = [{'label': k, 'name': v} for k, v in issue.labelmap.items()]
+        candidates = steve.vtypes.stv.get_candidates(issue.kv)
+        issue.candidates = [
+            {'label': label, **candidate} for label, candidate in candidates.items()
+        ]
         # Shuffle candidates to prevent bias towards the first listed candidate
         random.shuffle(issue.candidates)
 
@@ -295,6 +320,10 @@ async def vote_on_page(election):
     # Combine: STV first, then YNA
     result.issues = issues_stv + issues_yna
     result.issue_count = len(result.issues)
+
+    # Rewrite descriptions in-place
+    for issue in result.issues:
+        rewrite_description(issue)
 
     result.has_voted = None  # Leave as None for now
 
@@ -444,14 +473,18 @@ async def do_vote_endpoint(election):
 
         try:
             election.add_vote(result.uid, iid, votestring)
-            _LOGGER.info(f'User[U:{result.uid}] voted on issue[I:{iid}] in election[E:{election.eid}]')
+            _LOGGER.info(
+                f'User[U:{result.uid}] voted on issue[I:{iid}] in election[E:{election.eid}]'
+            )
         except Exception as e:
-            _LOGGER.error(f'Error adding vote for user[U:{result.uid}] on issue[I:{iid}]: {e}')
+            _LOGGER.error(
+                f'Error adding vote for user[U:{result.uid}] on issue[I:{iid}]: {e}'
+            )
             await flash_danger(f'Error submitting vote for issue {iid}.')
             return quart.redirect(f'/vote-on/{election.eid}', code=303)
 
     await flash_success('Votes submitted successfully!')
-    return quart.redirect(f'/voter', code=303)
+    return quart.redirect('/voter', code=303)
 
 
 @APP.post('/do-create-election')
@@ -618,15 +651,6 @@ async def settings_page():
     return result
 
 
-@APP.get('/privacy')
-@APP.use_template(TEMPLATES / 'privacy.ezt')
-async def privacy_page():
-    result = await basic_info()
-    result.title = 'Privacy'
-
-    return result
-
-
 @APP.get('/about')
 @APP.use_template(TEMPLATES / 'about.ezt')
 async def about_page():
@@ -634,6 +658,25 @@ async def about_page():
     result.title = 'About'
 
     return result
+
+
+# Serve supporting documents for an issue
+@APP.get('/docs/<iid>/<docname>')
+@asfquart.auth.require  # fine-grained per-doc authz within the handler
+async def serve_doc(iid, docname):
+    result = await basic_info()  # get PID  ### grr: called uid
+
+    db = steve.election.Election.open_database(DB_FNAME)
+    row = db.q_get_mayvote.first_row(result.uid, iid)
+    if not row:
+        # Nothing fancy. Just pretend the file does not exist
+        quart.abort(404)
+        # NOTREACHED
+
+    ### verify the propriety of DOCNAME.
+
+    # Return per-issue document.
+    return await quart.send_from_directory(DOCSDIR / iid, docname)
 
 
 # Route to serve static files (CSS and JS)

@@ -160,7 +160,7 @@ election:
         ORDER BY e._ROWID_
 
     q_voting_persons: |
-        SELECT DISTINCT m.pid, p.email
+        SELECT DISTINCT m.pid, p.name, p.email
         FROM mayvote m
         JOIN issue i ON m.iid = i.iid
         JOIN person p ON m.pid = p.pid

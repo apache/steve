@@ -90,12 +90,12 @@ class Election:
         self.add_salts()
 
         edata = self.gather_election_data(pdb)
-        print('EDATA:', edata)
+        # print('EDATA:', edata)
         salt = crypto.gen_salt()
         opened_key = crypto.gen_opened_key(edata, salt)
 
-        print('SALT:', salt)
-        print('KEY:', opened_key)
+        # print('SALT:', salt)
+        # print('KEY:', opened_key)
         self.c_open.perform(salt, opened_key, self.eid)
 
     def gather_election_data(self, pdb):
@@ -123,10 +123,7 @@ class Election:
         # Include the PID and EMAIL for each Person who may vote in this Election.
         # Use q_voting_persons to get distinct, sorted PIDs and emails from mayvote/issue/person join.
         self.q_voting_persons.perform(self.eid)
-        pdata = ''.join(
-            row.pid + row.email
-            for row in self.q_voting_persons.fetchall()
-        )
+        pdata = ''.join(row.pid + row.email for row in self.q_voting_persons.fetchall())
 
         return (mdata + idata + pdata).encode()
 
@@ -317,13 +314,19 @@ class Election:
         # The Election should be closed.
         md = self._all_metadata(self.S_CLOSED)
 
+        ### TBD: we need a param to "spy" on Open elections
+        # md = self._all_metadata()
+
         # Need the issue TYPE
         issue = self.q_get_issue.first_row(iid)
+
+        # Accumulate PID values for each person who voted on IID.
+        voters = set()
 
         # Accumulate all MOST-RECENT votes for Issue IID.
         votes = []
 
-        # Use mayvote to determine all potential voters for Issue IID.
+        # Use mayvote to determine all eligible voters for Issue IID.
         self.q_tally.perform(iid)
         for mayvote in self.q_tally.fetchall():
             # Each row is: PID, IID, SALT
@@ -338,6 +341,15 @@ class Election:
 
             # We don't need/want all columns, so only pick CIPHERTEXT.
             row = self.q_recent_vote.first_row(vote_token)
+
+            # This PID may not have voted on IID.
+            if row is None:
+                continue
+
+            # There is a vote by this PID. Record the voter.
+            voters.add(mayvote.pid)
+
+            # Get the original votestring using the token/salt.
             votestring = crypto.decrypt_votestring(
                 vote_token,
                 mayvote.salt,
@@ -350,9 +362,9 @@ class Election:
         #  superfluous. But it certainly should not hurt.
         crypto.shuffle(votes)  # in-place
 
-        # Perform the tally, and return the results.
+        # Perform the tally, and return the results and voters.
         m = vtypes.vtype_module(issue.type)
-        return m.tally(votes, self.json2kv(issue.kv))
+        return m.tally(votes, self.json2kv(issue.kv)), voters
 
     def has_voted_upon(self, pid):
         "Return {ISSUE-ID: BOOL} stating what has been voted upon."
@@ -382,16 +394,20 @@ class Election:
         return voted_upon
 
     def is_tampered(self, pdb):
-        # The Election should be open.
-        md = self._all_metadata(self.S_OPEN)
+        # The Election should be open (don't allow voting when TAMPERED)
+        # or it may be closed (don't bother tallying, if TAMPERED).
+        #
+        # ... if in the editable state, then the OPENED_KEY check below will
+        #     simply fail. So don't call when in that state. Your fault.
+        md = self._all_metadata()  # no required state
 
         # Compute an opened_key based on the current data.
         edata = self.gather_election_data(pdb)
         opened_key = crypto.gen_opened_key(edata, md.salt)
 
-        print('EDATA:', edata)
-        print('SALT:', md.salt)
-        print('KEY:', opened_key)
+        # print('EDATA:', edata)
+        # print('SALT:', md.salt)
+        # print('KEY:', opened_key)
 
         # The computed key should be unchanged.
         return opened_key != md.opened_key
@@ -506,15 +522,15 @@ class Election:
     def list_closed_election_ids(cls, db_fname, include_open=False):
         "Return a list of Election IDs for closed elections, optionally including open ones."
         db = cls.open_database(db_fname)
-        
+
         eids = []
         db.q_closed_election_ids.perform()
         eids.extend(row.eid for row in db.q_closed_election_ids.fetchall())
-        
+
         if include_open:
             db.q_open_election_ids.perform()
             eids.extend(row.eid for row in db.q_open_election_ids.fetchall())
-        
+
         return eids
 
     def set_open_at(self, timestamp):
@@ -524,6 +540,14 @@ class Election:
     def set_close_at(self, timestamp):
         "Set the close_at timestamp for this Election."
         self.c_set_close_at.perform(timestamp, self.eid)
+
+    def get_voters_for_email(self):
+        "Return a list of distinct voters (pid, name, email) eligible for this election."
+        self.q_voting_persons.perform(self.eid)
+        return [
+            edict(pid=row.pid, name=row.name, email=row.email)
+            for row in self.q_voting_persons.fetchall()
+        ]
 
 
 def not_found(cursor, key):

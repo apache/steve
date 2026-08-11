@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,6 +17,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+Script to create an election from a YAML definition file.
+Reads election metadata, issues, and voter records, then populates the database.
+"""
+
 import argparse
 import datetime
 import pathlib
@@ -25,6 +30,7 @@ import yaml
 
 import steve.election
 import steve.persondb
+import steve.vtypes.stv
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +50,7 @@ def parse_datetime(dt):
     if isinstance(dt, str):
         dt_obj = datetime.datetime.fromisoformat(dt)
         return int(dt_obj.timestamp())
-    raise ValueError(f"Invalid datetime format: {dt}")
+    raise ValueError(f'Invalid datetime format: {dt}')
 
 
 def validate_issue(issue):
@@ -59,6 +65,7 @@ def validate_issue(issue):
             )
         if not isinstance(kv['seats'], int) or kv['seats'] <= 0:
             raise ValueError('STV seats must be a positive integer')
+        steve.vtypes.stv.get_candidates(kv)
     return issue
 
 
@@ -87,10 +94,7 @@ def main(yaml_file):
     if not isinstance(record, list):
         raise ValueError('record must be a list of pid values')
 
-    ### revising how we manage the two database instances and their
-    ### connections. no transactions for now. partial Elections, and
-    ### issues are fine for now.
-    # Start transaction for safety
+    # TODO: Re-enable transactions for safety once database setup allows.
     # pdb = steve.persondb.PersonDB(DB_FNAME)
     # pdb.db.conn.execute('BEGIN TRANSACTION')
 
@@ -116,35 +120,32 @@ def main(yaml_file):
         # Open a PersonDB using the existing DB from the Election
         pdb = steve.persondb.PersonDB(election.db)
 
-        ### HACK: we opened PDB using the existing DB from the Election.
-        ### It does not have the cursors specific to PersonDB. For now,
-        ### hack the bugger in.
-        ### q_person: SELECT * FROM person ORDER BY pid
+        # HACK: Opened PDB using existing DB; lacks PersonDB cursors.
+        # q_person: SELECT * FROM person ORDER BY pid
         pdb.q_person = pdb.db.cursor_for('SELECT * FROM person ORDER BY pid')
 
-        # Get all persons
+        # Get all persons for validation
         all_persons = pdb.list_persons()
         all_pids = {person.pid for person in all_persons}
 
-        ### hack for testing. map OLD pids to their newer equivalent
+        # Temporary hack: Map old PIDs to newer equivalents for testing.
+        # TODO: Remove once PID data is fully migrated.
         _REMAP = {
             'iroh': 'wells',
-            }
+        }
 
         # Validate and add voters from record
         for pid in record:
-            pid = _REMAP.get(pid, pid)
+            pid = _REMAP.get(pid, pid)  # Apply remapping if needed
             if pid not in all_pids:
                 raise ValueError(f'PID {pid} from record not found in person database')
             election.add_voter(pid)
         _LOGGER.info(f'Added {len(record)} voters to election[E:{election.eid}]')
 
-        ### we aren't doing transactions right now. omit this.
         # pdb.db.conn.execute('COMMIT')
         _LOGGER.info(f'Election[E:{election.eid}] fully created from {yaml_file}')
 
     except Exception as e:
-        ### we aren't doing transactions right now. omit this.
         # pdb.db.conn.execute('ROLLBACK')
         _LOGGER.error(f'Failed to create election from {yaml_file}: {e}')
         raise

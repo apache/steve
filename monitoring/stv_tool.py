@@ -96,7 +96,26 @@ def load_votes(fname):
   return names, votes
 
 
-def read_votefile(fname, newformat):
+def load_v3(jvalue):
+    "Given JVALUE loaded from a v3 .json file, return LABELMAP and VOTESTRINGS."
+
+    # Find the single/first STV issue in the results.
+    for issue in jvalue['results'].values():
+        if issue['vtype'] == 'stv':
+            break
+    else:
+        raise Exception('No STV issue found.')
+
+    data = issue['supporting_data']
+    labelmap = data['labelmap']
+
+    votes_by_label = data['votestrings']
+    votes = [[labelmap[l] for l in vote.split(',')] for vote in votes_by_label]
+
+    return labelmap, votes
+
+
+def read_votefile(fname):
   """Return a list of votestrings, throwing out who produced each.
 
   Note: the file is time-ordered, and later votes override any prior
@@ -112,25 +131,22 @@ def read_votefile(fname, newformat):
       vstring = match.group('votes').lower()
       if vstring == '-':  # abstain
         continue
-      if newformat:
-        # New format; example: AA AB AC
-        votes[vhash] = [ v for v in vstring.split() ]
-      else:
-        # Old format; example: abc
-        votes[vhash] = [ v for v in vstring ]
+
+      # Format; example: abc
+      votes[vhash] = [ v for v in vstring ]
 
   # Discard voterhash, and just return the list of votes.
   return list(votes.values())
 
 
-def read_jsonvotes(fname):
-  "Return a list of votestrings."
+def process_jsonvotes(votestrings):
+  "Return a list (each voter) of ordered lists of vote-labels."
 
   votes = [ ]
-  for v in json.load(open(fname))['votes'].values():
+  for v in votestrings:
     # Ignore the "null" votes, for STV purposes.
     if (vote := v['vote']) != '-':
-      votes.append(vote)
+      votes.append(vote.lower().split())
   return votes
 
 
@@ -486,26 +502,44 @@ def main(argv):
     parser.print_help()
     sys.exit(1)
 
-  # Get mapping from vote label (typically "a" to "z") to human name.
-  labelmap = read_nominees(args.raw_file)
+  if args.raw_file.endswith('.json'):
+    jvalue = json.load(open(args.raw_file))
+  else:
+    jvalue = None
+
+  if jvalue and 'results' in jvalue:
+    # This is a modern (v3 starting in 2026) vote-results.json file.
+    # It contains everything we need.
+
+    labelmap, votes = load_v3(jvalue)
+
+  else:
+    # Older styles of vote records.
+
+    # Get mapping from vote label (typically "a" to "z") to human name.
+    labelmap = read_nominees(args.raw_file)
+    print('LABELMAP:', labelmap)
+
+    # Turn votes using labels into by-name.
+    if jvalue:
+      ### noted on 2025-03-06:
+      ### this appears totally broken. The prior-year raw JSON files have
+      ### labels such as "AK" and "AB", yet the labels extracted from
+      ### board_nominations.ini uses labels like "k" and "b".
+      ### QUESTION: do new .json files have a mapping in them? eg. who is "AK"?
+
+      ### ANSWER: punt. the raw_board_votes.json looks unusable.
+      raise Exception('cannot use that .json file')
+
+    ### we have no files with content like this. Force to False.
+    #newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
+
+    # votes_by_label: [ [L1, L2, ...], [ L1, L2, ... ], ... ]
+    votes_by_label = read_votefile(args.raw_file)
+    votes = [[labelmap[label] for label in votelist] for votelist in votes_by_label]
 
   # Construct a label-sorted list of names from the labelmap.
   names = [name for _, name in sorted(labelmap.items())]
-
-  # Turn votes using labels into by-name.
-  if args.raw_file.endswith('.json'):
-    ### noted on 2025-03-06:
-    ### this appears totally broken. The prior-year raw JSON files have
-    ### labels such as "AK" and "AB", yet the labels extracted from
-    ### board_nominations.ini uses labels like "k" and "b".
-    ### QUESTION: do new .json files have a mapping in them? eg. who is "AK"?
-    votes_by_label = read_jsonvotes(args.raw_file)
-    votes = [[labelmap[l.lower()] for l in vote.split()] for vote in votes_by_label]
-  else:
-    newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
-    # votes_by_label: [ [L1, L2, ...], [ L1, L2, ... ], ... ]
-    votes_by_label = read_votefile(args.raw_file, newformat)
-    votes = [[labelmap[label] for label in votelist] for votelist in votes_by_label]
 
   candidates = run_stv(names, votes, args.seats)
   candidates.print_results()

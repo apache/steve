@@ -76,7 +76,9 @@
   .sortable-chosen { box-shadow: 0 2px 8px rgba(13,110,253,.25); }
 
   /* empty-state hint */
-  .stv-panel-empty {
+  #stv-ranked-list.is-empty::after {
+    content: "Drag candidates here to rank them";
+    display: block;
     color: #adb5bd;
     font-size: .85rem;
     text-align: center;
@@ -147,7 +149,9 @@
 
   <p class="text-muted">
     You have <strong>[issue_count]</strong> issue[if-any are_yna_plural]s[end] to vote upon in this election.
-    [if-any has_stv_issues]STV election issue[if-any are_stv_plural]s[end] appear at the top.[end]
+    [if-any has_stv_issues]The STV election issue[if-any are_stv_plural]s[end]
+    appear[if-any are_stv_plural][else]s[end]
+    at the top.[end]
   </p>
 
   <form id="voteForm" method="POST" action="/do-vote/[eid]">
@@ -291,9 +295,6 @@
               </button>
             </div>
             <div class="stv-panel" id="stv-ranked-list">
-              <div class="stv-panel-empty" id="stv-ranked-empty">
-                Drag candidates here to rank them
-              </div>
             </div>
           </div>
 
@@ -329,13 +330,13 @@
 
   // ── Candidate data embedded by server ────────────────────────────────────
   // Each STV issue emits its candidates here so the modal can populate them
-  // without any XHR. Format: { iid: [{label, name}, ...], ... }
+  // without any XHR. Format: { iid: {seats, title, candidates: [{label, asfid, name}, ...]}, ... }
   const STV_CANDIDATES = {
 [for issues][is issues.vtype "stv"]    "[issues.iid]": {
       seats: [issues.seats],
       title: "[issues.title]",
       candidates: [
-[for issues.candidates]        { label: "[issues.candidates.label]", name: "[issues.candidates.name]" },
+[for issues.candidates]        { label: "[issues.candidates.label]", asfid: "[issues.candidates.asfid]", name: "[issues.candidates.name]" },
 [end]      ]
     },
 [end][end]  };
@@ -391,8 +392,9 @@
     div.className    = 'stv-item';
     div.dataset.label = candidate.label;
     if (rank) div.dataset.rank = rank;
+    const asfid = candidate.asfid ? ' (' + escapeHtml(candidate.asfid) + ')' : '';
     div.innerHTML = '<span class="drag-handle bi bi-grip-vertical"></span>'
-                  + '<span class="cand-name">' + escapeHtml(candidate.name) + '</span>';
+                  + '<span class="cand-name">' + escapeHtml(candidate.name) + asfid + '</span>';
     // Double-click to move between panels
     div.addEventListener('dblclick', () => moveItem(div));
     return div;
@@ -436,12 +438,6 @@
   }
 
   function onSortEnd() {
-    // Remove the empty-hint element if it got sorted (it shouldn't, but guard)
-    const hint = document.getElementById('stv-ranked-empty');
-    const rp   = document.getElementById('stv-ranked-list');
-    if (hint && hint.parentElement === rp && rp.children.length > 1) {
-      hint.remove();
-    }
     updateRankNumbers();
     updateEmptyHint();
   }
@@ -454,19 +450,8 @@
 
   function updateEmptyHint() {
     const rp    = document.getElementById('stv-ranked-list');
-    let   hint  = document.getElementById('stv-ranked-empty');
     const items = rp.querySelectorAll('.stv-item');
-    if (items.length === 0) {
-      if (!hint) {
-        hint = document.createElement('div');
-        hint.className = 'stv-panel-empty';
-        hint.id        = 'stv-ranked-empty';
-        hint.textContent = 'Drag candidates here to rank them';
-      }
-      rp.appendChild(hint);
-    } else if (hint) {
-      hint.remove();
-    }
+    rp.classList.toggle('is-empty', items.length === 0);
   }
 
   // ── Save ranking back to hidden input ────────────────────────────────────

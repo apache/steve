@@ -93,10 +93,10 @@ def _hash(data: bytes, salt: bytes) -> bytes:
     return argon2.low_level.hash_secret_raw(
         secret=data,
         salt=salt,
-        time_cost=2,          # Passlib default
-        memory_cost=65536,    # Passlib default
-        parallelism=4,        # Passlib default
-        hash_len=32,          # Standard Argon2 digest length
+        time_cost=2,  # Passlib default
+        memory_cost=65536,  # Passlib default
+        parallelism=4,  # Passlib default
+        hash_len=32,  # Standard Argon2 digest length
         type=argon2.low_level.Type.D,
     )
 
@@ -127,28 +127,23 @@ def create_id():
 
 
 def benchmark_argon2():
-
     # Test Data
-    dummy_data = b"This is a sample datum representing one of your 1000 entries."
-    salt = b"16_byte_salt_123" # 16 bytes
+    dummy_data = b'This is a sample datum representing one of your 1000 entries.'
+    salt = b'16_byte_salt_123'  # 16 bytes
     intermediate = hashlib.blake2b(dummy_data).digest()
 
     # Define Low/High levels for the 3 parameters
     # Note: Memory is in Kibibytes (65536 = 64MB)
-    options = {
-        "rounds": [2, 4],
-        "memory": [65536, 131072],
-        "parallelism": [4, 8]
-    }
+    options = {'rounds': [2, 4], 'memory': [65536, 131072], 'parallelism': [4, 8]}
 
-    print(f"{'Rounds':<8} | {'Memory (MB)':<12} | {'Threads':<8} | {'Time (s)':<10}")
-    print("-" * 50)
+    print(f'{"Rounds":<8} | {"Memory (MB)":<12} | {"Threads":<8} | {"Time (s)":<10}')
+    print('-' * 50)
 
-    for r in options["rounds"]:
-        for m in options["memory"]:
-            for p in options["parallelism"]:
+    for r in options['rounds']:
+        for m in options['memory']:
+            for p in options['parallelism']:
                 start = time.perf_counter()
-                
+
                 # The actual derivation process
                 argon2.low_level.hash_secret_raw(
                     secret=intermediate,
@@ -157,13 +152,13 @@ def benchmark_argon2():
                     memory_cost=m,
                     parallelism=p,
                     hash_len=32,
-                    type=argon2.low_level.Type.ID
+                    type=argon2.low_level.Type.ID,
                 )
-                
+
                 duration = time.perf_counter() - start
-                print(f"{r:<8} | {m//1024:<12} | {p:<8} | {duration:.4f}s")
+                print(f'{r:<8} | {m // 1024:<12} | {p:<8} | {duration:.4f}s')
 
 
-if __name__ == "__main__":
-    print("--- Argon2 Parameter Benchmarking ---")
+if __name__ == '__main__':
+    print('--- Argon2 Parameter Benchmarking ---')
     benchmark_argon2()

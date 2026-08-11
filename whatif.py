@@ -27,70 +27,103 @@
 #   whatif.py ../Meetings/20110712/raw_board_votes.txt -LawrenceRosen
 #   whatif.py ../Meetings/20110712/raw_board_votes.txt 1 kulp noirin geir chris
 
-import os.path
 import sys
-import re
+if __name__ != '__main__':
+    raise Exception('ERROR: not intended to be used as a library.')
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'monitoring'))
+import os.path
+import re
+import pathlib
+import json
+
+THIS_SCRIPT = pathlib.Path(__file__).resolve()
+THIS_DIR = THIS_SCRIPT.parent
+
+# We're a top-level script. Adjust the import path.
+sys.path.append(str(THIS_DIR / 'monitoring'))
 import stv_tool
 
+
 def usage():
-  print('Usage: %s [-v] RAW_VOTES_FILE [seats] [-]name...' % scriptname)
-  sys.exit(1)
+    print(f'Usage: {THIS_SCRIPT.name} [-v] RAW_VOTES_FILE [seats] [-]name...')
+    sys.exit(1)
 
-if __name__ == '__main__':
-  scriptname = sys.argv.pop(0)
 
-  if sys.argv and sys.argv[0] == '-v':
+def load_votedata(votefile):
+    "Accept multiple variants of the vote file. Return NAMES, VOTESTRINGS."
+
+    if votefile.endswith('.json'):
+        # Presume this is a v3 json file. (prior ones are useless, it seems)
+
+        jvalue = json.load(open(votefile))
+        labelmap, votestrings = stv_tool.load_v3(jvalue)
+
+        # Construct a label-sorted list of names from the labelmap.
+        names = [name for _, name in sorted(labelmap.items())]
+
+        return names, votestrings
+
+    # Assume raw_board_votes.txt
+    return stv_tool.load_votes(votefile)  # returns names, list of vote-lists
+
+
+### NOTE: whatif.rb has an expectation of our argument format and
+### sequencing. Stick to that for now. ... One day: argparse.
+
+
+# Get rid of the script name.
+_ = sys.argv.pop(0)
+
+if sys.argv and sys.argv[0] == '-v':
+    ### would be nice to pass this, but ... nope.
     stv_tool.VERBOSE = True
     sys.argv.pop(0)
 
-  # extract required vote file argument, and load votes from it
-  if not sys.argv or not os.path.exists(sys.argv[0]): usage()
-  votefile = sys.argv.pop(0)
-  names, votes = stv_tool.load_votes(votefile)
+# extract required vote file argument, and load votes from it
+if not sys.argv or not os.path.exists(sys.argv[0]): usage()
+names, votes = load_votedata(sys.argv.pop(0))
 
-  # extract optional number of seats argument
-  if sys.argv and sys.argv[0].isdigit():
+# extract optional number of seats argument
+if sys.argv and sys.argv[0].isdigit():
     seats = int(sys.argv.pop(0))
-  else:
+else:
     seats = 9
 
-  # extract an alias list of first, last, and joined names
-  alias = {}
-  for name in names:
+# extract an alias list of first, last, and joined names
+alias = {}
+for name in names:
     lname = re.sub(r'[^\w ]', '', name.lower())
     alias[lname.replace(' ', '')] = name
     for part in lname.split(' '):
-      alias[part] = name
+        alias[part] = name
 
-  # validate input
-  for arg in sys.argv:
+# validate input
+for arg in sys.argv:
     if arg.lstrip('-').lower() not in alias:
-      sys.stderr.write('invalid selection: %s\n' % arg)
-      usage()
+        sys.stderr.write('invalid selection: %s\n' % arg)
+        usage()
 
-  if not sys.argv:
+if not sys.argv:
     # no changes to the candidates running
     pass
-  elif sys.argv[0][0] == '-':
+elif sys.argv[0][0] == '-':
     # remove candidates from vote
     for name in sys.argv: names.remove(alias[name.lstrip('-').lower()])
-  else:
+else:
     # only include specified candidates
     # NOTE: order is important, so sort the names for repeatability
     names = [ alias[n.lower()] for n in sorted(sys.argv) ]
 
-  # Trim the raw votes based on cmdline params. Eliminate votes that
-  # are not for one of the allowed names. Do not include voters who
-  # did not vote for anybody [post-trimming].
-  trimmed = [ ]
-  for voteseq in votes:
+# Trim the raw votes based on cmdline params. Eliminate votes that
+# are not for one of the allowed names. Do not include voters who
+# did not vote for anybody [post-trimming].
+trimmed = [ ]
+for voteseq in votes:
     newseq = [ v for v in voteseq if v in names ]
     if newseq:
-      trimmed.append(newseq)
+        trimmed.append(newseq)
 
-  # run the vote
-  candidates = stv_tool.run_stv(names, trimmed, seats)
-  candidates.print_results()
-  print('Done!')
+# run the vote
+candidates = stv_tool.run_stv(names, trimmed, seats)
+candidates.print_results()
+print('Done!')

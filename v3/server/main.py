@@ -38,21 +38,8 @@ THIS_DIR = pathlib.Path(__file__).resolve().parent
 CERTS_DIR = THIS_DIR / 'certs'
 
 
-def main():
-    logging.basicConfig(
-        level=logging.DEBUG,
-        style='{',
-        format='[{asctime}|{levelname}|{name}] {message}',
-        datefmt=DATE_FORMAT,
-    )
-
-    # Switch some loggers to INFO, rather than DEBUG
-    logging.getLogger('selector_events').setLevel(logging.INFO)
-    logging.getLogger('hpack').setLevel(logging.INFO)
-    logging.getLogger('sslproto').setLevel(logging.INFO)
-    ### above is good, but leaks stuff. This quiets things. too much?
-    ### other way to approach: what in asyncio do we need to observe?
-    logging.getLogger('asyncio').setLevel(logging.INFO)
+def create_app():
+    "Create the asfquart app and its endpoints."
 
     ### is this really needed right now?
     # Avoid OIDC
@@ -69,6 +56,32 @@ def main():
     # and API endpoints into the APP.
     import pages  # noqa: F401
     import api  # noqa: F401
+
+    return app  # also available as asfquart.APP now
+
+
+def run_standalone():
+    "Run as a standalone server."
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        style='{',
+        format='[{asctime}|{levelname}|{name}] {message}',
+        datefmt=DATE_FORMAT,
+    )
+
+    # Switch some loggers to INFO, rather than DEBUG
+    logging.getLogger('selector_events').setLevel(logging.INFO)
+    logging.getLogger('hpack').setLevel(logging.INFO)
+    logging.getLogger('sslproto').setLevel(logging.INFO)
+    ### above is good, but leaks stuff. This quiets things. too much?
+    ### other way to approach: what in asyncio do we need to observe?
+    logging.getLogger('asyncio').setLevel(logging.INFO)
+
+    _LOGGER.info(' ** Run-mode: Standalone')
+
+    # Set up the STeVe app, then we'll start it up.
+    app = create_app()
 
     # Note: "pages" imports "steve.election". Pull that package into
     # our local namespace.
@@ -92,5 +105,41 @@ def main():
     # print(_LOGGER.manager.loggerDict['sslproto'])
 
 
+def run_asgi():
+    "Run as an ASGI process; eg. Hypercorn"
+
+    # NOTE: no-op if Hypercorn has set up the root logger.
+    logging.basicConfig(
+        level=logging.DEBUG,
+        style='{',
+        format='[{asctime}|{levelname}|{name}] {message}',
+        datefmt=DATE_FORMAT,
+    )
+
+    # Make some loggers explicitly INFO, rather than default to DEBUG.
+    logging.getLogger('watchfiles.main').setLevel(logging.INFO)
+
+    # Configure our app's loggers (rather than root logger default).
+    _LOGGER.setLevel(logging.DEBUG)
+
+    # Okay. Time to be a Hypercorn-based ASGI app.
+
+    _LOGGER.info(' ** Run-mode: ASGI')
+
+    global steve_app
+    steve_app = create_app()
+
+
 if __name__ == '__main__':
-    main()
+    # $ ./main.py
+    run_standalone()
+else:
+    # Using Hypercorn:
+    #
+    #   $ uv run python -m hypercorn main:steve_app
+    #
+    # NOTE: without our extended shutdown_trigger, we cannot reload
+    # or restart on .py changes, extra_files changes, or respond to
+    # SIGUSR2 to restart. Hypercorn will respond to SIGTERM/SIGINT
+    # and shutdown.
+    run_asgi()
