@@ -1,6 +1,0 @@
-passlib
-argon2-cffi
-cryptography
-
-# strictly speaking, optional:
-coverage

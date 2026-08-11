@@ -1,0 +1,574 @@
+[include "header.ezt"]
+
+<style>
+  /* ── Sticky election header ───────────────────────────────────────────── */
+  #election-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background: #fff;
+    border-bottom: 2px solid #dee2e6;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+  #election-header .meta-row {
+    font-size: .82rem;
+    color: #6c757d;
+    gap: .5rem 1.25rem;
+  }
+  #election-header .meta-row span + span::before {
+    content: "·";
+    margin-right: 1.25rem;
+  }
+
+  /* ── Issue list ───────────────────────────────────────────────────────── */
+  .issue-item { transition: background .15s; }
+  .issue-item:hover { background: #f8f9fa; }
+  .description { display: none; }
+  .description.show { display: block; }
+
+  /* ── STV badge + button ───────────────────────────────────────────────── */
+  .stv-action { min-width: 11rem; text-align: right; }
+  .stv-badge {
+    font-size: .75rem;
+    vertical-align: middle;
+  }
+
+  /* ── STV Modal two-panel layout ───────────────────────────────────────── */
+  .stv-panel {
+    min-height: 200px;
+    max-height: 420px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: .5rem;
+    background: #fdfdfd;
+  }
+  .stv-panel .stv-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .45rem .6rem;
+    margin-bottom: .3rem;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: .3rem;
+    cursor: grab;
+    user-select: none;
+    font-size: .9rem;
+  }
+  .stv-panel .stv-item:active { cursor: grabbing; }
+  .stv-panel .stv-item .drag-handle {
+    color: #adb5bd;
+    font-size: .8rem;
+    flex-shrink: 0;
+  }
+  /* rank number shown only in the ranked panel */
+  #stv-ranked-list .stv-item::before {
+    content: attr(data-rank);
+    font-weight: 700;
+    color: #0d6efd;
+    font-size: .78rem;
+    min-width: 1.4rem;
+    flex-shrink: 0;
+  }
+  /* ghost while dragging */
+  .sortable-ghost { opacity: .35; background: #e9f0ff !important; }
+  .sortable-chosen { box-shadow: 0 2px 8px rgba(13,110,253,.25); }
+
+  /* empty-state hint */
+  #stv-ranked-list.is-empty::after {
+    content: "Drag candidates here to rank them";
+    display: block;
+    color: #adb5bd;
+    font-size: .85rem;
+    text-align: center;
+    padding: 2rem 1rem;
+    pointer-events: none;
+  }
+</style>
+
+<div id="election-header">
+  <div class="container py-2">
+
+    <!-- Row 1: title + submit button -->
+    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+      <div>
+        <h1 class="h4 mb-0 fw-semibold">[election.title]</h1>
+        <div class="meta-row d-flex flex-wrap mt-1">
+          <span>Authority: <strong>[election.owner_name]</strong></span>
+          <span>Electorate: <strong>[election.authz]</strong></span>
+          <span>Opened:
+            <span title="[election.fmt_open_at_full]"
+                  style="border-bottom:1px dotted currentColor;cursor:help"
+                  >[election.fmt_open_at]</span>
+          </span>
+          [if-any election.fmt_close_at]
+          <span>Closes:
+            <span title="[election.fmt_close_at_full]"
+                  style="border-bottom:1px dotted currentColor;cursor:help"
+                  >[election.fmt_close_at]</span>
+          </span>
+          [end]
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm align-self-center"
+              id="submitVoteBtn" onclick="submitVotes()">
+        Submit Votes
+      </button>
+    </div>
+
+    <!-- Row 2: bulk controls -->
+    [if-any has_yna_issues]
+    <div class="d-flex align-items-center gap-2 flex-wrap mt-2 pt-2 border-top">
+      <small class="text-muted me-1">Bulk fill unvoted motions:</small>
+      <div class="btn-group btn-group-sm" role="group">
+        <button type="button" class="btn btn-outline-success"  onclick="bulkVote('y')">Yes</button>
+        <button type="button" class="btn btn-outline-danger"   onclick="bulkVote('n')">No</button>
+        <button type="button" class="btn btn-outline-secondary" onclick="bulkVote('a')">Abstain</button>
+      </div>
+      <button type="button" class="btn btn-outline-danger btn-sm"    onclick="clearYNAVotes()">Clear</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleAllDescriptions()">
+        <span id="toggle-all-text">Expand All</span>
+      </button>
+    </div>
+    [end]
+
+  </div>
+</div><!-- /#election-header -->
+
+<div class="container mt-3">
+  [include "flashes.ezt"]
+
+  [if-any has_voted]
+  <div class="alert alert-info alert-dismissible fade show py-2" role="alert">
+    <i class="bi bi-info-circle me-1"></i>
+    You have previously cast a ballot. Submitting will <strong>update</strong> your recorded votes.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  [end]
+
+  <p class="text-muted">
+    You have <strong>[issue_count]</strong> issue[if-any are_yna_plural]s[end] to vote upon in this election.
+    [if-any has_stv_issues]The STV election issue[if-any are_stv_plural]s[end]
+    appear[if-any are_stv_plural][else]s[end]
+    at the top.[end]
+  </p>
+
+  <form id="voteForm" method="POST" action="/do-vote/[eid]">
+    <input type="hidden" name="csrf_token" value="[csrf_token]">
+
+    <div id="issues-list" class="list-group">
+    [for issues]
+
+      [is issues.vtype "stv"]
+      <!-- ═══ STV ISSUE ════════════════════════════════════════════════ -->
+      <div class="list-group-item issue-item" data-vtype="stv" data-iid="[issues.iid]">
+
+        <!-- Hidden input that holds the final comma-separated ranking -->
+        <input type="hidden" name="vote-[issues.iid]" id="vote-[issues.iid]" value="">
+
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="twiddle bi bi-caret-right-fill me-2"
+                  onclick="toggleDescription('[issues.iid]')"></span>
+            <strong>[issues.title]</strong>
+            <span class="badge bg-primary ms-2" title="Single Transferable Vote election">STV</span>
+          </div>
+          <div class="stv-action d-flex align-items-center gap-2 flex-wrap justify-content-end">
+            <!-- Badge: shown once a ranking is saved -->
+            <span id="stv-badge-[issues.iid]"
+                  class="badge bg-success stv-badge d-none">
+              ✓ Ranked
+            </span>
+            <button type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    id="stv-btn-[issues.iid]"
+                    onclick="openSTVModal('[issues.iid]')">
+              Rank Candidates
+            </button>
+          </div>
+        </div>
+
+        <div id="description-[issues.iid]" class="description mt-2 text-muted small">
+          [issues.description]
+          <div class="mt-1">
+            <i class="bi bi-people me-1"></i>Seats available: <strong>[issues.seats]</strong>
+          </div>
+        </div>
+
+      </div><!-- /STV issue -->
+
+      [else][is issues.vtype "yna"]
+      <!-- ═══ YNA ISSUE ════════════════════════════════════════════════ -->
+      <div class="list-group-item issue-item" data-vtype="yna" data-iid="[issues.iid]">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="twiddle bi bi-caret-right-fill me-2"
+                  onclick="toggleDescription('[issues.iid]')"></span>
+            <strong>[issues.title]</strong>
+          </div>
+          <div class="vote-radio">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio"
+                     name="vote-[issues.iid]" id="yes-[issues.iid]" value="y">
+              <label class="form-check-label" for="yes-[issues.iid]">Yes</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio"
+                     name="vote-[issues.iid]" id="no-[issues.iid]" value="n">
+              <label class="form-check-label" for="no-[issues.iid]">No</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio"
+                     name="vote-[issues.iid]" id="abstain-[issues.iid]" value="a">
+              <label class="form-check-label" for="abstain-[issues.iid]">Abstain</label>
+            </div>
+          </div>
+        </div>
+        <div id="description-[issues.iid]" class="description mt-2 text-muted small">
+          [issues.description]
+        </div>
+      </div><!-- /YNA issue -->
+
+      [else]
+      <!-- ═══ UNKNOWN VTYPE ════════════════════════════════════════════ -->
+      <div class="list-group-item list-group-item-warning issue-item" data-vtype="unknown">
+        <strong>[issues.title]</strong>
+        <span class="badge bg-warning text-dark ms-2">Unknown vote type: [issues.vtype]</span>
+      </div>
+
+      [end][end]
+
+    [end]<!-- /for issues -->
+    </div><!-- /#issues-list -->
+
+    <!-- Bottom submit (convenience for long ballots) -->
+    <div class="mt-4 mb-5">
+      <button type="button" class="btn btn-primary" onclick="submitVotes()">
+        Submit Votes
+      </button>
+    </div>
+
+  </form>
+</div><!-- /.container -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     STV RANKING MODAL
+     Generated once; content swapped per issue when opened.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="stvModal" tabindex="-1"
+     aria-labelledby="stvModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title mb-0" id="stvModalLabel">Rank Candidates</h5>
+          <small class="text-muted" id="stv-modal-subtitle"></small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-3">
+
+          <!-- Left: Available candidates -->
+          <div class="col-12 col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <strong class="small text-uppercase text-muted ls-1">Candidates</strong>
+              <small class="text-muted">drag → or double-click to rank</small>
+            </div>
+            <div class="stv-panel" id="stv-available-list">
+              <!-- populated by JS -->
+            </div>
+          </div>
+
+          <!-- Right: Ranked list -->
+          <div class="col-12 col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <strong class="small text-uppercase text-muted">Your Ranking</strong>
+              <button type="button" class="btn btn-link btn-sm p-0 text-danger"
+                      id="stv-clear-btn" onclick="clearSTVRanking()">
+                Clear
+              </button>
+            </div>
+            <div class="stv-panel" id="stv-ranked-list">
+            </div>
+          </div>
+
+        </div><!-- /.row -->
+
+        <p class="text-muted small mt-3 mb-0">
+          <i class="bi bi-info-circle me-1"></i>
+          Rank as many or as few candidates as you wish. Drag between panels to adjust.
+          Your ranking is not saved until you click <strong>Save Ranking</strong>.
+        </p>
+      </div><!-- /.modal-body -->
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary"
+                data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary"
+                onclick="saveSTVRanking()">Save Ranking</button>
+      </div>
+
+    </div>
+  </div>
+</div><!-- /#stvModal -->
+
+
+<!-- SortableJS -->
+<script src="/static/js/Sortable.min.js"
+        integrity="sha384-DgmC6Xe2bSN2WjTDXzWYbUbxyhNP+NNkGDR/g78pCXV7E7rcVTGxVg0uIVCUUcBc"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Candidate data embedded by server ────────────────────────────────────
+  // Each STV issue emits its candidates here so the modal can populate them
+  // without any XHR. Format: { iid: {seats, title, candidates: [{label, asfid, name}, ...]}, ... }
+  const STV_CANDIDATES = {
+[for issues][is issues.vtype "stv"]    "[issues.iid]": {
+      seats: [issues.seats],
+      title: "[issues.title]",
+      candidates: [
+[for issues.candidates]        { label: "[issues.candidates.label]", asfid: "[issues.candidates.asfid]", name: "[issues.candidates.name]" },
+[end]      ]
+    },
+[end][end]  };
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  let currentIID   = null;
+  let sortAvail    = null;
+  let sortRanked   = null;
+
+  // ── Open modal for a given STV issue ────────────────────────────────────
+  window.openSTVModal = function (iid) {
+    currentIID = iid;
+    const issue  = STV_CANDIDATES[[]iid];
+    const hidden = document.getElementById('vote-' + iid);
+
+    // Set modal title/subtitle
+    document.getElementById('stvModalLabel').textContent  = issue.title;
+    document.getElementById('stv-modal-subtitle').textContent =
+      issue.seats + ' seat' + (issue.seats !== 1 ? 's' : '') + ' available';
+
+    // Determine which labels are already ranked (from a prior save)
+    const alreadyRanked = hidden.value
+      ? hidden.value.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+    const rankedSet = new Set(alreadyRanked);
+
+    // Populate available panel (candidates not yet ranked)
+    const availPanel  = document.getElementById('stv-available-list');
+    const rankedPanel = document.getElementById('stv-ranked-list');
+    availPanel.innerHTML  = '';
+    rankedPanel.innerHTML = '';
+
+    // Build ranked items first, preserving saved order
+    alreadyRanked.forEach((lbl, idx) => {
+      const c = issue.candidates.find(x => x.label === lbl);
+      if (c) rankedPanel.appendChild(makeItem(c, idx + 1));
+    });
+
+    // Build available items (unranked candidates)
+    issue.candidates.forEach(c => {
+      if (!rankedSet.has(c.label)) availPanel.appendChild(makeItem(c, null));
+    });
+
+    updateEmptyHint();
+    updateRankNumbers();
+    initSortable();
+
+    showModal('stvModal');
+  };
+
+  function makeItem(candidate, rank) {
+    const div = document.createElement('div');
+    div.className    = 'stv-item';
+    div.dataset.label = candidate.label;
+    if (rank) div.dataset.rank = rank;
+    const asfid = candidate.asfid ? ' (' + escapeHtml(candidate.asfid) + ')' : '';
+    div.innerHTML = '<span class="drag-handle bi bi-grip-vertical"></span>'
+                  + '<span class="cand-name">' + escapeHtml(candidate.name) + asfid + '</span>';
+    // Double-click to move between panels
+    div.addEventListener('dblclick', () => moveItem(div));
+    return div;
+  }
+
+  function moveItem(el) {
+    const availPanel  = document.getElementById('stv-available-list');
+    const rankedPanel = document.getElementById('stv-ranked-list');
+    if (el.parentElement === availPanel) {
+      rankedPanel.appendChild(el);
+    } else {
+      availPanel.appendChild(el);
+    }
+    updateRankNumbers();
+    updateEmptyHint();
+  }
+
+  function initSortable() {
+    if (sortAvail)  { sortAvail.destroy();  sortAvail  = null; }
+    if (sortRanked) { sortRanked.destroy(); sortRanked = null; }
+
+    const sharedGroup = { name: 'stv', pull: true, put: true };
+
+    sortAvail = Sortable.create(document.getElementById('stv-available-list'), {
+      group:       sharedGroup,
+      sort:        true,
+      animation:   150,
+      ghostClass:  'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      onEnd: onSortEnd,
+    });
+
+    sortRanked = Sortable.create(document.getElementById('stv-ranked-list'), {
+      group:       sharedGroup,
+      sort:        true,
+      animation:   150,
+      ghostClass:  'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      onEnd: onSortEnd,
+    });
+  }
+
+  function onSortEnd() {
+    updateRankNumbers();
+    updateEmptyHint();
+  }
+
+  function updateRankNumbers() {
+    document.querySelectorAll('#stv-ranked-list .stv-item').forEach((el, i) => {
+      el.dataset.rank = i + 1;
+    });
+  }
+
+  function updateEmptyHint() {
+    const rp    = document.getElementById('stv-ranked-list');
+    const items = rp.querySelectorAll('.stv-item');
+    rp.classList.toggle('is-empty', items.length === 0);
+  }
+
+  // ── Save ranking back to hidden input ────────────────────────────────────
+  window.saveSTVRanking = function () {
+    const rankedPanel = document.getElementById('stv-ranked-list');
+    const labels = Array.from(rankedPanel.querySelectorAll('.stv-item'))
+                        .map(el => el.dataset.label);
+
+    const hidden = document.getElementById('vote-' + currentIID);
+    hidden.value = labels.join(',');
+
+    updateSTVBadge(currentIID, labels.length);
+
+    bootstrap.Modal.getInstance(document.getElementById('stvModal')).hide();
+  };
+
+  window.clearSTVRanking = function () {
+    const availPanel  = document.getElementById('stv-available-list');
+    const rankedPanel = document.getElementById('stv-ranked-list');
+    Array.from(rankedPanel.querySelectorAll('.stv-item')).forEach(el => {
+      delete el.dataset.rank;
+      availPanel.appendChild(el);
+    });
+    updateEmptyHint();
+  };
+
+  function updateSTVBadge(iid, count) {
+    const badge = document.getElementById('stv-badge-' + iid);
+    const btn   = document.getElementById('stv-btn-'   + iid);
+    if (count > 0) {
+      badge.textContent = '✓ ' + count + ' ranked';
+      badge.classList.remove('d-none');
+      btn.textContent = 'Edit Ranking';
+    } else {
+      badge.classList.add('d-none');
+      btn.textContent = 'Rank Candidates';
+    }
+  }
+
+  // ── YNA helpers ──────────────────────────────────────────────────────────
+  window.bulkVote = function (value) {
+    document.querySelectorAll('.issue-item[[]data-vtype="yna"]').forEach(item => {
+      const radios  = item.querySelectorAll('input[[]type="radio"]');
+      const isVoted = Array.from(radios).some(r => r.checked);
+      if (!isVoted) {
+        const r = item.querySelector('input[[]value="' + value + '"]');
+        if (r) r.checked = true;
+      }
+    });
+  };
+
+  window.clearYNAVotes = function () {
+    document.querySelectorAll('.issue-item[[]data-vtype="yna"] input[[]type="radio"]')
+      .forEach(r => { r.checked = false; });
+  };
+
+  // ── Description toggle ────────────────────────────────────────────────────
+  window.toggleDescription = function (issueId) {
+    const desc    = document.getElementById('description-' + issueId);
+    const item    = desc.closest('.issue-item');
+    const twiddle = item.querySelector('.twiddle');
+    desc.classList.toggle('show');
+    twiddle.classList.toggle('bi-caret-right-fill');
+    twiddle.classList.toggle('bi-caret-down-fill');
+  };
+
+  let allExpanded = false;
+  window.toggleAllDescriptions = function () {
+    allExpanded = !allExpanded;
+    document.querySelectorAll('.description').forEach(d => {
+      d.classList.toggle('show', allExpanded);
+    });
+    document.querySelectorAll('.twiddle').forEach(t => {
+      t.classList.toggle('bi-caret-right-fill', !allExpanded);
+      t.classList.toggle('bi-caret-down-fill',  allExpanded);
+    });
+    document.getElementById('toggle-all-text').textContent =
+      allExpanded ? 'Collapse All' : 'Expand All';
+  };
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  window.submitVotes = function () {
+    // Check all YNA issues have a vote
+    const ynamissing = [];
+    document.querySelectorAll('.issue-item[[]data-vtype="yna"]').forEach(item => {
+      const iid    = item.dataset.iid;
+      const radios = item.querySelectorAll('input[[]type="radio"]');
+      if (!Array.from(radios).some(r => r.checked)) ynamissing.push(iid);
+    });
+
+    // Check all STV issues have at least 1 candidate ranked
+    const stvmissing = [];
+    document.querySelectorAll('.issue-item[[]data-vtype="stv"]').forEach(item => {
+      const iid    = item.dataset.iid;
+      const hidden = document.getElementById('vote-' + iid);
+      if (!hidden || !hidden.value) stvmissing.push(iid);
+    });
+
+    const problems = ynamissing.length + stvmissing.length;
+    if (problems > 0) {
+      const parts = [];
+      if (ynamissing.length) parts.push(ynamissing.length + ' motion(s) need a Y/N/A vote');
+      if (stvmissing.length) parts.push(stvmissing.length + ' election(s) need at least one candidate ranked');
+      if (!confirm('Some issues are unvoted:\n  • ' + parts.join('\n  • ')
+                 + '\n\nSubmit anyway?')) return;
+    }
+
+    submitFormWithLoading('voteForm', 'submitVoteBtn', 'Submitting Votes…');
+  };
+
+  // ── Utility ──────────────────────────────────────────────────────────────
+  function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;');
+  }
+
+})();
+</script>
+
+[include "footer.ezt"]

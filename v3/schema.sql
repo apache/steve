@@ -17,13 +17,19 @@
  * under the License.
  */
 
-/* ### TBD DOCCO.  */
+/* There is a per-install SQLite database containing all election data
+   for the site. This file defines/constructs the schema of that database.
 
-/* ### $ sqlite3 testing.db < schema.sql
+   Note that foreign key references are defined within this scheme. For
+   these to be enforced at runtime, you must use a PRAGMA statement:
+       conn.execute('PRAGMA foreign_keys = ON')
+   */
+
+/* ### $ sqlite3 steve.db < steve/v3/schema.sql
    ###
    ### OR:
    ### >>> import sqlite3
-   ### >>> conn = sqlite3.connect('testing.db')
+   ### >>> conn = sqlite3.connect('steve.db')
    ### >>> conn.executescript(open('schema.sql').read())
    ###
    ### ? maybe: conn.commit() and/or conn.close() ... the DML statements
@@ -33,12 +39,11 @@
 
 /* --------------------------------------------------------------------- */
 
-/* Various metadata about the Election contained in this database.
-   Only one row will exist.
+/* Various Election metadata.
 
    An Election has three states:
 
-     1. Editable. The election is being set up. Issues and persons of
+     1. Editable. The election is being set up. Issues and Persons of
         record can be added, edited, and deleted. The Election's title
         may be changed (EID is fixed, however).
         DEFINITION: salt and opened_key are NULL. closed is n/a.
@@ -49,42 +54,86 @@
      3. Closed. The election is closed.
         DEFINITION: salt and opened_key are NOT NULL. closed is 1.
 */
-CREATE TABLE METADATA (
+CREATE TABLE election (
 
-    /* The Election ID. This value might be replicated in the
-       filesystem holding this database. To remain independent of
-       application file choices, the ID is stored here.  */
-    eid  TEXT PRIMARY KEY NOT NULL,
+    /* The Election ID; 10 hex characters. We do not use AUTOINCREMENT,
+       so that URLs for Elections cannot be deduced.  */
+    eid  TEXT
+           PRIMARY KEY NOT NULL
+           CHECK (length(eid) = 10
+                  AND eid GLOB '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
 
     /* Title of this election.  */
     title  TEXT NOT NULL,
 
-    /* ### if we have monitors, they go here.  */
-    /* ### maybe add an owner?  */
+    /* Who is the owner/creator of this election?
+       Note: no need to CHECK OWNER_PID as it refers to a foreign table
+       where its propriety is enforced.  */
+    owner_pid  TEXT NOT NULL,
+
+    /* What authz group is allowed to edit this election? If NULL,
+       then only the OWNER_PID can edit.  */
+    /* ### contents/format is TBD; think "which PMC" or "Foundation"  */
+    authz  TEXT,
 
     /* A salt value to use for hashing this Election. 16 bytes.
        This will be NULL until the Election is opened.  */
-    salt  BLOB,
+    salt  BLOB  CHECK (salt IS NULL OR length(salt) = 16),
 
     /* If this Election has been opened for voting, then we store
        the OpenedKey here to avoid recomputing. 32 bytes.
        This will be NULL until the Election is opened.  */
-    opened_key  BLOB,
+    opened_key  BLOB  CHECK (opened_key IS NULL OR length(opened_key) = 32),
 
     /* Has this election been closed? NULL or 0 for not-closed (see
        SALT and OPENED_KEY to determine if the election has been
-       opened). 1 for closed (implies it was opened).  */
-    closed  INTEGER
+       opened). 1 for closed (implies it was formerly-opened).  */
+    closed  INTEGER  CHECK (closed IS NULL OR closed IN (0, 1)),
+
+    /* The approximate times this Election will be opened and closed,
+       if known. NULL if unknown. These are purely advisory, for humans,
+       and have no effect upon the actual Election operation. Look
+       to OPENED_KEY and CLOSED for the current Election state.
+
+       Note: the "prevent_open_close_update" trigger will prevent these
+       two values from changing once an election is closed. They never
+       need to be set, but once an election is closed: they are fixed.  */
+    open_at  INTEGER,  /* seconds since epoch  */
+    close_at  INTEGER,  /* seconds since epoch  */
+
+
+    /* Enforce/declare/document relationships.  */
+    FOREIGN KEY (owner_pid) REFERENCES person(pid)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION
 
     ) STRICT;
 
+/* For posterity, do not allow changes to the time fields, once closed.  */
+CREATE TRIGGER prevent_open_close_update
+BEFORE UPDATE OF open_at, close_at ON election
+FOR EACH ROW
+WHEN OLD.closed = 1
+BEGIN
+    SELECT RAISE(ABORT, 'Cannot modify open_at or close_at when election is closed');
+END;
+
 /* --------------------------------------------------------------------- */
 
-/* The set of issues to vote upon in this Election.  */
-CREATE TABLE ISSUES (
+/* The set of Issues to vote upon for a given Election.  */
+CREATE TABLE issue (
 
-    /* The Issue ID, matching [-a-zA-Z0-9]+  */
-    iid  TEXT PRIMARY KEY NOT NULL,
+    /* The Issue ID; 10 hex characters. We do not use AUTOINCREMENT,
+       so that URLs for Issues cannot be deduced.  */
+    iid  TEXT
+           PRIMARY KEY NOT NULL
+           CHECK (length(iid) = 10
+                  AND iid GLOB '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
+
+    /* Which election is this issue associated with?
+       Note: no need to CHECK EID as it refers to a foreign table where
+       its propriety is enforced.  */
+    eid  TEXT NOT NULL,
 
     /* Simple one-line title for this issue.  */
     title  TEXT NOT NULL,
@@ -101,17 +150,19 @@ CREATE TABLE ISSUES (
        value is JSON-formatted  */
     kv  TEXT,
 
-    /* A salt value to use for hashing this Issue. 16 bytes.
-       This will be NULL until the Election is opened.  */
-    salt  BLOB
+    /* Enforce/declare/document relationships.  */
+    FOREIGN KEY (eid) REFERENCES election(eid)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION
 
     ) STRICT;
 
+CREATE INDEX idx_issue_eid ON issue(eid);
+
 /* --------------------------------------------------------------------- */
 
-/* The set of people "on record" for this Election. Only these people
-   may vote.  */
-CREATE TABLE PERSON (
+/* The set of Persons ever seen, across all Elections.  */
+CREATE TABLE person (
 
     /* An id assigned to the person (eg. an LDAP username).  */
     pid  TEXT PRIMARY KEY NOT NULL,
@@ -119,21 +170,51 @@ CREATE TABLE PERSON (
     /* Optional human-readable name for this person.  */
     name  TEXT,
 
-    /* How to contact this person (ie. to send a ballot link).  */
-    email  TEXT NOT NULL,
+    /* How to contact this person (eg. to send a ballot link).  */
+    email  TEXT NOT NULL
 
-    /* A salt value to use for hashing this Person. 16 bytes.
-       This will be NULL until the Election is opened.  */
-    salt  BLOB
+    ) STRICT;
+
+/* --------------------------------------------------------------------- */
+
+/* The set of Persons who may vote on an Issue (aka eligible/allowed).  */
+CREATE TABLE mayvote (
+
+    /* The Person who may vote...  */
+    pid  TEXT NOT NULL,
+
+    /* ... on this Issue.  */
+    iid  TEXT NOT NULL,
+
+    /* A salt value for hashing this Person/Issue pair into a vote_token.
+       Also used via key-stretching to create an encryption key for the
+       vote values. This will be NULL until the Election (containing IID)
+       is opened.  16 bytes.  */
+    salt  BLOB  CHECK (salt IS NULL OR length(salt) = 16),
+
+    /* The pair should be unique.  */
+    PRIMARY KEY (pid, iid),
+
+    /* Note: no need to check PID/IID columns as they refer to a foreign
+       table where their propriety is enforced.  */
+
+    /* Enforce/declare/document relationships.  */
+    FOREIGN KEY (pid) REFERENCES person(pid)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION,
+
+    FOREIGN KEY (iid) REFERENCES issue(iid)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION
 
     ) STRICT;
 
 /* --------------------------------------------------------------------- */
 
 /* The registered votes, once the Election has been opened. Note that
-   duplicates of (person, issue) may occur, as re-voting is allowed. Only
-   the latest is used.  */
-CREATE TABLE VOTES (
+   duplicates of (person, issue) may occur (the vote_token will be the
+   same), as re-voting is allowed. Only the latest is used.  */
+CREATE TABLE vote (
 
     /* The key is auto-incrementing to provide a record of insert-order,
        so that we have an ordering to find the "most recent" when
@@ -141,21 +222,16 @@ CREATE TABLE VOTES (
        Note: an integer primary key is an alias for _ROWID_.  */
     vid  INTEGER PRIMARY KEY AUTOINCREMENT,
 
-    /* A hashed token representing a single Person.  32 bytes.  */
-    person_token  BLOB NOT NULL,
-
-    /* A hashed token representing an issue.  32 bytes.  */
-    issue_token  BLOB NOT NULL,
-
-    /* A binary value used to salt the token's encryption.  16 bytes.  */
-    salt  BLOB NOT NULL,
+    /* A hashed-based token (32 bytes) based on a (Person, Issue) pair
+       from the MAYVOTE table. Used to produce a key for encryption.   */
+    vote_token  BLOB NOT NULL  CHECK (length(vote_token) = 32),
 
     /* An encrypted form of the vote.  */
-    token  BLOB NOT NULL
+    ciphertext  BLOB NOT NULL
 
     ) STRICT;
 
-CREATE INDEX I_BY_PERSON ON VOTES (person_token);
-CREATE INDEX I_BY_ISSUE ON VOTES (issue_token);
+/* ### review queries.yaml to figure out proper indexes  */
+CREATE INDEX idx_by_vote_token ON vote (vote_token);
 
 /* --------------------------------------------------------------------- */

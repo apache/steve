@@ -1,30 +1,31 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# ### TBD docco
-#
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 import base64
-import random
+import secrets
+import hashlib  # for blake2b
+import time
 
-import passlib.hash  # note that .argon2 is proxy in this pkg
-import passlib.utils  # for the RNG, to create Salt values
+import argon2.low_level
 
 import cryptography.fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf import hkdf
+
 
 # All salt values will be 16 bytes in length. After base64 encoding, they
 # will be represented with 22 characters.
@@ -33,49 +34,131 @@ SALT_LEN = 16
 
 def gen_salt() -> bytes:
     "Generate bytes to be used as a salt, for hashing."
-    return passlib.utils.getrandbytes(passlib.utils.rng, SALT_LEN)
+    return secrets.token_bytes(SALT_LEN)
 
 
 def gen_opened_key(edata: bytes, salt: bytes) -> bytes:
     "Generate the OpenedKey for this election."
-    return _hash(edata, salt)
+
+    # The data is of arbitrary length. Use BLAKE2b to quickly hash all
+    # this down into a manageable size for Argon2.
+    # Note: BLAKE2b is the internal primitive of Argon2, so a good fit.
+    digest = hashlib.blake2b(edata).digest()
+
+    # We have scaled EDATA down to 64 bytes, which is now within the
+    # passlib input size for the Argon2 algorithm.
+    return _hash(digest, salt)
 
 
-def gen_token(opened_key: bytes, value: str, salt: bytes) -> bytes:
+def gen_vote_token(opened_key: bytes, pid: str, iid: str, salt: bytes) -> bytes:
     "Generate a person or issue token."
-    return _hash(opened_key + value.encode(), salt)
+
+    # NOTE: the data is short enough for the Argon2 algorithm.
+    return _hash(opened_key + pid.encode() + iid.encode(), salt)
 
 
-### fix return type, to be a tuple
-def create_vote(person_token: bytes,
-                issue_token: bytes,
-                votestring: str) -> bytes:
-    "Create a vote tuple, to record the VOTESTRING."
-    salt = gen_salt()
-    key = _hash(person_token + issue_token, salt)
-    b64key = base64.urlsafe_b64encode(key)
+def _b64_vote_key(vote_token: bytes, salt: bytes) -> bytes:
+    "Key-stretch the vote_token. (ref: PBKDF)"
+
+    ### still using Fernet now, but will switch soon. Leaving comments.
+    keymaker = hkdf.HKDF(
+        algorithm=hashes.SHA256(),
+        length=32,  # 32-byte key for XChaCha20-Poly1305
+        salt=salt,
+        info=b'xchacha20_key',
+    )
+    vote_key = keymaker.derive(vote_token)
+    return base64.urlsafe_b64encode(vote_key)
+
+
+def create_vote(vote_token: bytes, salt: bytes, votestring: str) -> bytes:
+    "Encrypt VOTESTRING using the VOTE_TOKEN and SALT."
+
+    b64key = _b64_vote_key(vote_token, salt)
     f = cryptography.fernet.Fernet(b64key)
-    return salt, f.encrypt(votestring.encode())
+    return f.encrypt(votestring.encode())
 
 
-def decrypt_votestring(person_token: bytes,
-                       issue_token: bytes,
-                       salt: bytes,
-                       token: bytes) -> str:
-    "Decrypt TOKEN into a VOTESTRING."
-    key = _hash(person_token + issue_token, salt)
-    b64key = base64.urlsafe_b64encode(key)
+def decrypt_votestring(vote_token: bytes, salt: bytes, ciphertext: bytes) -> str:
+    "Decrypt CIPHERTEXT into a VOTESTRING."
+
+    b64key = _b64_vote_key(vote_token, salt)
     f = cryptography.fernet.Fernet(b64key)
-    return f.decrypt(token).decode()
+    return f.decrypt(ciphertext).decode()
 
 
 def _hash(data: bytes, salt: bytes) -> bytes:
-    "Apply our desired hashing function."
-    ph = passlib.hash.argon2.using(type='d', salt=salt)
-    h = ph.hash(data)
-    return base64.standard_b64decode(h.split('$')[-1] + '==')
+    "Use Argon2 to hash the data, with default tuning parameters."
+
+    return argon2.low_level.hash_secret_raw(
+        secret=data,
+        salt=salt,
+        time_cost=2,  # Passlib default
+        memory_cost=65536,  # Passlib default
+        parallelism=4,  # Passlib default
+        hash_len=32,  # Standard Argon2 digest length
+        type=argon2.low_level.Type.D,
+    )
 
 
 def shuffle(x):
     "Ensure we use the strongest RNG available for shuffling."
-    return random.shuffle(x, passlib.utils.rng.random)
+
+    # Implements the Fisher-Yates shuffle, using secrets.randbelow() for
+    # cryptographically-safe (aka unpredictable) shuffling of elements.
+
+    # Count backwards, "fixing" a chosen element into place.
+    for i in range(len(x) - 1, 0, -1):
+        # Choose element to fix from remaining pool.
+        j = secrets.randbelow(i + 1)
+
+        # Swap them in-place.
+        x[i], x[j] = x[j], x[i]
+
+    # We shuffled in-place, but also return for funsies.
+    return x
+
+
+def create_id():
+    "Create a standard ID value."
+
+    # Use 10 hex characters for the ID
+    return secrets.token_hex(5)  # 5 bytes
+
+
+def benchmark_argon2():
+    # Test Data
+    dummy_data = b'This is a sample datum representing one of your 1000 entries.'
+    salt = b'16_byte_salt_123'  # 16 bytes
+    intermediate = hashlib.blake2b(dummy_data).digest()
+
+    # Define Low/High levels for the 3 parameters
+    # Note: Memory is in Kibibytes (65536 = 64MB)
+    options = {'rounds': [2, 4], 'memory': [65536, 131072], 'parallelism': [4, 8]}
+
+    print(f'{"Rounds":<8} | {"Memory (MB)":<12} | {"Threads":<8} | {"Time (s)":<10}')
+    print('-' * 50)
+
+    for r in options['rounds']:
+        for m in options['memory']:
+            for p in options['parallelism']:
+                start = time.perf_counter()
+
+                # The actual derivation process
+                argon2.low_level.hash_secret_raw(
+                    secret=intermediate,
+                    salt=salt,
+                    time_cost=r,
+                    memory_cost=m,
+                    parallelism=p,
+                    hash_len=32,
+                    type=argon2.low_level.Type.ID,
+                )
+
+                duration = time.perf_counter() - start
+                print(f'{r:<8} | {m // 1024:<12} | {p:<8} | {duration:.4f}s')
+
+
+if __name__ == '__main__':
+    print('--- Argon2 Parameter Benchmarking ---')
+    benchmark_argon2()

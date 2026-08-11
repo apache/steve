@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl"?>
 <rdf:RDF xml:lang="en"
-         xmlns="http://usefulinc.com/ns/doap#" 
-         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
-         xmlns:asfext="http://projects.apache.org/ns/asfext#"
-         xmlns:foaf="http://xmlns.com/foaf/0.1/">
-<!--
+  xmlns="http://usefulinc.com/ns/doap#"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:asfext="http://projects.apache.org/ns/asfext#"
+  xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  <!--
     Licensed to the Apache Software Foundation (ASF) under one or more
     contributor license agreements.  See the NOTICE file distributed with
     this work for additional information regarding copyright ownership.
@@ -23,28 +23,31 @@
 -->
   <Project rdf:about="http://steve.apache.org">
     <created>2014-06-13</created>
-    <license rdf:resource="http://spdx.org/licenses/Apache-2.0" />
+    <license rdf:resource="https://www.apache.org/licenses/LICENSE-2.0" />
     <name>Apache Steve</name>
     <homepage rdf:resource="http://steve.apache.org" />
     <asfext:pmc rdf:resource="http://steve.apache.org" />
     <shortdesc>STV Voting Tools</shortdesc>
-    <description>Apache STeVe is a collection of online voting tools, used by the ASF, to handle STV and other voting methods.</description>
-    <bug-database rdf:resource="https://issues.apache.org/jira/browse/STEVE" />
-    <mailing-list rdf:resource="http://steve.apache.org/support.html" />
+    <description>
+      Apache STeVe is a collection of online voting tools, used by the ASF,
+      to handle STV and other voting methods.
+    </description>
+    <bug-database rdf:resource="https://github.com/apache/steve/issues" />
+    <mailing-list rdf:resource="dev@steve.apache.org" />
     <download-page rdf:resource="http://steve.apache.org/downloads.html" />
     <programming-language>Perl</programming-language>
     <programming-language>Python</programming-language>
     <category rdf:resource="http://projects.apache.org/category/library" />
     <repository>
       <SVNRepository>
-        <location rdf:resource="https://svn.apache.org/repos/asf/steve/trunk"/>
-        <browse rdf:resource="http://svn.apache.org/viewvc/steve/trunk/"/>
+        <location rdf:resource="https://github.com/apache/steve" />
+        <browse rdf:resource="https://github.com/apache/steve" />
       </SVNRepository>
     </repository>
     <maintainer>
       <foaf:Person>
         <foaf:name>Jim Jagielski</foaf:name>
-          <foaf:mbox rdf:resource="mailto:jim@apache.org"/>
+        <foaf:mbox rdf:resource="mailto:jim@apache.org" />
       </foaf:Person>
     </maintainer>
   </Project>

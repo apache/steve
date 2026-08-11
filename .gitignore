@@ -1,3 +1,4 @@
+### default/generic ignores below
 *.py[co]
 
 # Packages
@@ -18,7 +19,7 @@ docs/_build
 dropin.cache
 eggs/
 include/
-lib/
+/lib/
 man/
 parts/
 share/
@@ -54,3 +55,4 @@ pip-log.txt
 target/
 output/
 .DS_Store
+.aider*

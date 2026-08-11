@@ -5,77 +5,71 @@
 v1 was a set of command-line tools to run voting on a host server, with the
 people ssh'ing to that server to cast votes.
 
-v2 was a webapp and data server to run the voting process, utilizing LDAP
-authentication for the people voting.
+v2 was a webapp and data server to run the voting process, utilizing emailed
+tokens as "authentication" for those voting. A later modification used LDAP
+to look up that token, so that email was not required (which also prevents
+email interception of a voting token, which anybody could use).
 
-v3 is intended (primarily) to revamp the data model/storage and the webui
-frameworks, using more recent technologies for greater leverage.
+v3 is intended (primarily) to revamp the data model and storage and the webui
+framework, using more recent technologies for greater leverage.
+
+For background reference in this README, see the documentation for the
+[database schema](docs/schema.md)
+
+## Getting Started
+
+Read the [Getting Started Guide](docs/quickstart.md) to set up a development
+environment.
 
 ## Data Model
 
 v2 is the initial guide for a data model, to be used by v3.
 
 The top-level item is an **Election**, and our design-point (in terms of scale)
-is to manage hundreds of these.
+is to manage hundreds of these. Each Election contains some simple metadata.
 
-Each **Election** contains some simple metadata, along with **Persons**
-(numbering in the hundreds) that are on record to vote, a set of **Issues**
-(also, hundreds) on the ballot for the people to vote upon, and a small
-set of **Vote Monitors** (single digit count) for the Election.
+The number of **Persons** is numbered in low thousands, and is the entire union
+of people who may be eligible to vote in any of the Elections. 
 
-This will produce a set of **Votes** (tens of thousands).
+The **Issues** are the union of all issues across all Elections, and expected to
+number in tens of thousands.
 
-### Vote Monitors (and Attacks?)
+There is a mapping table that specifies which **Persons** are eligible to vote
+in which **Issues**, which will likely reach low millions.
 
-This role is undefined.
+Lastly, there is the set of **Votes** which may reach many millions.
 
-Once an election is opened, no changes to the ballot are allowed, so the
-Monitors cannot affect an election. With read-only status, what should they
-be looking for?
+**Note**: these are initial scaling estimates, and the underlying SQLite database
+should easily scale to these levels and beyond.
 
-* Alice voting as Bob (see below)
-* Alice stuffing ballots (eg. as a person not on Record; should be impossible)
+### Vote Monitors
 
-Each person receives a **token** to represent themself during voting. The
-token is regarded as a **shared secret** between STeVe and the Person.
+v2 had the notion of a "Vote Monitor" which will not be used in v3. There are
+no known items to monitor.
 
-Note: this token could be used internally, and the **shared secret** would be
-the Person's LDAP password. This *may* create undesired data in access logs,
-which could be solved by custom config to **omit** the authenticated user from
-the logs. And/or, a Person could sign in to retrieve a link that embeds
-their token, and that link requires no authentication (note: would need to
-ensure that **all** browsers obey path-based directives on when to send
-credentials; we'd only want creds for retrieving the token/link, but for them
-to be dropped during voting the ballot).
-
-Given the above, if Alice is able to discover Bob's token, then she can vote
-as if she were Bob. This may be discoverable by aberrant repeat voting by Bob.
-
-Since votes may only be performed by those on record, with person tokens, it
-does not seem possible for Alice to stuff the ballot box.
-
-?? other attack vectors? can Monitors help with any?
+The owner/creator of an Election will be given a dashboard to view progress,
+in an anonymized form.
 
 ## Hashes and Anonymity
 
-The Persons must be as anonymous as possible. The goal is that Persons
-and Monitors cannot "unmask" any Person in the election, nor the Votes that
-they have cast.
+The recorded Votes must be as anonymized as possible. The goal is to
+detach Persons from their recorded Votes on Issues in a given Election. 
+The data "at rest" cannot be decrypted without significant work.
 
 It is presumed that the "root" users of the team operating the software would be
 able to unmask Persons and view their votes.
 
-Cryptographic-grade hashes are used as identifiers to create anonymity.
+Cryptographic hashes, techniques, and ciphers are used to create anonymity.
 
 ## Integrity
 
-When an Election is "opened for voting", all Persons, Issues, and Monitors
-will be used to construct a singular hash (`opened_key`) that identifies
+When an Election is "opened for voting", all metadata, Persons, and Issues,
+are used to construct a singular hash (`opened_key`) that identifies
 the precise state of
 the Election. This hash is used to prevent any post-opening tampering of the
-Persons of record, the ballot, or those watching for such tampering.
+Election, the Persons of record, or the ballot.
 
-The recorded votes use the `opened_key` to produce the anonymized tokens
+The recorded votes use the `opened_key` to produce an anonymized token
 for each Person and each Issue, and it is used as part of the vote encryption
 process. Any attempt to alter the election will produce a new `opened_key`
 value, implying that any recorded vote becomes entirely useless (the vote
@@ -86,72 +80,72 @@ can not be matched to a Person, to an Issue, nor decrypted).
 (for details, see **Implementation** below)
 
 The recorded votes are encrypted when at rest in the SQLite database. Each
-vote is recorded using a hashed form of the Person that performed the vote
-(`person_token`), and a hashed version of the issue voted upon
-(`issue_token`). Thus, a cursory examination of the recorded votes will not
+vote is recorded using a token (`vote_token`) genearated as a hash of the
+Person that performed the vote and the issue voted upon. Thus, a cursory
+examination of the recorded votes will not
 reveal people's name, nor the issues voted upon.
 
-To reveal the votes for computing a final tally, the `person_token` will
-be used in its opaque form -- there is no need to pair these tokens to
-visible names. For a given issue, its `issue_token` is computed and
-all rows with that token are selected. If two or more selected rows have
-the same `person_token` (a Person filed a later vote), then only the
-most-recent row is used in the tally process. Each vote is decrypted
-using the `person_token` and the `issue_token` from that row, along
-with a unique per-vote salt value. The decrypted vote is then tallied
-according to the chosen vote type (eg. yes/no/abstain, or Single
+To reveal the votes for computing a final tally of an Issue, the
+`vote_token` will be reconstructed for each voter, and used to query
+the corresponding votes for the tally (only most-recent vote used).
+
+The votes will be decrypted and fed into the issue's tally
+function (based on the vote type, eg. yes/no/abstain, or Single
 Transferable Vote).
 
 When a Person loads their ballot, and needs to know which issues have
-not (yet) been voted upon, then we compute the `person_token` for them.
-For each issue on the ballot, we compute the `issue_token` and see if
-the votes contain any rows with those two tokens. The actual vote does
-not need to be decrypted for this process.
-
-Note that to reveal each recorded vote requires one (1) expensive hash
-computation, and one (1) expensive decryption. Additional hash
-computations are required to pair each Person and each Issue with
-their corresponding tokens. These operations are all salted to increase
-the entropy.
+not (yet) been voted upon, then we compute a `vote_token` for each
+eligible Issue, then look into the **Votes** table for rows.
+The actual vote does not need to be decrypted for this process.
 
 ## Implementation
+
+All information/data is recorded within a site-wide SQLite database,
+using [this schema](docs/schema.md)
+(see also: [schema.sql](schema.sql)).
 
 Some notes on implementation, hashing, storage, at-rest encryption, etc.
 
 ```
-ElectionID := 32 bits
+ElectionID := 40 bits, as 10 hex characters
 PersonID := availid from iclas.txt  # for ASF usage
-IssueID := [-a-zA-Z0-9]+
+IssueID := 40 bits, as 10 hex characters
 
 ElectionData := Tuple[ ElectionID, Title ]
 IssueData := Tuple[ IssueID, Title, Description, VoteType, VoteOptions ]
-PersonData := Tuple[ PersonID, Name, Email ]
+PersonData := Tuple[ PersonID, Email ]
 BLOCK := ElectionData + sorted(IssueData) + sorted(PersonData)
 OpenedKey := Hash(BLOCK, Salt(each-election))
 
-Persons := Map<PersonID, Salt(each-person)>
-PersonToken := Hash(OpenedKey + PersonID, Salt(each-person))
+pair = Tuple[ PersonID, IssueID ]
+votestring = TBD, based on vote type
 
-Issues := Map<IssueID, Salt(each-issue)>
-IssueToken := Hash(OpenedKey + IssueID, Salt(each-issue))
-
-votestring = TBD; padding TBD
-VoteKey := Hash(PersonToken + IssueToken, Salt(each-vote))
-Vote := Tuple[ PersonToken, IssueToken, Salt(each-vote), Encrypt(VoteKey, votestring) ]
+VoteToken = Hash(OpenedKey + PersonID + IssueID, Salt(each-pair))
+VoteKey := PBKDF(VoteToken, Salt(each-pair))
+Vote := Tuple[ VoteToken, Encrypt(VoteKey, votestring) ]
 ```
+
+`ElectionID` and `IssueID` are generated 10-character hex values, using
+`secrets.token_hex(5)` for cryptographic-level entropy. The 10 characters
+is chosen because these values are visible in URLs and should not be too
+confusing for humans. At 40 bits, the chance for collision is over a
+million generated values. When generating a new ID, if a collision
+actually occurs, then a new ID will be generated and tried.
 
 When an **Election** is Opened for voting, the `OpenedKey` is calculated, stored,
 and used for further work. The `OpenedKey` is primarily used to resist tampering
-with the ballot definition.
+with the ballot definition, and to salt hash of later operations.
 
-The size of **Salt(xx)** is 16 bytes, which is the default used by the Argon2
-implementation. The salt values should never be transmitted.
-
-The `Hash()` function will be **Argon2**[^argon2]. Note that `Hash()` is
+The `Hash()` function is **Argon2**[^argon2], producing 32 bytes.
+Note that `Hash()` is
 computationally/memory intensive, in order to make "unmasking" of votes
 somewhat costly for **root**. Yet it needs to be reasonable to decrypt
 the votestrings for final tallying (eg. after ballot-close, **several hours**
 to decrypt all the votes and perform the tally).
+
+The `Salt()` function is `secrets.token_bytes(16)` to produce 16 bytes of
+cryptographic-level entropy, suitable for use by the Argon2 hash functions.
+The salt values should never be transmitted.
 
 `Encrypt()` and `Decrypt()` are a **symmetric** encryption algorithm,
 so that votestrings can be recovered. This will
@@ -161,51 +155,67 @@ the 32 bytes needed for a Fernet key.
 
 ### Storage and Transmission
 
-**IMPORTANT**: the `PersonToken` and `IssueToken` should never be
+**IMPORTANT**: the `VoteToken` should never be
 stored in a way that ties them to the PersonID and IssueID.  The
-`VoteKey` should never be stored. Instead, the `Salt(xx)` values
-are stored, and the tokens/key are computed when needed.
+`VoteKey` should never be stored. Instead, the `Salt()` values
+are stored, and the token and key are computed when needed.
 
 In general, the expense of the `Hash()` function should not be short-circuited
 by storing the result. Any attacker must perform the work. During normal
 operation of the voting system, each call of the `Hash()` function should be
 within human-reasonable time limits (but unreasonable to perform in bulk).
 
-Note that `PersonToken` and `IssueToken` are stored as part of each `Vote`,
-but those tokens provide no easy mapping back to a person or issue.
+Note that `VoteToken` is stored as part of each `Vote`,
+but that token provides no mapping back to a Person or Issue.
 
-The `PersonToken` is normally emailed to the Person. If it is not
-emailed, then LDAP authentication would be used, and the server will
-compute it from the authenticated credentials.
+The `ElectionID` and `IssueID` are visible to users, and will be encoded
+as hex digits to make them relatively human-consumable.
 
-Since `PersonToken` *may* be used by the Person, via URL, to perform
-their voting, it must be "URL safe". If LDAP authn mode is used, then
-the `PersonToken` will never be encoded for humans.
+### Entropy
 
-The `ElectionID` is also visible to Persons, and will be encoded
-as eight (8) hex digits, just like STeVe v2.
+There is high-entropy in the following values: `ElectionID`, `UserID`,
+`VoteToken`, the two salts, and the computed (never-stored) `VoteKey`.
+
+The `PersonID` is considered low-entropy, as it is likely a username.
+
+Low-entropy implies a threat vector, where an attacker could use various
+techniques to try "all values". However, it is combined into the
+`VoteToken` with the 40-bit high-entropy `IssueID`, the 256-bit
+high-entropy OpenedKey, and a 128-bit high-entropy salt value.
+
+The `VoteKey` is a key-stretched `VoteToken` and also considered as
+high-entropy and infeasible to crack.
 
 ### (Re)Tally Process
 
-  1. For each issue on the ballot, the `IssueToken` is computed and
-     entered into a `Map<IssueToken, IssueID>`
-  1. For each vote in the election:
-     1. Compute the `VoteKey`
-     1. Decrypt the `votestring`
-     1. Look up the `IssueID`, and apply `votestring` to that issue
+Querying the set of Issues for those associated with an ElectionID is
+straight-forward.
 
-Notes: be wary of repeats; collect STV votestrings, for passing in-bulk
-to the STV algorithm.
+To tally a specific issue:
 
-Note that the tally process does not require unmasking the Person.
+1. For each Person eligible to vote on this issue, compute a `VoteToken`
+2. Find the **most-recent** vote using the `VoteToken`
+3. Decrypt the ciphertext to produce the original `votestring`
+4. Feed these votes into the tally mechanism for the Issue's vote type.
 
-### API Documentation
+## API Documentation
 
 This is _TBD_
 
 A basic example of using the API is available via the
-[code coverage testing script](test/check_coverage.py).
+[code coverage testing script](tests/check_coverage.py).
 
+## Testing
+
+See [tests/README.md](tests/README.md) for details on testing the codebase.
+
+## Threat Model
+
+There are two primary threat vectors that can compromise the cryptographic
+records of elections, people, issues, and their votes:
+
+1. **root** on the system
+2. Remote Code Execution (RCE) that can surface necessary rows from the database
 
 [^fernet]: https://cryptography.io/en/latest/fernet/
 [^argon2]: https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html

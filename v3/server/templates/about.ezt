@@ -1,0 +1,11 @@
+[include "header.ezt"]
+    <div class="container">
+        <h1>[title]</h1>
+        [include "flashes.ezt"]
+
+        <p>
+          For more information, please see the
+          <a href="https://steve.apache.org/">Apache STeVe website</a>
+        </p>
+    </div>
+[include "footer.ezt"]

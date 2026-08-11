@@ -1,0 +1,16 @@
+[include "header.ezt"]
+    <div class="container">
+        <h1>[title]</h1>
+        [# skipping flashes.ezt ]
+
+        <p>
+            [# we could be more specific. simpler to re-use. ]
+
+            The Issue ID ([iid]) does not exist, or you do not
+            have access to vote or manage that issue.
+        </p>
+        <p>
+            <a href="/">Return to the home page</a>
+        </p>
+    </div>
+[include "footer.ezt"]

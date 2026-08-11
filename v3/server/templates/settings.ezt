@@ -1,0 +1,10 @@
+[include "header.ezt"]
+    <div class="container">
+        <h1>[title]</h1>
+        [include "flashes.ezt"]
+
+        <p>
+            TBD
+        </p>
+    </div>
+[include "footer.ezt"]

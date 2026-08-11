@@ -1,0 +1,41 @@
+name: Linting
+
+on:
+  push:
+    branches: [ trunk ]
+    paths:
+      - 'v3/**/*.py'
+      - '**/ruff.toml'
+      - 'v3/pyproject.toml'
+  pull_request:
+    branches: [ trunk ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version-file: v3/pyproject.toml
+    - name: Install uv
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+    - name: Install dependencies
+      working-directory: v3
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y libldap2-dev libsasl2-dev
+        uv sync --all-extras --dev
+    - name: Check with ruff
+      working-directory: v3
+      run: uv run ruff check
+    - name: Format with ruff
+      working-directory: v3
+      run: uv run ruff format --diff
