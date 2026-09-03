@@ -47,7 +47,7 @@ for more insight into how STV works.
 For calculating results, we use Meek's Method with a quota derived from
 the Droop Quota, but with implementation changes such as those
 proposed by New Zealand. See 
-[this paper](http://svn.apache.org/repos/asf/steve/trunk/stv_background/meekm.pdf)
+[this paper](https://www.prsa.org.au/meek_algorithm_1987.pdf)
 for details.
 
 ----
