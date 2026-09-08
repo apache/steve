@@ -29,6 +29,7 @@
 
 import sys
 import os.path
+import pathlib
 import random
 import argparse
 import configparser
@@ -53,47 +54,85 @@ RE_VOTE = re.compile(r'\[.{19}\]\s+'
 VERBOSE = False
 
 
-#@deprecated
+class LoadData:
+    """Loaded ballots for STV. Votes are lists of candidate names."""
+
+    def __init__(self, names, votes, labelmap, source, legacy):
+        self.names = names
+        self.votes = votes
+        self.labelmap = labelmap
+        self.source = pathlib.Path(source)
+        self.legacy = legacy
+
+    @classmethod
+    def from_path(cls, path):
+        """Load a vote file. File only — not a directory.
+
+        v3 vote-results.json is the source of truth.
+        raw_board_votes.txt is old-school (warns).
+        v2 raw_board_votes.json is not a tally format (warn + exit).
+        """
+        path = pathlib.Path(path)
+        if not path.is_file():
+            print(f'ERROR: "{path}" is not a file.', file=sys.stderr)
+            sys.exit(1)
+
+        if path.suffix.lower() == '.json':
+            jvalue = json.load(open(path))
+            if isinstance(jvalue, dict) and 'results' in jvalue:
+                return cls.from_v3_json(jvalue, path)
+
+            v3 = path.with_name('vote-results.json')
+            txt = path.with_name('raw_board_votes.txt')
+            print(
+                'WARNING: raw_board_votes.json is not a tally format and is ignored.',
+                file=sys.stderr,
+            )
+            if v3.is_file():
+                hint = v3
+            elif txt.is_file():
+                hint = txt
+            else:
+                hint = 'vote-results.json or raw_board_votes.txt'
+            print(f'Use {hint} instead.', file=sys.stderr)
+            sys.exit(1)
+
+        return cls.from_txt(path)
+
+    @classmethod
+    def from_txt(cls, votefile):
+        """txt + sibling board_nominations.ini. Last vote per 32-char hash wins."""
+        votefile = pathlib.Path(votefile)
+        print(
+            'WARNING: old-school raw_board_votes.txt; '
+            'prefer vote-results.json when it exists.',
+            file=sys.stderr,
+        )
+
+        first = open(votefile).readline()
+        if first.strip() == 'rank order':
+            raise Exception(
+                'This script cannot parse rank-order / VoteMain input.'
+            )
+
+        labelmap = read_nominees(str(votefile))
+        names = [name for _, name in sorted(labelmap.items())]
+        votes_by_label = read_votefile(str(votefile))
+        votes = [[labelmap[l] for l in vote] for vote in votes_by_label]
+        return cls(names, votes, labelmap, votefile, legacy=True)
+
+    @classmethod
+    def from_v3_json(cls, jvalue, path):
+        """vote-results.json: first issue with vtype == 'stv'."""
+        labelmap, votes = load_v3(jvalue)
+        names = [name for _, name in sorted(labelmap.items())]
+        return cls(names, votes, labelmap, path, legacy=False)
+
+
 def load_votes(fname):
-  """Used by WHATIF.PY.
-
-  Returns a list of names, and a list of vote-lists.
-  """
-
-  line = open(fname).readline()
-  if line.strip() == 'rank order':
-    lines = open(fname).readlines()
-
-    # The input file was processed by nstv-rank.py, or somehow otherwise
-    # converted to the standard input for VoteMain.jar
-    names = [s.strip() for s in lines[1].strip().split(',')][1:]
-    labels = [s.strip() for s in lines[2].strip().split(',')][1:]
-    assert len(names) == len(labels)
-    remap = dict(zip(labels, names))
-
-    ### this is broken. We need to return a list of lists. Not a dict.
-    ### we do not want to flow "who" voted -- that should be discarded.
-    raise Exception("This script cannot parse the provided input file. "
-                    "Fix the script.")
-    votes = { }
-    for line in lines[3:]:
-      parts = line.strip().split(',')
-      votes[parts[0]] = [remap[l] for l in parts[1:]]
-    return names, votes
-
-  # Map from "a".."z" to human names.
-  labelmap = read_nominees(fname)
-
-  # Construct a label-sorted list of names from the labelmap.
-  names = [name for _, name in sorted(labelmap.items())]
-
-  # Load the raw votes that were recorded. (eg. "kbaf")
-  votes_by_label = read_votefile(fname)
-
-  # Remap all labels to names in the votes.
-  votes = [ [labelmap[l] for l in vote] for vote in votes_by_label ]
-
-  return names, votes
+    """Return (names, votes). Prefer LoadData.from_path for new code."""
+    data = LoadData.from_txt(fname)
+    return data.names, data.votes
 
 
 def load_v3(jvalue):
@@ -137,17 +176,6 @@ def read_votefile(fname):
 
   # Discard voterhash, and just return the list of votes.
   return list(votes.values())
-
-
-def process_jsonvotes(votestrings):
-  "Return a list (each voter) of ordered lists of vote-labels."
-
-  votes = [ ]
-  for v in votestrings:
-    # Ignore the "null" votes, for STV purposes.
-    if (vote := v['vote']) != '-':
-      votes.append(vote.lower().split())
-  return votes
 
 
 def read_nominees(votefile):
@@ -498,50 +526,8 @@ def main(argv):
   global VERBOSE
   VERBOSE = args.verbose
 
-  if not os.path.exists(args.raw_file):
-    parser.print_help()
-    sys.exit(1)
-
-  if args.raw_file.endswith('.json'):
-    jvalue = json.load(open(args.raw_file))
-  else:
-    jvalue = None
-
-  if jvalue and 'results' in jvalue:
-    # This is a modern (v3 starting in 2026) vote-results.json file.
-    # It contains everything we need.
-
-    labelmap, votes = load_v3(jvalue)
-
-  else:
-    # Older styles of vote records.
-
-    # Get mapping from vote label (typically "a" to "z") to human name.
-    labelmap = read_nominees(args.raw_file)
-    print('LABELMAP:', labelmap)
-
-    # Turn votes using labels into by-name.
-    if jvalue:
-      ### noted on 2025-03-06:
-      ### this appears totally broken. The prior-year raw JSON files have
-      ### labels such as "AK" and "AB", yet the labels extracted from
-      ### board_nominations.ini uses labels like "k" and "b".
-      ### QUESTION: do new .json files have a mapping in them? eg. who is "AK"?
-
-      ### ANSWER: punt. the raw_board_votes.json looks unusable.
-      raise Exception('cannot use that .json file')
-
-    ### we have no files with content like this. Force to False.
-    #newformat = (len(next(iter(labelmap))) > 1)  # keys like "a" or "aa"?
-
-    # votes_by_label: [ [L1, L2, ...], [ L1, L2, ... ], ... ]
-    votes_by_label = read_votefile(args.raw_file)
-    votes = [[labelmap[label] for label in votelist] for votelist in votes_by_label]
-
-  # Construct a label-sorted list of names from the labelmap.
-  names = [name for _, name in sorted(labelmap.items())]
-
-  candidates = run_stv(names, votes, args.seats)
+  data = LoadData.from_path(args.raw_file)
+  candidates = run_stv(data.names, data.votes, args.seats)
   candidates.print_results()
   print('Done!')
 
