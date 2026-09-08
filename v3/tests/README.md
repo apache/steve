@@ -27,8 +27,8 @@ STV (Single Transferable Vote) testing involves running the STV tally process on
 
 ### Prerequisites
 
-- Ensure the `stv_tool` module is available at `../../../monitoring/stv_tool.py` (relative to `v3/steve/vtypes/stv.py`).
-- Provide a `Meetings` directory containing subdirectories (e.g., `yyyymmdd`) with the required input files: `raw_board_votes.txt` (raw vote data) and `board_nominations.ini` (label mappings for candidates).
+- Ensure the `stv_tool` module is available at `../../../monitoring/stv_tool.py` (relative to `v3/steve/vtypes/stv.py`). Live tallies prefer v3 `vote-results.json` via `LoadData.from_path`. These regression tests still use historical `raw_board_votes.txt` so v3 continues to match pre-v3 Meek results (the loader will warn that txt is old-school).
+- Provide a `Meetings` directory containing subdirectories (e.g., `yyyymmdd`) with `raw_board_votes.txt` and `board_nominations.ini`.
 
 ### Scripts
 
@@ -43,9 +43,10 @@ STV (Single Transferable Vote) testing involves running the STV tally process on
 
 ### Dependencies
 
-- `raw_board_votes.txt`: Contains the raw vote data in each meeting subdirectory.
-- `board_nominations.ini`: Contains the label mappings for candidates in each meeting subdirectory.
+- `raw_board_votes.txt`: Historical raw vote data in each meeting subdirectory (legacy format; `read_votefile` takes only the filename).
+- `board_nominations.ini`: Letter-to-name map for those txt files.
+- Do not pass v2 `raw_board_votes.json` into `stv_tool`; it is not a tally format.
 
 ### Importing stv_tool
 
-The `stv.py` module imports `stv_tool` from `../../../monitoring/stv_tool.py` using dynamic loading to ensure compatibility.
+The `stv.py` module imports `stv_tool` from `../../../monitoring/stv_tool.py` using dynamic loading. Tally math is `run_stv`; file loading for new code is `LoadData.from_path`. See also [`monitoring/README.md`](../../monitoring/README.md).
