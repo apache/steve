@@ -19,8 +19,7 @@ Meek STV engine plus `LoadData` (load a **file**, not a directory). v3 (`steve.v
 | `raw_board_votes.txt` (+ sibling `board_nominations.ini`) | Old-school emailed format. Non-vote lines ignored; later vote per 32-char hash wins. Warns on stderr. |
 | `raw_board_votes.json` (v2 export, labels like `AA`/`AB`) | Not a tally format. Warns and exits. Keep for posterity; pass txt or v3 JSON instead.                 |
 
-`whatif.py` runs seat / drop / runoff scenarios on the same loaders.
-`whatif.rb` still wants txt+ini.
+`whatif.py` runs seat / drop / runoff scenarios on the same loaders. `whatif.rb` still wants txt+ini.
 
 ## Other STV tools
 
@@ -49,9 +48,7 @@ ASF Meek STV settings: precision 6; threshold Droop | Dynamic | Fractional.
 
 ## YNA
 
-`yna-summary.pl` tallies Yes / No / Abstain. You can concatenate all
-final YNA tallies into one file; it pulls out each issue name and
-result, honoring only the most recent vote per voter.
+`yna-summary.pl` tallies Yes / No / Abstain. You can concatenate all final YNA tallies into one file; it pulls out each issue name and result, honoring only the most recent vote per voter.
 
 ```shell
 ./yna-summary.pl all30tally.txt
