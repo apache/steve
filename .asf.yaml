@@ -33,6 +33,12 @@ github:
     allow_update_branch: true
     del_branch_on_merge: true
 
+# Stage generated site/<name>-staging branches at steve-<name>.staged.apache.org.
+staging:
+  profile: ~
+  whoami: asf-staging
+  autostage: site/*
+
 # We will publish our site using Pelican, via the asf-site branch
 pelican:
   whoami: trunk
