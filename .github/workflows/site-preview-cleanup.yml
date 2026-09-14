@@ -1,0 +1,30 @@
+name: Remove website preview
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: website-${{ github.event.pull_request.head.repo.full_name }}-refs/heads/${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'preview/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete the generated preview branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          name="${SOURCE_BRANCH#preview/}"
+          [[ "$name" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || exit 0
+          branch="site/${name}-staging"
+          if gh api "repos/$GH_REPO/git/ref/heads/$branch" --silent; then
+            gh api --method DELETE "repos/$GH_REPO/git/refs/heads/$branch"
+          fi

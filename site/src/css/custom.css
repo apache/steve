@@ -1,0 +1,282 @@
+/* Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to you under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:root {
+  --ifm-color-primary: #225d77;
+  --ifm-color-primary-dark: #1f546b;
+  --ifm-color-primary-darker: #1d4f65;
+  --ifm-color-primary-darkest: #184153;
+  --ifm-color-primary-light: #256683;
+  --ifm-color-primary-lighter: #276b89;
+  --ifm-color-primary-lightest: #2c799b;
+  --ifm-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ifm-font-size-base: 17px;
+  --ifm-line-height-base: 1.7;
+  --ifm-heading-color: #172f3c;
+  --ifm-font-color-base: #354e5b;
+  --ifm-heading-font-weight: 650;
+  --ifm-heading-line-height: 1.18;
+  --ifm-navbar-height: 5rem;
+  --ifm-navbar-shadow: none;
+  --ifm-footer-background-color: #f4f6f5;
+  --ifm-code-font-size: 90%;
+  --ifm-global-radius: 4px;
+}
+
+.navbar {
+  border-bottom: 1px solid #e0e7e9;
+  padding-inline: max(1.5rem, calc((100vw - 1180px) / 2));
+}
+.navbar__logo {
+  height: 2.65rem;
+}
+.navbar__link {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.site-width {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+.eyebrow {
+  margin-bottom: 1.4rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.home-hero {
+  padding: 5.5rem 0 4.5rem;
+  background: #fafbf9;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.home-hero h1 {
+  font-size: clamp(2.4rem, 4.4vw, 3.6rem);
+  letter-spacing: -0.05em;
+  margin-bottom: 1.5rem;
+}
+.home-hero h1 span {
+  color: var(--ifm-color-primary);
+}
+.hero-description {
+  max-width: 35rem;
+  font-size: 1.12rem;
+  line-height: 1.65;
+}
+.hero-actions {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+.button {
+  font-weight: 600;
+  font-size: 0.94rem;
+}
+.button--lg {
+  padding: 0.85rem 1.2rem;
+}
+.hero-actions .button span {
+  padding-left: 0.8rem;
+}
+.source-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.election-path {
+  border: 1px solid #d7e2e4;
+  border-top: 3px solid #558397;
+  padding: 1.7rem 1.6rem 0.5rem;
+  background: #fff;
+}
+.election-path .eyebrow {
+  color: #566c75;
+  margin-bottom: 0.5rem;
+}
+.election-path ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.election-path li {
+  display: flex;
+  gap: 1rem;
+  padding: 1.3rem 0;
+}
+.election-path li + li {
+  border-top: 1px solid #e5ecee;
+}
+.step-number {
+  font-size: 0.75rem;
+  color: #5b7c8c;
+  font-variant-numeric: tabular-nums;
+  padding-top: 0.15rem;
+}
+.election-path h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.4rem;
+}
+.election-path p:not(.eyebrow) {
+  font-size: 0.86rem;
+  margin: 0;
+  line-height: 1.55;
+}
+.development-note {
+  background: #edf3f4;
+  border-block: 1px solid #dce6e8;
+  font-size: 0.8rem;
+}
+.development-note .site-width {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  padding-block: 1.1rem;
+}
+.development-note a {
+  margin-left: auto;
+  font-weight: 600;
+}
+.home-section {
+  padding-block: 4.5rem;
+}
+.section-heading h2,
+.community-band h2 {
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+}
+.section-heading .eyebrow {
+  margin-bottom: 0.8rem;
+}
+.tool-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  margin-top: 2.5rem;
+}
+.tool-grid article {
+  border-top: 1px solid #bdcfd5;
+  padding-top: 1.5rem;
+}
+.tool-label {
+  font-size: 0.75rem;
+  color: #59717c;
+}
+.tool-grid h3 {
+  font-size: 1.45rem;
+  margin: 0.6rem 0 1rem;
+}
+.tool-grid p {
+  max-width: 31rem;
+}
+.tool-grid a {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.community-band {
+  background: #edf3f4;
+  padding-block: 3.5rem;
+}
+.community-grid {
+  display: flex;
+  gap: 3rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.community-grid > div {
+  max-width: 42rem;
+}
+.community-grid .button {
+  flex-shrink: 0;
+}
+.community-grid .eyebrow {
+  margin-bottom: 0.8rem;
+}
+.community-grid p:last-child {
+  margin-bottom: 0;
+}
+.footer {
+  padding-block: 3rem;
+  font-size: 0.85rem;
+  border-top: 1px solid #dce6e8;
+}
+.footer__title {
+  font-size: 0.9rem;
+}
+.footer__copyright {
+  margin-top: 2rem;
+  font-size: 0.75rem;
+  color: #5f7178;
+}
+.markdown {
+  padding-block: 2rem;
+}
+.markdown h1 {
+  font-size: 2.6rem;
+  letter-spacing: -0.04em;
+}
+.markdown h2 {
+  font-size: 1.65rem;
+  margin-top: 2.5rem;
+}
+.markdown a:not(.hash-link) {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+@media (max-width: 996px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .home-hero {
+    padding-block: 3.5rem;
+  }
+  .election-path {
+    max-width: 38rem;
+  }
+  .development-note a {
+    margin-left: 0;
+  }
+  .community-grid {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .tool-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .home-section {
+    padding-block: 3rem;
+  }
+  .hero-actions {
+    gap: 1.2rem;
+  }
+  .development-note .site-width {
+    flex-direction: column;
+  }
+  .markdown h1 {
+    font-size: 2.15rem;
+  }
+}

@@ -53,15 +53,19 @@ See also [`monitoring/README.md`](monitoring/README.md).
 
 ## Getting Started
 
-Getting Started documentation can be found at: http://steve.apache.org/demo.html
-Otherwise, come to the #steve channel on the Slack workspace at the-asf.slack.com, 
-and we'd be glad to help you.
+Read the [Getting Started Guide](v3/docs/quickstart.md) to set up a v3 development
+environment, or visit https://steve.apache.org/getting-started/ for an overview
+of the application and tally tools. Ask questions on the development mailing
+list below.
 
 ## Documentation
 
-Documentation may be found at http://steve.apache.org/documentation.html
+Documentation may be found at https://steve.apache.org/documentation/.
 
 Contributions to the documentation are very welcome.
+
+The website is built with Docusaurus from [`site/`](site/README.md) in this
+repository. See the site README for local development and preview publishing.
 
 ## Mailing Lists
 

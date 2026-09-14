@@ -1,0 +1,30 @@
+{
+  "name": "apache-steve-website",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve",
+    "test": "node --test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "pnpm format:check && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.10.2",
+    "@docusaurus/preset-classic": "3.10.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "fast-xml-parser": "^5.11.1",
+    "prettier": "^3.9.6"
+  }
+}
