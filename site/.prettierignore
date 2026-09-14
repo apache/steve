@@ -1,0 +1,4 @@
+build/
+.docusaurus/
+pnpm-lock.yaml
+static/images/

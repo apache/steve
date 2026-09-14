@@ -1,0 +1,97 @@
+name: Website
+
+on:
+  pull_request:
+    branches: [trunk]
+    paths:
+      - site/**
+      - .asf.yaml
+      - .github/workflows/site.yml
+  push:
+    branches:
+      - trunk
+      - preview/*
+    paths:
+      - site/**
+      - .asf.yaml
+      - .github/workflows/site.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+      - name: Enable pnpm
+        run: corepack enable pnpm
+      - name: Select the site URL
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if [[ "$SOURCE_BRANCH" == preview/* ]]; then
+            name="${SOURCE_BRANCH#preview/}"
+            [[ "$name" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo 'Use preview/<lowercase-name> for website previews.' >&2; exit 1; }
+            echo "SITE_URL=https://steve-${name}.staged.apache.org" >> "$GITHUB_ENV"
+          fi
+      - name: Install dependencies
+        working-directory: site
+        run: pnpm install --frozen-lockfile
+      - name: Validate and build
+        working-directory: site
+        run: pnpm validate
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: github.event_name != 'pull_request'
+        with:
+          name: website
+          path: site/build
+          include-hidden-files: true
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/trunk' || startsWith(github.ref, 'refs/heads/preview/'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: website
+          path: build
+      - name: Select the publishing branch
+        id: target
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+        run: |
+          if [[ "$SOURCE_BRANCH" == trunk ]]; then
+            echo 'branch=asf-site' >> "$GITHUB_OUTPUT"
+            echo 'url=https://steve.apache.org' >> "$GITHUB_OUTPUT"
+          else
+            name="${SOURCE_BRANCH#preview/}"
+            echo "branch=site/${name}-staging" >> "$GITHUB_OUTPUT"
+            echo "url=https://steve-${name}.staged.apache.org" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish generated files
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build
+          publish_branch: ${{ steps.target.outputs.branch }}
+          force_orphan: false
+          enable_jekyll: true
+      - name: Link to the website
+        env:
+          SITE_URL: ${{ steps.target.outputs.url }}
+        run: echo "Website submitted to ASF publishing — [open site]($SITE_URL). Publication may take a few minutes." >> "$GITHUB_STEP_SUMMARY"
