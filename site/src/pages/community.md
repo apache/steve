@@ -24,10 +24,6 @@ These lists are public and their messages are publicly archived.
 - [Browse the source and open a pull request](https://github.com/apache/steve). The [getting started guide](/getting-started/) and [documentation](/documentation/) are useful starting points.
 - For a potential security vulnerability, follow the [ASF security reporting process](https://www.apache.org/security/).
 
-## People
-
-STeVe is maintained by its community. The [ASF project roster](https://whimsy.apache.org/roster/committee/steve) lists the current PMC and committers, and the [contributor history](https://github.com/apache/steve/graphs/contributors) records contributions to the repository.
-
 ## About the project
 
 STeVe grew out of the voting system used to elect the ASF Board of Directors. It is an Apache Software Foundation project, released under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
