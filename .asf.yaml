@@ -1,3 +1,24 @@
+project:
+  metadata:
+    key: steve
+    committee: steve
+    name: Apache STeVe
+    description: Apache STeVe is a collection of online voting tools, used by the ASF, to handle STV and other voting methods.
+    short_description: STV Voting Tools
+    homepage: https://steve.apache.org
+    download_page: https://steve.apache.org/downloads.html
+    bug_database: https://github.com/apache/steve/issues
+    mailing_lists: https://steve.apache.org/community.html
+    repositories:
+      - https://github.com/apache/steve.git
+    categories:
+      - library
+    programming_languages:
+      - Perl
+      - Python
+  features:
+    atr_sync: true
+
 # set some values on github.com/apache/steve
 github:
   description: "Apache STeVe -- a set of voting tools"
