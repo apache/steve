@@ -23,6 +23,7 @@ const config = {
   tagline: 'Open source tools for community elections',
   url: process.env.SITE_URL || 'https://steve.apache.org',
   baseUrl: '/',
+  favicon: 'images/favicon.svg',
   trailingSlash: true,
   onBrokenLinks: 'throw',
   markdown: {
@@ -84,7 +85,7 @@ const config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} The Apache Software Foundation. Licensed under the Apache License, Version 2.0.<br />Apache, Apache STeVe, STeVe, the Apache feather logo, and the Apache STeVe logo are trademarks of The Apache Software Foundation.`,
+      copyright: `Copyright © ${new Date().getFullYear()} The Apache Software Foundation. Licensed under the Apache License, Version 2.0.<br />Apache, Apache STeVe, STeVe, and the Apache STeVe logo are trademarks of The Apache Software Foundation.`,
     },
   },
 };
