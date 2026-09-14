@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from .asf.yaml. Edit project.metadata in the source repository. -->
+<rdf:RDF xmlns="http://usefulinc.com/ns/doap#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:asfext="http://projects.apache.org/ns/asfext#">
+<Project rdf:about="https://steve.apache.org">
+  <name>Apache STeVe</name>
+  <shortdesc>STV Voting Tools</shortdesc>
+  <description>Apache STeVe is a collection of online voting tools, used by the ASF, to handle STV and other voting methods.</description>
+  <homepage rdf:resource="https://steve.apache.org" />
+  <download-page rdf:resource="https://steve.apache.org/downloads/" />
+  <bug-database rdf:resource="https://github.com/apache/steve/issues" />
+  <mailing-list rdf:resource="https://steve.apache.org/community/" />
+  <license rdf:resource="https://www.apache.org/licenses/LICENSE-2.0" />
+  <asfext:pmc rdf:resource="https://steve.apache.org" />
+  <category rdf:resource="http://projects.apache.org/category/library" />
+  <programming-language>Perl</programming-language>
+  <programming-language>Python</programming-language>
+  <repository><GitRepository><location rdf:resource="https://github.com/apache/steve.git" /></GitRepository></repository>
+</Project>
+</rdf:RDF>

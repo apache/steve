@@ -1,4 +1,44 @@
-# Pelican pushes generated content to this branch.
-# Then, publish to steve.apache.org
+project:
+  metadata:
+    key: steve
+    committee: steve
+    name: Apache STeVe
+    description: Apache STeVe is a collection of online voting tools, used by the ASF, to handle STV and other voting methods.
+    short_description: STV Voting Tools
+    homepage: https://steve.apache.org
+    download_page: https://steve.apache.org/downloads/
+    bug_database: https://github.com/apache/steve/issues
+    mailing_lists: https://steve.apache.org/community/
+    repositories:
+      - https://github.com/apache/steve.git
+    categories:
+      - library
+    programming_languages:
+      - Perl
+      - Python
+  features:
+    atr_sync: true
+
+# set some values on github.com/apache/steve
+github:
+  description: "Apache STeVe -- a set of voting tools"
+  homepage: https://steve.apache.org
+  labels:
+    - python
+    - voting
+    - stv
+  features:
+    issues: true
+  pull_requests:
+    allow_update_branch: true
+    del_branch_on_merge: true
+
+# Stage generated site/<name>-staging branches at steve-<name>.staged.apache.org.
+staging:
+  profile: ~
+  whoami: asf-staging
+  autostage: site/*
+
+# GitHub Actions pushes the generated website to this branch.
 publish:
   whoami: asf-site
