@@ -43,7 +43,7 @@ v3/
 - **Authentication**: Relies on external ASF authentication via `asfquart.auth`. Requires committer-level access for most operations.
 - **Templates**: Uses EZT (Easy Template) for server-side rendering. Templates are stored in `templates/` and use `[variable]` syntax for substitution. Includes includes for headers/footers.
 - **Static Assets**: Served from `static/` directory, including Bootstrap CSS/JS, custom CSS, and JavaScript utilities.
-- **Middleware**: Includes session management, CSRF protection (placeholder), and flash messages for user feedback.
+- **Middleware**: Includes session management, session-token CSRF protection for mutations, and flash messages for user feedback. Election management is restricted to the election owner; `authz` delegation is not implemented.
 
 ### Business Logic Layer (`steve/`)
 

@@ -36,3 +36,6 @@ jobs:
     - name: Type testing with mypy
       working-directory: v3  # Ensure mypy runs in the correct directory
       run: uv run mypy --cache-dir /tmp/ --ignore-missing-imports .
+    - name: Run regression tests
+      working-directory: v3
+      run: uv run python -m unittest discover -s tests -p 'test_*.py'

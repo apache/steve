@@ -2,6 +2,12 @@
 
 This directory contains scripts and utilities for testing the v3 codebase.
 
+## Regression Tests
+
+From `v3/`, run `uv run python -m unittest discover -s tests -p 'test_*.py'`. These tests use synthetic users, temporary SQLite databases, and Quart's HTTP test client; they do not require LDAP credentials or a running server.
+
+The suite exercises management authorization, CSRF, date storage, election and ballot atomicity, foreign-key enforcement, cross-election issue isolation, YAML imports, and a small mixed YNA/STV lifecycle. Run without `-O`: the current asfpy dependency explicitly requires assertions to be enabled. Historical STV equivalence still requires the fixtures described below.
+
 ## Code Coverage Testing
 
 To run code coverage testing, use the `check_coverage.py` script. This script uses the `coverage` library to measure code coverage of the `steve` package.
