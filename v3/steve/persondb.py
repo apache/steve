@@ -26,19 +26,30 @@ QUERIES = THIS_DIR.parent / 'queries.yaml'
 class PersonDB:
     @classmethod
     def open(cls, db_fname):
-        return cls(asfpy.db.DB(db_fname, yaml_fname=QUERIES, yaml_section='person'))
+        db = asfpy.db.DB(db_fname, yaml_fname=QUERIES, yaml_section='person')
+        db.conn.execute('PRAGMA foreign_keys = ON')
+        persondb = cls(db)
+        persondb._owns_db = True
+        return persondb
 
     def __init__(self, db):
         self.db = db
+        self._owns_db = False
 
     def __getattr__(self, name):
         "Proxy the cursors."
         return self.__dict__.get(name, getattr(self.db, name))
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self._owns_db:
+            self.db.conn.close()
+
     def get_person(self, pid):
         "Return NAME, EMAIL for Person identified by PID."
 
-        # NEVER return person.salt
         person = self.q_get_person.first_row(pid)
         if not person:
             raise PersonNotFound(pid)
@@ -48,8 +59,6 @@ class PersonDB:
     def add_person(self, pid, name, email):
         "Add or update a Person designated by PID."
 
-        # If we ADD, then SALT will be NULL. If we UPDATE, then it will not
-        # be touched (it should be NULL).
         self.c_add_person.perform(pid, name, email)
 
     def delete_person(self, pid):

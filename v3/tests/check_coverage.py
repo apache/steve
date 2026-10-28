@@ -49,11 +49,6 @@ def touch_every_line():
     conn.executescript(open(SCHEMA_FILE).read())
     conn.close()
 
-    # Ready to load up the Election and exercise it.
-    e = steve.election.Election.create(TESTING_DB, 'coverage', 'alice')
-
-    _ = e.get_metadata()  # while EDITABLE
-
     pdb = steve.persondb.PersonDB.open(TESTING_DB)
     pdb.add_person('alice', 'Alice', 'alice@example.org')
     pdb.add_person('bob', None, 'bob@example.org')
@@ -62,6 +57,9 @@ def touch_every_line():
     _ = pdb.list_persons()
     pdb.delete_person('david')
     _ = pdb.get_person('alice')
+
+    e = steve.election.Election.create(TESTING_DB, 'coverage', 'alice')
+    _ = e.get_metadata()  # while EDITABLE
 
     i1 = e.add_issue('issue A', None, 'yna', None)
     i2 = e.add_issue(

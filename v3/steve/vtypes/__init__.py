@@ -24,6 +24,7 @@ from . import stv  # noqa: E402,F401
 
 def vtype_module(vtype):
     "Return the vote type's module."
-    assert vtype in TYPES
+    if vtype not in TYPES:
+        raise ValueError(f'Unsupported vote type: {vtype}')
 
     return globals()[vtype]
