@@ -137,7 +137,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" id="confirm-open">
+                    <form id="openElectionForm" method="POST" action="/do-open/[eid]">
+                        <input type="hidden" name="csrf_token" value="[csrf_token]">
+                    </form>
+                    <button type="submit" form="openElectionForm" class="btn btn-success" id="confirm-open">
                         <i class="bi bi-unlock me-1"></i>Open for Voting
                     </button>
                 </div>
@@ -159,7 +162,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirm-close">
+                    <form id="closeElectionForm" method="POST" action="/do-close/[eid]">
+                        <input type="hidden" name="csrf_token" value="[csrf_token]">
+                    </form>
+                    <button type="submit" form="closeElectionForm" class="btn btn-danger" id="confirm-close">
                         <i class="bi bi-lock me-1"></i>Close Election
                     </button>
                 </div>
@@ -319,7 +325,6 @@
     const confirmOpen = document.getElementById('confirm-open');
     confirmOpen.addEventListener('click', () => {
         openModal.hide();
-        window.location.href = '/do-open/[eid]';
     });
 
     [is e_state "open"]
@@ -331,7 +336,6 @@
     const confirmClose = document.getElementById('confirm-close');
     confirmClose.addEventListener('click', () => {
         closeModal.hide();
-        window.location.href = '/do-close/[eid]';
     });
 
     // Auto-save a date field on change
