@@ -1,0 +1,68 @@
+[include "header.ezt"]
+<main class="container py-4">
+    <a href="/manage/[eid]">Back to election</a>
+    <h1 class="mt-3">[title]</h1>
+    <p class="lead">[election.title]</p>
+    [include "flashes.ezt"]
+    [if-any error]<div class="alert alert-danger" role="alert">[error]</div>[end]
+    [is election.state "editable"]
+        <p class="text-muted">Eligibility is assigned per issue. New issues start with no voters; adding an issue does not extend existing eligibility.</p>
+    [else]
+        <div class="alert alert-info">This election has opened. Its voter list is frozen and cannot be changed.</div>
+    [end]
+    <div class="row g-4">
+        <section class="col-lg-8" aria-labelledby="voter-list-heading">
+            <h2 id="voter-list-heading" class="h4">Eligible voters <span class="text-muted">([voter_count])</span></h2>
+            [if-any voters]
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th scope="col">ASF ID</th><th scope="col">Name</th><th scope="col">Eligible issues</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                        <tbody>
+                            [for voters]
+                                <tr>
+                                    <th scope="row">[voters.pid]</th>
+                                    <td>[voters.name]</td>
+                                    <td>[voters.issue_count]</td>
+                                    <td><a class="btn btn-outline-primary" href="/manage-voter/[eid]/[voters.url_pid]">[is election.state "editable"]Edit eligibility[else]View eligibility[end]<span class="visually-hidden"> for [voters.pid]</span></a></td>
+                                </tr>
+                            [end]
+                        </tbody>
+                    </table>
+                </div>
+            [else]
+                <p class="text-muted py-3">No voters are eligible for this election yet.</p>
+            [end]
+        </section>
+        [is election.state "editable"]
+            <section class="col-lg-4" aria-labelledby="add-voters-heading">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 id="add-voters-heading" class="h4">Add voters</h2>
+                        [if-any issues]
+                            <form method="POST" action="/do-add-voters/[eid]">
+                                <input type="hidden" name="csrf_token" value="[csrf_token]">
+                                <label for="voter-ids" class="form-label">ASF IDs</label>
+                                <textarea id="voter-ids" name="pids" class="form-control" rows="5" required aria-describedby="voter-ids-help">[pids]</textarea>
+                                <p id="voter-ids-help" class="form-text">Separate IDs with spaces, commas, or new lines. IDs must match the voter directory exactly. Unknown IDs reject the whole batch.</p>
+                                <fieldset class="mb-3">
+                                    <legend class="h6">Eligible issues</legend>
+                                    [for issues]
+                                        <label class="d-flex gap-2 align-items-start py-2" for="add-issue-[issues.iid]">
+                                            <input id="add-issue-[issues.iid]" class="form-check-input flex-shrink-0" type="checkbox" name="issue" value="[issues.iid]" [if-any issues.selected]checked[end]>
+                                            <span>[issues.title]</span>
+                                        </label>
+                                    [end]
+                                </fieldset>
+                                <p class="form-text">Existing eligibility is preserved. Repeating an ID does not create a duplicate.</p>
+                                <button type="submit" class="btn btn-primary">Add voters</button>
+                            </form>
+                        [else]
+                            <p class="mb-0">Add an issue on the <a href="/manage/[eid]">election page</a> before assigning voters.</p>
+                        [end]
+                    </div>
+                </div>
+            </section>
+        [end]
+    </div>
+</main>
+[include "footer.ezt"]

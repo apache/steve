@@ -216,6 +216,16 @@ present in the person database. Management of an existing election is restricted
 to its `owner_pid`. The `authz` field is reserved for a future delegation policy
 and currently grants no additional management access.
 
+### Voter Lists
+
+From an election's management page, use **Manage voters** to view its eligible voters and the number of issues assigned to each. While the election is editable, paste ASF IDs separated by spaces, commas, or newlines and select the issues they may vote on. IDs must exactly match existing person-directory records; an unknown ID or invalid issue rejects the entire batch and keeps the input for correction. Repeated IDs and existing grants are accepted without duplicates, and adding voters preserves their other grants.
+
+Use **Edit eligibility** beside a voter to change their assigned issues, or **Remove voter** to remove their eligibility from every issue in this election. Removal leaves the global person record and other elections untouched. The web editor requires at least one selected issue when saving; removal is a separate explicit action.
+
+Eligibility belongs to individual issues, rather than an independent election-wide roster. Create issues before assigning voters. A newly added issue starts with no eligible voters and never automatically inherits another issue's list. Review its eligibility explicitly before opening. Once the election opens, the voter list and each person's issue assignments remain visible to the owner but cannot be changed, including after closure. These pages do not display participation or ballots.
+
+### Mutation and Storage Contracts
+
 All `/do-*` mutations require POST and a session CSRF token. HTML forms send
 `csrf_token`; JSON requests send `X-CSRFToken`. Opening and closing elections
 via GET is not supported. State conflicts return HTTP 409, invalid ballots
