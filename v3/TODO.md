@@ -2,7 +2,7 @@
 
 ## Community Self-Service
 
-- Add voter roster management to the web UI, including ASF ID validation and a clear policy for issues added after a roster is configured.
+- Add group-based voter selection once person-directory group membership and refresh semantics are defined. The web UI currently accepts explicit ASF IDs and issue assignments.
 - Add STV creation and editing for candidate labels, names, ASF IDs, and seats. The current web issue creation flow supports YNA only.
 - Define delegated management semantics for `authz` before granting access beyond the election owner.
 - Expose closed-election tallying through an owner-authorized workflow with execution status, failure reporting, stored results, and controlled downloads. Separate summary results from participation lists and anonymized raw ballots.

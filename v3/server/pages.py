@@ -26,6 +26,7 @@ import functools
 import logging
 import random
 import secrets
+from urllib.parse import quote
 from contextlib import closing
 
 from easydict import EasyDict as edict
@@ -58,6 +59,8 @@ SOON_CUTOFF = 48 * SOON_1HOUR  # 48 hours, in seconds
 T_BAD_EID = APP.load_template(TEMPLATES / 'e_bad_eid.ezt')
 T_BAD_IID = APP.load_template(TEMPLATES / 'e_bad_iid.ezt')
 T_BAD_PID = APP.load_template(TEMPLATES / 'e_bad_pid.ezt')
+T_MANAGE_VOTERS = APP.load_template(TEMPLATES / 'manage-voters.ezt')
+T_MANAGE_VOTER = APP.load_template(TEMPLATES / 'manage-voter.ezt')
 
 
 def rewrite_description(issue):
@@ -258,6 +261,9 @@ def load_election(func):
         except steve.election.ElectionBadState:
             quart.abort(409, 'The election is not in the required state')
 
+        except steve.election.VoterNotFound:
+            quart.abort(404, 'This person is not on the election voter list')
+
     return loader
 
 
@@ -408,6 +414,134 @@ async def manage_page(election):
     result.issue_count = len(result.issues)
 
     return result
+
+
+async def voter_management_data(election, *, pids='', selected=None, error=None):
+    result = await basic_info()
+    result.title = 'Manage Voters'
+    result.eid = election.eid
+    result.election = election.get_metadata()
+    result.issues = election.list_issues()
+    result.voters = election.list_voters()
+    for voter in result.voters:
+        voter.name = voter.name or voter.pid
+        voter.url_pid = quote(voter.pid, safe='')
+    result.voter_count = len(result.voters)
+    result.pids = pids
+    result.error = error
+    for issue in result.issues:
+        issue.selected = ezt.boolean(selected is None or issue.iid in selected)
+    return result
+
+
+@APP.get('/manage-voters/<eid>')
+@asfquart.auth.require({R.committer})
+@load_election
+@require_election_owner
+@APP.use_template(TEMPLATES / 'manage-voters.ezt')
+async def manage_voters_page(election):
+    return await voter_management_data(election)
+
+
+@APP.post('/do-add-voters/<eid>')
+@asfquart.auth.require({R.committer})
+@load_election
+@require_election_owner
+async def do_add_voters_endpoint(election):
+    form = await quart.request.form
+    raw_pids = form.get('pids', '')
+    pids = list(dict.fromkeys(raw_pids.replace(',', ' ').split()))
+    iids = form.getlist('issue')
+    try:
+        election.add_voters(pids, iids)
+    except (
+        ValueError,
+        steve.persondb.PersonNotFound,
+        steve.election.IssueNotFound,
+    ) as ex:
+        if isinstance(ex, steve.persondb.PersonNotFound):
+            error = f'ASF ID "{ex.pid}" is not in the voter directory. No voters were added.'
+        elif isinstance(ex, steve.election.IssueNotFound):
+            error = (
+                'An issue is no longer available. Review your selection and try again.'
+            )
+        else:
+            error = str(ex)
+        data = await voter_management_data(
+            election, pids=raw_pids, selected=iids, error=error
+        )
+        return quart.Response(
+            asfquart.utils.render(T_MANAGE_VOTERS, data),
+            status=400,
+            mimetype='text/html',
+        )
+    await flash_success(f'Updated voter eligibility for {len(pids)} ASF IDs.')
+    return quart.redirect(f'/manage-voters/{election.eid}', code=303)
+
+
+async def voter_editor_data(election, pid, *, selected=None, error=None):
+    eligible = election.get_voter_issues(pid)
+    result = await basic_info()
+    result.title = 'Edit Voter Eligibility'
+    result.eid = election.eid
+    result.election = election.get_metadata()
+    result.pid = pid
+    result.url_pid = quote(pid, safe='')
+    result.error = error
+    result.issues = election.list_issues()
+    for issue in result.issues:
+        issue.selected = ezt.boolean(
+            issue.iid in (eligible if selected is None else selected)
+        )
+    return result
+
+
+@APP.get('/manage-voter/<eid>/<pid>')
+@asfquart.auth.require({R.committer})
+@load_election
+@require_election_owner
+@APP.use_template(TEMPLATES / 'manage-voter.ezt')
+async def manage_voter_page(election, pid):
+    return await voter_editor_data(election, pid)
+
+
+@APP.post('/do-set-voter/<eid>/<pid>')
+@asfquart.auth.require({R.committer})
+@load_election
+@require_election_owner
+async def do_set_voter_endpoint(election, pid):
+    if not election.is_editable():
+        quart.abort(409, 'The voter list is frozen')
+    form = await quart.request.form
+    iids = form.getlist('issue')
+    if not iids:
+        error = (
+            'Select at least one issue, or use Remove voter to remove all eligibility.'
+        )
+    else:
+        try:
+            election.set_voter_issues(pid, iids)
+        except steve.election.IssueNotFound:
+            error = (
+                'An issue is no longer available. Review your selection and try again.'
+            )
+        else:
+            await flash_success(f'Updated eligibility for {pid}.')
+            return quart.redirect(f'/manage-voters/{election.eid}', code=303)
+    data = await voter_editor_data(election, pid, selected=iids, error=error)
+    return quart.Response(
+        asfquart.utils.render(T_MANAGE_VOTER, data), status=400, mimetype='text/html'
+    )
+
+
+@APP.post('/do-remove-voter/<eid>/<pid>')
+@asfquart.auth.require({R.committer})
+@load_election
+@require_election_owner
+async def do_remove_voter_endpoint(election, pid):
+    election.set_voter_issues(pid, [])
+    await flash_success(f'Removed {pid} from this election.')
+    return quart.redirect(f'/manage-voters/{election.eid}', code=303)
 
 
 @APP.get('/manage-stv/<eid>/<iid>')

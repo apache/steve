@@ -7,6 +7,13 @@
             <h2>[e_title]</h2>
         </div>
 
+        <div class="my-3">
+            <a href="/manage-voters/[eid]" class="btn btn-outline-primary">Manage voters</a>
+            [is e_state "editable"]
+                <p class="form-text mb-0">New issues start with no eligible voters. Assign their voters before opening the election.</p>
+            [end]
+        </div>
+
     <!-- CSRF token for JS fetch calls -->
     <input type="hidden" id="csrf-token" value="[csrf_token]">
 
