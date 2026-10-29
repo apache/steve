@@ -168,6 +168,15 @@ election:
         WHERE i.eid = ?
         ORDER BY m.pid
 
+    q_voters: |
+        SELECT m.pid, p.name, COUNT(*) AS issue_count
+        FROM mayvote m
+        JOIN issue i ON m.iid = i.iid
+        JOIN person p ON m.pid = p.pid
+        WHERE i.eid = ?
+        GROUP BY m.pid, p.name
+        ORDER BY m.pid
+
     q_closed_election_ids: SELECT eid FROM election WHERE closed = 1
     q_open_election_ids: SELECT eid FROM election WHERE salt IS NOT NULL AND (closed IS NULL OR closed = 0)
 

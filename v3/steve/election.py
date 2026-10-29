@@ -26,6 +26,7 @@ from easydict import EasyDict as edict
 
 from . import crypto
 from . import vtypes
+from .persondb import PersonNotFound
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -278,6 +279,63 @@ class Election:
                 self.c_add_mayvote.perform(pid, iid)
             else:
                 self.c_add_mayvote_all.perform(pid, self.eid)
+
+    def list_voters(self):
+        """List this election's eligible people without disclosing participation."""
+        self.q_voters.perform(self.eid)
+        return list(self.q_voters.fetchall())
+
+    def get_voter_issues(self, pid: str) -> set[str]:
+        """Return eligible issue IDs, or raise VoterNotFound for a nonmember."""
+        self.q_find_issues.perform(pid, self.eid)
+        iids = {row.iid for row in self.q_find_issues.fetchall()}
+        if not iids:
+            raise VoterNotFound(pid)
+        return iids
+
+    def add_voters(self, pids: list[str], iids: list[str]) -> None:
+        """Atomically grant existing people access to selected current issues.
+
+        Existing grants are preserved. Future issues never inherit these grants.
+        """
+        with self.transaction():
+            self._all_metadata(self.S_EDITABLE)
+            if not pids or not iids:
+                raise ValueError('Select at least one voter and one issue')
+            pids = list(dict.fromkeys(pids))
+            iids = list(dict.fromkeys(iids))
+            for iid in iids:
+                self.get_issue(iid)
+            for pid in pids:
+                if (
+                    self.db.conn.execute(
+                        'SELECT 1 FROM person WHERE pid = ?', (pid,)
+                    ).fetchone()
+                    is None
+                ):
+                    raise PersonNotFound(pid)
+            self.db.conn.executemany(
+                'INSERT INTO mayvote (pid, iid) VALUES (?, ?) '
+                'ON CONFLICT (pid, iid) DO NOTHING',
+                ((pid, iid) for pid in pids for iid in iids),
+            )
+
+    def set_voter_issues(self, pid: str, iids: list[str]) -> None:
+        """Replace one voter's eligibility; an empty selection removes the voter."""
+        with self.transaction():
+            self._all_metadata(self.S_EDITABLE)
+            current = self.get_voter_issues(pid)
+            selected = set(iids)
+            for iid in selected:
+                self.get_issue(iid)
+            self.db.conn.executemany(
+                'DELETE FROM mayvote WHERE pid = ? AND iid = ?',
+                ((pid, iid) for iid in current - selected),
+            )
+            self.db.conn.executemany(
+                'INSERT INTO mayvote (pid, iid) VALUES (?, ?)',
+                ((pid, iid) for iid in selected - current),
+            )
 
     def validate_vote(self, pid: str, iid: str, votestring: str):
         """Validate eligibility and ballot syntax without recording a vote."""
@@ -606,3 +664,9 @@ class IssueNotFound(Exception):
 
     def __str__(self):
         return f'Issue[I:{self.iid}] not found'
+
+
+class VoterNotFound(Exception):
+    def __init__(self, pid):
+        self.pid = pid
+        super().__init__(f'Voter[P:{pid}] not found in this election')
