@@ -23,16 +23,12 @@ import pathlib
 import logging
 import json
 import sys
+from contextlib import closing
 
 import steve.election
 import steve.persondb
 
 from easydict import EasyDict as edict
-
-try:
-    import pbar
-except ImportError:
-    pbar = None
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,22 +52,22 @@ def list_elections(db_fname, spy_on_open):
 
     elections = []
     for eid in eids:
-        election = steve.election.Election(db_fname, eid)
-        metadata = election.get_metadata()
-        # Fetch issue count using existing list_issues method
-        issue_count = len(election.list_issues())
-        # Fetch person count using existing get_voters_for_email method
-        person_count = len(election.get_voters_for_email())
-        elections.append(
-            edict(
-                eid=eid,
-                title=metadata.title,
-                close_at=metadata.close_at,
-                state=metadata.state,
-                issue_count=issue_count,
-                person_count=person_count,
+        with steve.election.Election(db_fname, eid) as election:
+            metadata = election.get_metadata()
+            # Fetch issue count using existing list_issues method
+            issue_count = len(election.list_issues())
+            # Fetch person count using existing get_voters_for_email method
+            person_count = len(election.get_voters_for_email())
+            elections.append(
+                edict(
+                    eid=eid,
+                    title=metadata.title,
+                    close_at=metadata.close_at,
+                    state=metadata.state,
+                    issue_count=issue_count,
+                    person_count=person_count,
+                )
             )
-        )
 
     # Sort by close_at descending (most recent first)
     elections.sort(key=lambda x: x.close_at or 0, reverse=True)
@@ -147,8 +143,8 @@ def tally_election(election, issue_id, output_format):
                 'supporting_data': tally_result[1],
             }
             all_voters.update(issue_voters)
-        except Exception as e:
-            print(f'Error tallying issue {issue.iid}: {e}')
+        except Exception:
+            _LOGGER.exception('Error tallying issue %s', issue.iid)
             raise  # Fail hard
 
     if output_format == 'json':
@@ -176,11 +172,11 @@ def main(spy_on_open, election_id, issue_id, db_fname, output_format):
     """
     if issue_id:
         db = steve.election.Election.open_database(db_fname)
-        issue = db.q_get_issue.first_row(issue_id)
-        if not issue:
-            raise steve.election.IssueNotFound(issue_id)
-        election_id = issue.eid
-        db.conn.close()
+        with closing(db.conn):
+            issue = db.q_get_issue.first_row(issue_id)
+            if not issue:
+                raise steve.election.IssueNotFound(issue_id)
+            election_id = issue.eid
     elif not election_id:
         elections = list_elections(db_fname, spy_on_open)
         election_id = select_election(elections)
@@ -188,16 +184,16 @@ def main(spy_on_open, election_id, issue_id, db_fname, output_format):
             print('No election selected. Exiting.')
             return
 
-    election = steve.election.Election(db_fname, election_id)
-
-    # Check for tampering
-    pdb = steve.persondb.PersonDB.open(db_fname)
-    if election.is_tampered(pdb):
-        print(f'Error: Election {election_id} has been tampered with. Cannot proceed.')
-        sys.exit(1)
-
-    # Proceed with tally
-    tally_election(election, issue_id, output_format)
+    with (
+        steve.election.Election(db_fname, election_id) as election,
+        steve.persondb.PersonDB.open(db_fname) as pdb,
+    ):
+        if election.is_tampered(pdb):
+            _LOGGER.error(
+                'Election %s has been tampered with; cannot tally', election_id
+            )
+            raise SystemExit(1)
+        tally_election(election, issue_id, output_format)
 
 
 if __name__ == '__main__':

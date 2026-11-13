@@ -31,6 +31,12 @@ NO = {
 # "abstain" is any other (non-affirmative) value.
 
 
+def validate_vote(votestring: str, _kv) -> None:
+    """Reject unsupported submissions without changing how historical votes tally."""
+    if votestring not in YES | NO | {'a', 'abstain', ''}:
+        raise ValueError('Invalid YNA vote')
+
+
 def tally(votestrings, _kv):
     y = n = a = 0
     for v in votestrings:

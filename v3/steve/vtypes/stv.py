@@ -40,6 +40,8 @@ stv_tool = load_stv()
 def get_candidates(kv):
     """Return normalized candidate details keyed by ballot label."""
 
+    if not isinstance(kv, dict):
+        raise ValueError('STV configuration must be a mapping')
     version = kv.get('version', 1)
     labelmap = kv.get('labelmap')
     if not isinstance(labelmap, dict):
@@ -68,6 +70,41 @@ def get_candidates(kv):
         raise ValueError(f'Unsupported STV KV version: {version}')
 
     return candidates
+
+
+def validate_configuration(kv) -> None:
+    """Reject configurations that cannot be represented unambiguously in a ballot."""
+    candidates = get_candidates(kv)
+    seats = kv.get('seats')
+    if type(seats) is not int or seats <= 0:
+        raise ValueError('STV seats must be a positive integer')
+    names = set()
+    for label, candidate in candidates.items():
+        if (
+            not isinstance(label, str)
+            or not label
+            or label.strip() != label
+            or ',' in label
+        ):
+            raise ValueError(
+                'STV labels must be nonempty, trimmed strings without commas'
+            )
+        name = candidate['name']
+        if not name.strip() or name in names:
+            raise ValueError('STV candidate names must be nonempty and unique')
+        names.add(name)
+
+
+def validate_vote(votestring: str, kv) -> None:
+    """Allow partial or empty rankings, but not unknown or repeated candidates."""
+    candidates = get_candidates(kv)
+    labels = [label.strip() for label in votestring.split(',')]
+    if not votestring.strip():
+        return
+    if any(label not in candidates for label in labels):
+        raise ValueError('Invalid STV candidate label')
+    if len(set(labels)) != len(labels):
+        raise ValueError('STV candidates may only be ranked once')
 
 
 def tally(votestrings, kv):

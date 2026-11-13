@@ -21,7 +21,7 @@ Stores metadata for each election.
   - `eid` (TEXT, PRIMARY KEY): A 10-character hexadecimal election ID (e.g., "1a2b3c4d5e"). Not auto-incremented to prevent URL deduction. Must match the pattern `[0-9a-f]{10}`.
   - `title` (TEXT, NOT NULL): The election’s title.
   - `owner_pid` (TEXT, NOT NULL): The ID of the person who created/owns the election. References `person(pid)`.
-  - `authz` (TEXT): Specifies an LDAP group (e.g., group name or identifier) allowed to edit the election. If `NULL`, only `owner_pid` can edit. The exact format is TBD but will likely map to LDAP-based persons.
+  - `authz` (TEXT): Reserved for delegated management authorization. The format and enforcement policy are not implemented; currently only `owner_pid` can manage an election, regardless of this field's value.
   - `salt` (BLOB): A 16-byte salt generated using `secrets.token_bytes()` in Python, set when the election is opened. `NULL` if not opened.
   - `opened_key` (BLOB): A 32-byte hash (using Argon2) derived from election data to detect tampering, set when the election is opened. `NULL` if not opened.
   - `closed` (INTEGER): Indicates election status: `NULL` or `0` for not closed, `1` for closed (implies opened). Must be `NULL`, `0`, or `1`.
@@ -108,6 +108,6 @@ Records votes cast for issues, supporting re-voting.
   - The owner (`owner_pid`) can monitor and edit the election at all stages, including viewing voter eligibility and vote counts.
 
 ## Notes
-- **Authorization**: The `authz` field’s format is TBD but will likely use LDAP group identifiers to define editing permissions. Validation occurs outside the schema (e.g., via LDAP integration).
+- **Authorization**: Management currently checks `owner_pid` in the web application. The `authz` field does not grant access until a delegation policy is defined and implemented.
 - **Query Optimization**: The schema references a `queries.yaml` file, which maps query names to SQL statements for all database interactions. This file provides insight into common operations (e.g., vote tallying, eligibility checks). Specific queries are not included here but can be analyzed for index optimization.
 - **Future Changes**: The `ciphertext` encryption will transition from Fernet to XChaCha20-Poly1305. Additional `issue` types may be added beyond `yna` and `stv`.

@@ -209,6 +209,40 @@ A basic example of using the API is available via the
 
 See [tests/README.md](tests/README.md) for details on testing the codebase.
 
+## Management and Data Integrity
+
+Election creation requires an authenticated ASF PMC member whose account is
+present in the person database. Management of an existing election is restricted
+to its `owner_pid`. The `authz` field is reserved for a future delegation policy
+and currently grants no additional management access.
+
+All `/do-*` mutations require POST and a session CSRF token. HTML forms send
+`csrf_token`; JSON requests send `X-CSRFToken`. Opening and closing elections
+via GET is not supported. State conflicts return HTTP 409, invalid ballots
+return HTTP 400, and ineligible voters receive HTTP 403. A submitted ballot is
+atomic across all of its issues.
+
+Advisory dates entered in the web UI are stored as midnight UTC and displayed in
+UTC. They do not schedule opening or closing. Once opened, the opening date is
+fixed; once closed, both dates are fixed. Manual opening and closing record the
+actual operation time.
+
+The YAML creation script validates voters without rewriting their IDs and
+creates the election, issues, and eligibility records in one transaction.
+Missing voters and database failures leave no partially created election.
+Timezone-free YAML dates and datetimes are interpreted as UTC; integer
+timestamps remain seconds since the Unix epoch.
+
+Application database connections enforce SQLite foreign keys. Before deploying
+this behavior against an existing database, run `PRAGMA foreign_key_check` on a
+consistent backup and resolve any reported orphan records. Do not delete
+historical voting data to silence integrity errors.
+
+Use `Election` and `PersonDB.open()` as context managers when their connections
+are scoped to an operation. `Election.create(..., db=db)` and `PersonDB(db)`
+borrow an existing database connection; the caller owns its transaction and
+connection lifetime.
+
 ## Threat Model
 
 There are two primary threat vectors that can compromise the cryptographic

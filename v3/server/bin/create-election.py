@@ -26,10 +26,10 @@ import argparse
 import datetime
 import pathlib
 import logging
+from contextlib import closing
 import yaml
 
 import steve.election
-import steve.persondb
 import steve.vtypes.stv
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,36 +42,44 @@ VALID_VTYPES = {'yna', 'stv'}
 
 
 def parse_datetime(dt):
-    """Parse ISO datetime string to Unix timestamp, or return if already int."""
-    if not dt:
+    """Parse timestamps or YAML/ISO dates, interpreting timezone-free values as UTC."""
+    if dt is None:
         return None
-    if isinstance(dt, int):
+    if type(dt) is int:
         return dt
     if isinstance(dt, str):
-        dt_obj = datetime.datetime.fromisoformat(dt)
-        return int(dt_obj.timestamp())
+        dt = datetime.datetime.fromisoformat(dt)
+    if isinstance(dt, datetime.date) and not isinstance(dt, datetime.datetime):
+        dt = datetime.datetime.combine(dt, datetime.time())
+    if isinstance(dt, datetime.datetime):
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
+        return int(dt.timestamp())
     raise ValueError(f'Invalid datetime format: {dt}')
 
 
 def validate_issue(issue):
     """Validate an issue dict from YAML."""
-    if 'vtype' not in issue or issue['vtype'] not in VALID_VTYPES:
+    if not isinstance(issue, dict):
+        raise ValueError('Each issue must be a mapping')
+    if not isinstance(issue.get('vtype'), str) or issue['vtype'] not in VALID_VTYPES:
         raise ValueError(f'Invalid vtype: {issue.get("vtype")}')
+    if not isinstance(issue.get('title'), str) or not issue['title'].strip():
+        raise ValueError('Each issue must have a title')
+    if issue.get('description') is not None and not isinstance(
+        issue['description'], str
+    ):
+        raise ValueError('Issue description must be a string')
     if issue['vtype'] == 'stv':
-        kv = issue.get('kv', {})
-        if not all(k in kv for k in ['version', 'labelmap', 'seats']):
-            raise ValueError(
-                'STV issue missing required kv fields: version, labelmap, seats'
-            )
-        if not isinstance(kv['seats'], int) or kv['seats'] <= 0:
-            raise ValueError('STV seats must be a positive integer')
-        steve.vtypes.stv.get_candidates(kv)
+        steve.vtypes.stv.validate_configuration(issue.get('kv'))
     return issue
 
 
 def main(yaml_file):
-    with open(yaml_file, 'r') as f:
+    with open(yaml_file, encoding='utf-8') as f:
         data = yaml.safe_load(f)
+    if not isinstance(data, dict) or not isinstance(data.get('election'), dict):
+        raise ValueError('YAML must contain an election mapping')
 
     # Extract election data
     election_data = data.get('election', {})
@@ -81,74 +89,54 @@ def main(yaml_file):
     open_at = parse_datetime(election_data.get('open_at'))
     close_at = parse_datetime(election_data.get('close_at'))
 
-    if not title or not owner_pid:
+    if (
+        not isinstance(title, str)
+        or not title.strip()
+        or not isinstance(owner_pid, str)
+        or not owner_pid.strip()
+    ):
         raise ValueError('Election must have title and owner_pid')
+    if authz is not None and not isinstance(authz, str):
+        raise ValueError('authz must be a string')
 
     # Extract issues
     issues = data.get('issues', [])
+    if not isinstance(issues, list):
+        raise ValueError('issues must be a list')
     for issue in issues:
         validate_issue(issue)
 
     # Extract record: list of pid values for eligible voters
     record = data.get('record', [])
-    if not isinstance(record, list):
+    if not isinstance(record, list) or any(not isinstance(pid, str) for pid in record):
         raise ValueError('record must be a list of pid values')
+    if len(set(record)) != len(record):
+        raise ValueError('record contains duplicate pid values')
 
-    # TODO: Re-enable transactions for safety once database setup allows.
-    # pdb = steve.persondb.PersonDB(DB_FNAME)
-    # pdb.db.conn.execute('BEGIN TRANSACTION')
-
-    try:
-        # Create election
+    db = steve.election.Election.open_database(DB_FNAME)
+    with closing(db.conn), db.conn:
+        db.conn.execute('BEGIN IMMEDIATE')
+        for pid in {owner_pid, *record}:
+            if not db.conn.execute(
+                'SELECT 1 FROM person WHERE pid = ?', (pid,)
+            ).fetchone():
+                raise ValueError(f'PID {pid} not found in person database')
         election = steve.election.Election.create(
-            DB_FNAME, title, owner_pid, authz, open_at, close_at
+            DB_FNAME, title, owner_pid, authz, open_at, close_at, db=db
         )
-        _LOGGER.info(
-            f'Created election[E:{election.eid}]: "{title}" by owner "{owner_pid}"'
-        )
-
-        # Add issues
         for issue_data in issues:
-            iid = election.add_issue(
+            election.add_issue(
                 issue_data['title'],
                 issue_data.get('description'),
                 issue_data['vtype'],
                 issue_data.get('kv') if issue_data['vtype'] == 'stv' else None,
             )
-            _LOGGER.info(f'Added issue[I:{iid}] to election[E:{election.eid}]')
-
-        # Open a PersonDB using the existing DB from the Election
-        pdb = steve.persondb.PersonDB(election.db)
-
-        # HACK: Opened PDB using existing DB; lacks PersonDB cursors.
-        # q_person: SELECT * FROM person ORDER BY pid
-        pdb.q_person = pdb.db.cursor_for('SELECT * FROM person ORDER BY pid')
-
-        # Get all persons for validation
-        all_persons = pdb.list_persons()
-        all_pids = {person.pid for person in all_persons}
-
-        # Temporary hack: Map old PIDs to newer equivalents for testing.
-        # TODO: Remove once PID data is fully migrated.
-        _REMAP = {
-            'iroh': 'wells',
-        }
-
-        # Validate and add voters from record
         for pid in record:
-            pid = _REMAP.get(pid, pid)  # Apply remapping if needed
-            if pid not in all_pids:
-                raise ValueError(f'PID {pid} from record not found in person database')
             election.add_voter(pid)
-        _LOGGER.info(f'Added {len(record)} voters to election[E:{election.eid}]')
-
-        # pdb.db.conn.execute('COMMIT')
-        _LOGGER.info(f'Election[E:{election.eid}] fully created from {yaml_file}')
-
-    except Exception as e:
-        # pdb.db.conn.execute('ROLLBACK')
-        _LOGGER.error(f'Failed to create election from {yaml_file}: {e}')
-        raise
+    _LOGGER.info(
+        f'Created election[E:{election.eid}] with {len(record)} eligible voters'
+    )
+    return election.eid
 
 
 if __name__ == '__main__':

@@ -25,6 +25,8 @@ import datetime
 import functools
 import logging
 import random
+import secrets
+from contextlib import closing
 
 from easydict import EasyDict as edict
 import asfpy.stopwatch
@@ -49,7 +51,7 @@ DOCSDIR = THIS_DIR / 'docs'
 
 # Formatted values to inject into templates.
 FMT_DATE = '%b %d'
-FMT_DATE_FULL = '%Y-%m-%d %H:%M'
+FMT_DATE_FULL = '%Y-%m-%d %H:%M UTC'
 SOON_1HOUR = 60 * 60
 SOON_CUTOFF = 48 * SOON_1HOUR  # 48 hours, in seconds
 
@@ -62,7 +64,7 @@ def rewrite_description(issue):
     """Rewrite issue description: wrap in <pre> and convert doc:filename to links."""
     import re
 
-    desc = issue.description
+    desc = issue.description or ''
 
     # Replace doc:filename with <a> link
     def repl(match):
@@ -103,34 +105,73 @@ async def basic_info():
             email=None,
         )
 
-    ### generate a real token and store in the session
-    basic.csrf_token = 'placeholder'
+    basic.csrf_token = quart.session.setdefault('csrf_token', secrets.token_urlsafe(32))
 
     return basic
+
+
+@APP.before_request
+async def check_csrf():
+    """Require the session's token on application mutations, including JSON requests."""
+    if quart.request.method != 'POST' or not quart.request.path.startswith('/do-'):
+        return
+    expected = quart.session.get('csrf_token')
+    supplied = quart.request.headers.get('X-CSRFToken')
+    if supplied is None:
+        supplied = (await quart.request.form).get('csrf_token')
+    if (
+        not isinstance(expected, str)
+        or not isinstance(supplied, str)
+        or not secrets.compare_digest(expected.encode(), supplied.encode())
+    ):
+        quart.abort(400, 'Invalid CSRF token')
+
+
+def require_election_owner(func):
+    """Limit management to the owner until delegated authz has a defined contract."""
+
+    @functools.wraps(func)
+    async def checked(election, *args, **kwargs):
+        session = await asfquart.session.read()
+        if not session or session['uid'] != election.get_metadata().owner_pid:
+            quart.abort(403)
+        return await func(election, *args, **kwargs)
+
+    return checked
 
 
 async def _set_election_date(election, field):
     """Helper to set open_at or close_at on an election, with validation and logging."""
     result = await basic_info()
-    ### check authz
     data = await quart.request.get_json()
-    date_str = data.get('date')
-    if not date_str:
+    if not isinstance(data, dict) or not isinstance(data.get('date'), str):
         quart.abort(400, 'Missing date')
+    date_str = data['date']
 
     # Validate date (basic check)
     try:
-        dt = datetime.datetime.fromisoformat(date_str).date()
+        date = datetime.date.fromisoformat(date_str)
     except ValueError:
         quart.abort(400, 'Invalid date format')
+    timestamp = int(
+        datetime.datetime.combine(
+            date, datetime.time(), datetime.timezone.utc
+        ).timestamp()
+    )
 
     # Set the date on the election (field is 'open_at' or 'close_at')
-    if field == 'open_at':
-        election.set_open_at(dt)
-    elif field == 'close_at':
-        election.set_close_at(dt)
-    else:
-        quart.abort(400, 'Invalid field')
+    with election.transaction():
+        state = election.get_state()
+        if state == election.S_CLOSED or (
+            field == 'open_at' and state != election.S_EDITABLE
+        ):
+            quart.abort(409, 'This election date can no longer be edited')
+        if field == 'open_at':
+            election.set_open_at(timestamp)
+        elif field == 'close_at':
+            election.set_close_at(timestamp)
+        else:
+            quart.abort(400, 'Invalid field')
 
     _LOGGER.info(
         f'User[U:{result.uid}] set {field} for election[E:{election.eid}] to {date_str}'
@@ -202,9 +243,10 @@ def load_election(func):
     """Decorator to load/pass-argument an Election from EID."""
 
     @functools.wraps(func)
-    async def loader(eid):
+    async def loader(eid, *args, **kwargs):
         try:
-            e = steve.election.Election(DB_FNAME, eid)
+            with steve.election.Election(DB_FNAME, eid) as election:
+                return await func(election, *args, **kwargs)
         except steve.election.ElectionNotFound:
             result = await basic_info()
             result.title = 'Unknown Election'
@@ -213,11 +255,8 @@ def load_election(func):
             raise_404(T_BAD_EID, result)
             # NOTREACHED
 
-        _LOGGER.debug(f'Loaded: {e}')
-
-        ### check authz
-
-        return await func(e)
+        except steve.election.ElectionBadState:
+            quart.abort(409, 'The election is not in the required state')
 
     return loader
 
@@ -225,28 +264,15 @@ def load_election(func):
 def load_election_issue(func):
     """Decorator to load/pass-argument an Election from EID."""
 
+    @load_election
     @functools.wraps(func)
-    async def loader(eid, iid):
-        try:
-            e = steve.election.Election(DB_FNAME, eid)
-        except steve.election.ElectionNotFound:
-            result = await basic_info()
-            result.title = 'Unknown Election'
-            result.eid = eid
-            # Note: result.uid (and friends) are needed for the navbar.
-            raise_404(T_BAD_EID, result)
-            # NOTREACHED
-
-        _LOGGER.debug(f'Loaded: {e}')
-
-        ### check authz
-
+    async def loader(e, iid):
         try:
             i = e.get_issue(iid)
         except steve.election.IssueNotFound:
             result = await basic_info()
             result.title = 'Unknown Issue'
-            result.eid = eid
+            result.eid = e.eid
             result.iid = iid
             # Note: result.uid (and friends) are needed for the navbar.
             raise_404(T_BAD_IID, result)
@@ -273,16 +299,17 @@ async def vote_on_page(election):
     result.e_title = result.election.title
 
     # Fetch owner name from PersonDB
-    pdb = steve.persondb.PersonDB.open(DB_FNAME)
-    try:
-        owner_person = pdb.get_person(result.election.owner_pid)
-        result.election.owner_name = owner_person[0]  # name
-    except steve.persondb.PersonNotFound:
-        result.election.owner_name = 'unknown'
+    with steve.persondb.PersonDB.open(DB_FNAME) as pdb:
+        try:
+            owner_person = pdb.get_person(result.election.owner_pid)
+            result.election.owner_name = owner_person[0]
+        except steve.persondb.PersonNotFound:
+            result.election.owner_name = 'unknown'
 
     # Check if user can vote in this election (has mayvote entries)
     election.q_find_issues.perform(result.uid, election.eid)
-    if not election.q_find_issues.fetchall():
+    eligible = {row.iid for row in election.q_find_issues.fetchall()}
+    if not eligible:
         result = await basic_info()
         result.title = 'Access Denied'
         result.eid = election.eid
@@ -291,7 +318,7 @@ async def vote_on_page(election):
     # Add more stuff into the Election instance.
     _ = postprocess_election(result.election)
 
-    all_issues = election.list_issues()
+    all_issues = [issue for issue in election.list_issues() if issue.iid in eligible]
 
     # Split into YNA and STV issues, sort each by title
     issues_yna = [i for i in all_issues if i.vtype == 'yna']
@@ -344,28 +371,15 @@ async def admin_page():
 
     result.owned = [postprocess_election(e) for e in owned]
 
-    ### owned.owner_name should be based on OWNER_PID. That might not be
-    ### the "me" because of authz access to manage issues.
-
-    ### should open/keep a PersonDB instance in the APP
-    pdb = steve.persondb.PersonDB.open(DB_FNAME)
-    try:
-        me = pdb.get_person(result.uid)
-    except steve.persondb.PersonNotFound:
-        ### the authn'd committer is not in "person"
-
-        result = await basic_info()
-        result.title = 'Unknown Person'
-        result.pid = result.uid
-        # Note: result.uid (and friends) are needed for the navbar.
-        raise_404(T_BAD_PID, result)
-        # NOTREACHED
-
-    ### the query for OWNED is just for "me", so this is the correct
-    ### name at the moment. When authz kicks in ... Nope.
-    # me is (name, email)
-    for e in result.owned:
-        e.owner_name = me[0]
+    with steve.persondb.PersonDB.open(DB_FNAME) as pdb:
+        try:
+            name, _ = pdb.get_person(result.uid)
+        except steve.persondb.PersonNotFound:
+            result.title = 'Unknown Person'
+            result.pid = result.uid
+            raise_404(T_BAD_PID, result)
+    for owned_election in result.owned:
+        owned_election.owner_name = name
 
     result.len_election = len(election)
     result.len_owned = len(owned)
@@ -376,6 +390,7 @@ async def admin_page():
 @APP.get('/manage/<eid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
+@require_election_owner
 @APP.use_template(TEMPLATES / 'manage.ezt')
 async def manage_page(election):
     result = await basic_info()
@@ -398,6 +413,7 @@ async def manage_page(election):
 @APP.get('/manage-stv/<eid>/<iid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election_issue
+@require_election_owner
 @APP.use_template(TEMPLATES / 'manage-stv.ezt')
 async def manage_stv_page(election, issue):
     if issue.vtype != 'stv':
@@ -429,6 +445,7 @@ async def manage_stv_page(election, issue):
 @APP.post('/do-set-open_at/<eid>')
 @asfquart.auth.require({R.committer})
 @load_election
+@require_election_owner
 async def do_set_open_at_endpoint(election):
     return await _set_election_date(election, 'open_at')
 
@@ -436,6 +453,7 @@ async def do_set_open_at_endpoint(election):
 @APP.post('/do-set-close_at/<eid>')
 @asfquart.auth.require({R.committer})
 @load_election
+@require_election_owner
 async def do_set_close_at_endpoint(election):
     return await _set_election_date(election, 'close_at')
 
@@ -446,42 +464,26 @@ async def do_set_close_at_endpoint(election):
 async def do_vote_endpoint(election):
     result = await basic_info()
 
-    ### check authz
-
-    # Parse the form data
-    form = edict(await quart.request.form)
-    if not form:
-        await flash_danger('No vote data provided.')
-        return quart.redirect(f'/vote-on/{election.eid}', code=303)
-
-    # Extract votes from form (keys like 'vote-<iid>')
+    form = await quart.request.form
     votes = {}
     for key, value in form.items():
         if key.startswith('vote-'):
+            if len(form.getlist(key)) != 1:
+                quart.abort(400, 'Multiple votes submitted for one issue')
             iid = key.split('-', 1)[1]
             votes[iid] = value
+    if not votes:
+        quart.abort(400, 'No vote data provided')
+    try:
+        election.add_votes(result.uid, votes)
+    except (ValueError, steve.election.IssueNotFound):
+        quart.abort(400, 'Invalid ballot')
+    except PermissionError:
+        quart.abort(403)
 
-    # Get the list of issues for this election
-    issues = election.list_issues()
-    issue_dict = {i.iid: i for i in issues}
-
-    # Process each vote
-    for iid, votestring in votes.items():
-        if iid not in issue_dict:
-            await flash_danger(f'Invalid issue ID: {iid}')
-            return quart.redirect(f'/vote-on/{election.eid}', code=303)
-
-        try:
-            election.add_vote(result.uid, iid, votestring)
-            _LOGGER.info(
-                f'User[U:{result.uid}] voted on issue[I:{iid}] in election[E:{election.eid}]'
-            )
-        except Exception as e:
-            _LOGGER.error(
-                f'Error adding vote for user[U:{result.uid}] on issue[I:{iid}]: {e}'
-            )
-            await flash_danger(f'Error submitting vote for issue {iid}.')
-            return quart.redirect(f'/vote-on/{election.eid}', code=303)
+    _LOGGER.info(
+        f'User[U:{result.uid}] submitted a ballot in election[E:{election.eid}]'
+    )
 
     await flash_success('Votes submitted successfully!')
     return quart.redirect('/voter', code=303)
@@ -494,36 +496,32 @@ async def do_create_endpoint():
 
     result = await basic_info()
 
-    ### check authz
+    form = await quart.request.form
+    title = form.get('title', '').strip()
+    if not title:
+        quart.abort(400, 'Election title is required')
+    with steve.persondb.PersonDB.open(DB_FNAME) as pdb:
+        try:
+            pdb.get_person(result.uid)
+        except steve.persondb.PersonNotFound:
+            quart.abort(
+                409, 'Your account has not been loaded into the voter directory'
+            )
+    with steve.election.Election.create(DB_FNAME, title, result.uid) as election:
+        _LOGGER.info(f'User[U:{result.uid}] created election[E:{election.eid}]')
+        await flash_success(f'Created election: {title}')
+        return quart.redirect(f'/manage/{election.eid}', code=303)
 
-    form = edict(await quart.request.form)
 
-    # Create the Election.
-    election = steve.election.Election.create(DB_FNAME, form.title, result.uid)
-
-    _LOGGER.info(
-        f'User[U:{result.uid}] created election[E:{election.eid}];'
-        f' title: "{form.title}"'
-    )
-    await flash_success(f'Created election: {form.title}')
-
-    # Go to the management page for the new Election.
-    return quart.redirect(f'/manage/{election.eid}', code=303)
-
-
-@APP.get('/do-open/<eid>')
+@APP.post('/do-open/<eid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
+@require_election_owner
 async def do_open_endpoint(election):
     result = await basic_info()
 
-    ### check authz
-
-    ### should open/keep a PersonDB instance in the APP
-    pdb = steve.persondb.PersonDB.open(DB_FNAME)
-
-    # Open the Election.
-    election.open(pdb)
+    with steve.persondb.PersonDB.open(DB_FNAME) as pdb:
+        election.open(pdb)
 
     _LOGGER.info(f'User[U:{result.uid}] opened election[E:{election.eid}]')
 
@@ -534,13 +532,12 @@ async def do_open_endpoint(election):
     return quart.redirect(f'/manage/{election.eid}', code=303)
 
 
-@APP.get('/do-close/<eid>')
+@APP.post('/do-close/<eid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
+@require_election_owner
 async def do_close_endpoint(election):
     result = await basic_info()
-
-    ### check authz
 
     # Close the Election.
     election.close()
@@ -557,26 +554,21 @@ async def do_close_endpoint(election):
 @APP.post('/do-add-issue/<eid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election
+@require_election_owner
 async def do_add_issue_endpoint(election):
     result = await basic_info()
 
-    ### check authz
-
-    form = edict(await quart.request.form)
-    print('FORM:', form)
-
-    ### do better with these
-    vtype = 'yna'
-    kv = None
-    ### for STV, there is a SEATS form parameter. Create empty LABELMAP.
-
-    iid = election.add_issue(form.title, form.description, vtype, kv)
+    form = await quart.request.form
+    title = form.get('title', '').strip()
+    if not title:
+        quart.abort(400, 'Issue title is required')
+    iid = election.add_issue(title, form.get('description', ''), 'yna', None)
 
     _LOGGER.info(
         f'User[U:{result.uid}] added issue[I:{iid}] to election[E:{election.eid}]'
     )
 
-    await flash_success(f'Issue "{form.title}" has been added.')
+    await flash_success(f'Issue "{title}" has been added.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -585,17 +577,20 @@ async def do_add_issue_endpoint(election):
 @APP.post('/do-edit-issue/<eid>/<iid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election_issue
+@require_election_owner
 async def do_edit_issue_endpoint(election, issue):
     result = await basic_info()
 
-    ### check authz
-
-    form = edict(await quart.request.form)
-    print('FORM:', form)
+    form = await quart.request.form
+    title = form.get('title', '').strip()
+    if not title:
+        quart.abort(400, 'Issue title is required')
 
     # Update the title/description.
     ### for now, no way to update the vtype or KV pairs.
-    election.edit_issue(issue.iid, form.title, form.description, issue.vtype, issue.kv)
+    election.edit_issue(
+        issue.iid, title, form.get('description', ''), issue.vtype, issue.kv
+    )
 
     _LOGGER.info(
         f'User[U:{result.uid}] edited issue[I:{issue.iid}]'
@@ -603,7 +598,7 @@ async def do_edit_issue_endpoint(election, issue):
     )
 
     # Use the new TITLE for this.
-    await flash_success(f'Issue "{form.title}" has been updated.')
+    await flash_success(f'Issue "{title}" has been updated.')
 
     # Return to the management page for this Election.
     return quart.redirect(f'/manage/{election.eid}', code=303)
@@ -612,10 +607,9 @@ async def do_edit_issue_endpoint(election, issue):
 @APP.post('/do-delete-issue/<eid>/<iid>')
 @asfquart.auth.require({R.committer})  ### need general solution
 @load_election_issue
+@require_election_owner
 async def do_delete_issue_endpoint(election, issue):
     result = await basic_info()
-
-    ### check authz
 
     # Issue exists, and was loaded. No errors to handle?
     election.delete_issue(issue.iid)
@@ -667,7 +661,8 @@ async def serve_doc(iid, docname):
     result = await basic_info()  # get PID  ### grr: called uid
 
     db = steve.election.Election.open_database(DB_FNAME)
-    row = db.q_get_mayvote.first_row(result.uid, iid)
+    with closing(db.conn):
+        row = db.q_get_mayvote.first_row(result.uid, iid)
     if not row:
         # Nothing fancy. Just pretend the file does not exist
         quart.abort(404)
@@ -694,7 +689,7 @@ def format_datetime(dt):
     "Format a datetime as absolute or relative."
 
     # Carry through an absent datetime.
-    if not dt:
+    if dt is None:
         return None
 
     delta = dt.timestamp() - datetime.datetime.now().timestamp()
@@ -729,20 +724,24 @@ def postprocess_election(e):
     # this is called "editable" (S_EDITABLE)
 
     # Format dates, if present.
-    dt_open = e.open_at and datetime.datetime.fromtimestamp(e.open_at)
+    dt_open = (
+        datetime.datetime.fromtimestamp(e.open_at, datetime.timezone.utc)
+        if e.open_at is not None
+        else None
+    )
     e.fmt_open_at = format_datetime(dt_open)
     e.fmt_open_at_full = dt_open and dt_open.strftime(FMT_DATE_FULL)
-    dt_close = e.close_at and datetime.datetime.fromtimestamp(e.close_at)
+    dt_close = (
+        datetime.datetime.fromtimestamp(e.close_at, datetime.timezone.utc)
+        if e.close_at is not None
+        else None
+    )
     e.fmt_close_at = format_datetime(dt_close)
     e.fmt_close_at_full = dt_close and dt_close.strftime(FMT_DATE_FULL)
 
     # Add ISO date strings for input fields (YYYY-MM-DD)
     e.fmt_open_at_iso = dt_open.date().isoformat() if dt_open else None
     e.fmt_close_at_iso = dt_close.date().isoformat() if dt_close else None
-
-    ### temporary. need to adjust input query.
-    if 'issue_count' not in e:
-        e.issue_count = 5  ### arbitrary. just provide a value
 
     ### need to figure this out later.
     e.has_voted = None  # EZT False

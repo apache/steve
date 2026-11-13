@@ -132,7 +132,8 @@ election:
     # Which elections were created by PID?
     q_owned: |
         SELECT eid, title, authz, closed, open_at, close_at,
-               owner_pid, (opened_key IS NOT NULL) AS is_opened
+               owner_pid, (opened_key IS NOT NULL) AS is_opened,
+               (SELECT COUNT(*) FROM issue i WHERE i.eid = election.eid) AS issue_count
         FROM election WHERE owner_pid = ?
 
     # Returns all editable elections for voting by the specified person (PID).
